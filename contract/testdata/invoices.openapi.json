@@ -1,0 +1,649 @@
+{
+  "components": {
+    "schemas": {
+      "TrestError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "invalid_input",
+              "unauthenticated",
+              "forbidden",
+              "not_found",
+              "conflict",
+              "rate_limited",
+              "unavailable",
+              "internal",
+              "deadline_exceeded",
+              "canceled"
+            ],
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "path",
+                "code",
+                "message"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "type": "object"
+      },
+      "invoice.create.v1.Input": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807
+          },
+          "memo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "additionalProperties": false
+      },
+      "invoice.create.v1.Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "invoice.update.v1.Input": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807
+          },
+          "memo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "additionalProperties": false
+      },
+      "invoice.update.v1.Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "info": {
+    "title": "Invoices",
+    "version": "0.1.0"
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "openapi": "3.1.1",
+  "paths": {
+    "/invoice": {
+      "put": {
+        "operationId": "invoice.update.v1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/invoice.update.v1.Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invoice.update.v1.Output"
+                }
+              }
+            },
+            "description": "Successful operation",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Unauthenticated",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Not found",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "408": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Request canceled",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Conflict",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Request body too large",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Unsupported media type",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Invocation limit reached",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Internal error",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Invocation deadline exceeded",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Write an invoice",
+        "x-trest-access": {
+          "mode": "permission",
+          "permission": "invoices:write"
+        },
+        "x-trest-side-effect": "write",
+        "x-trest-timeout-ms": 30000
+      }
+    },
+    "/invoices": {
+      "post": {
+        "operationId": "invoice.create.v1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/invoice.create.v1.Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/invoice.create.v1.Output"
+                }
+              }
+            },
+            "description": "Successful operation",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Unauthenticated",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Not found",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "408": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Request canceled",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Conflict",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Request body too large",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Unsupported media type",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Invocation limit reached",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Internal error",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrestError"
+                }
+              }
+            },
+            "description": "Invocation deadline exceeded",
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request correlation ID",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Write an invoice",
+        "x-trest-access": {
+          "mode": "permission",
+          "permission": "invoices:write"
+        },
+        "x-trest-side-effect": "write",
+        "x-trest-timeout-ms": 30000
+      }
+    }
+  }
+}
