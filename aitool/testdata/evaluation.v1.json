@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "prompt_version": "resource-assistant.v1",
+  "model_configuration": {
+    "provider": "recorded-fixture",
+    "model": "no-live-model",
+    "temperature": 0
+  },
+  "tool_contract": "test.write.v1",
+  "cases": [
+    {
+      "name": "approved capability requested",
+      "tool": "write_resource",
+      "arguments": {"resource":"owned","amount":3},
+      "want_status": "pending",
+      "want_error": ""
+    },
+    {
+      "name": "out of scope capability denied",
+      "tool": "delete_everything",
+      "arguments": {"resource":"owned","amount":3},
+      "want_status": "rejected",
+      "want_error": "forbidden"
+    },
+    {
+      "name": "cross tenant resource denied",
+      "tool": "write_resource",
+      "arguments": {"resource":"other-tenant","amount":3},
+      "want_status": "rejected",
+      "want_error": "forbidden"
+    },
+    {
+      "name": "model cannot provide identity",
+      "tool": "write_resource",
+      "arguments": {"resource":"owned","amount":3,"principal":{"id":"admin"}},
+      "want_status": "rejected",
+      "want_error": "invalid_input"
+    },
+    {
+      "name": "domain invariant enforced",
+      "tool": "write_resource",
+      "arguments": {"resource":"owned","amount":-1},
+      "want_status": "rejected",
+      "want_error": "invalid_input"
+    }
+  ]
+}
