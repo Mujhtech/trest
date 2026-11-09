@@ -1,0 +1,365 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "client test",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Node": {
+        "type": "object",
+        "properties": {
+          "label": {"type": "string"},
+          "children": {"type": "array", "items": {"$ref": "#/components/schemas/Node"}},
+          "parent": {"anyOf": [{"$ref": "#/components/schemas/Node"}, {"type": "null"}]},
+          "links": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Node"}}
+        },
+        "required": ["label", "children", "parent", "links"]
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "NGN",
+              "USD"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "paths": {
+    "/variant": {
+      "get": {
+        "operationId": "variant",
+        "parameters": [{"name":"kind","in":"query","required":true,"schema":{"type":"string"}}],
+        "responses": {
+          "201": {"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string"}},"required":["id"]}}}},
+          "202": {"content":{"application/json":{"schema":{"type":"object","properties":{"ticket":{"type":"string"}},"required":["ticket"]}}}},
+          "204": {"description":"No content"},
+          "206": {"content":{"application/octet-stream":{"schema":{"type":"string","format":"binary"}}}},
+          "302": {"content":{"text/plain":{"schema":{"type":"string"}}}}
+        }
+      }
+    },
+    "/redirect": {
+      "get": {
+        "operationId": "redirect",
+        "responses": {
+          "302": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/redirect-empty": {
+      "get": {
+        "operationId": "redirectEmpty",
+        "responses": {
+          "307": {
+            "description": "Temporary Redirect"
+          }
+        }
+      }
+    },
+    "/not-modified": {
+      "get": {
+        "operationId": "notModified",
+        "responses": {
+          "304": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/socket": {
+      "get": {
+        "operationId": "socket",
+        "x-trest-protocol": "websocket",
+        "responses": {
+          "101": {
+            "description": "Switching Protocols"
+          }
+        }
+      }
+    },
+    "/invoices/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getInvoice",
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "X-Scope",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteInvoice",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        }
+      },
+      "head": {
+        "operationId": "headInvoice",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices": {
+      "post": {
+        "operationId": "createInvoice",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "NGN",
+                      "USD"
+                    ]
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invoice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/upload": {
+      "post": {
+        "operationId": "upload",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "files": {"type":"array","items":{"type":"string","format":"binary"}},
+                  "title": {"type":"string"},
+                  "tag": {"type":"array","items":{"type":"string"}},
+                  "count": {"type":"integer"}
+                },
+                "required": ["file","files","title"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cookie": {
+      "get": {
+        "operationId": "cookie",
+        "parameters": [
+          {
+            "name": "session",
+            "in": "cookie",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
