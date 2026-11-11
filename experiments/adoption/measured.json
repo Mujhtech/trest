@@ -1,0 +1,55 @@
+{
+  "schema_version": "trest.adoption.measurement.v1",
+  "measured_at": "2026-11-08T07:20:03Z",
+  "go_version": "go1.27.3",
+  "os": "darwin",
+  "architecture": "arm64",
+  "gomaxprocs": 12,
+  "workload": "serial httptest POST /invoices, repeated scoped idempotency key; request construction and response recording included; no network, persistence, tracing exporter, or body capture",
+  "compiled_modules": [
+    "github.com/danielgtaylor/huma/v2@v2.40.0",
+    "trest.local/trest@v0.0.0 =\u003e local replacement"
+  ],
+  "measurements": [
+    {
+      "name": "net_http",
+      "samples": 3000,
+      "p50_ns": 4750,
+      "p95_ns": 9000,
+      "requests_per_second": 165695.89126107717,
+      "benchmark_ns_per_op": 3254,
+      "allocations_per_op": 39,
+      "bytes_per_op": 7913,
+      "startup_p50_ns": 1792,
+      "startup_p95_ns": 4208
+    },
+    {
+      "name": "trest",
+      "samples": 3000,
+      "p50_ns": 12750,
+      "p95_ns": 17959,
+      "requests_per_second": 69336.37279338727,
+      "benchmark_ns_per_op": 14298,
+      "allocations_per_op": 217,
+      "bytes_per_op": 15144,
+      "startup_p50_ns": 17292,
+      "startup_p95_ns": 23625,
+      "contract_export_p50_ns": 73000,
+      "contract_bytes": 18861
+    },
+    {
+      "name": "huma",
+      "samples": 3000,
+      "p50_ns": 4500,
+      "p95_ns": 7959,
+      "requests_per_second": 185258.08767339,
+      "benchmark_ns_per_op": 5441,
+      "allocations_per_op": 56,
+      "bytes_per_op": 8468,
+      "startup_p50_ns": 65584,
+      "startup_p95_ns": 99166,
+      "contract_export_p50_ns": 123292,
+      "contract_bytes": 3371
+    }
+  ]
+}
