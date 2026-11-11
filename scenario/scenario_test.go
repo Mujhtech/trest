@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/scenario"
+	"github.com/mujhtech/trest/scenario"
 )
 
 func TestExecutionRequiresLocalOptIn(t *testing.T) {

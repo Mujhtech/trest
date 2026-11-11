@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 //go:embed migrations/001_init.sql

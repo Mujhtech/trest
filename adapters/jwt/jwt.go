@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 // Options defines one issuer, audience, and signing algorithm for a scope.

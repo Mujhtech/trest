@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/clientgen"
-	"trest.local/trest/examples/invoices"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/clientgen"
+	"github.com/mujhtech/trest/examples/invoices"
 )
 
 func setup(t *testing.T) (*trest.App, *invoices.Service) {

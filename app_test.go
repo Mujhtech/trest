@@ -16,9 +16,9 @@ import (
 	"testing/fstest"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/operation"
-	"trest.local/trest/telemetry"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/telemetry"
 )
 
 func request(t *testing.T, app http.Handler, method, path, body, token string) *httptest.ResponseRecorder {

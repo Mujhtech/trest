@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"trest.local/trest/clientgen"
+	"github.com/mujhtech/trest/clientgen"
 )
 
 func put(t *testing.T, dir, name string, data []byte) {

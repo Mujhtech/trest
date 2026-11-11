@@ -12,11 +12,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mujhtech/trest/operation"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-	"trest.local/trest/operation"
 )
 
 // Options supplies application-owned telemetry dependencies. Neither dependency
@@ -41,7 +41,7 @@ func New(options Options) (*Instrumentation, error) {
 	if isNil(options.Provider) || isNil(options.Propagator) {
 		return nil, errors.New("trestotel: provider and propagator are required")
 	}
-	tracer := options.Provider.Tracer("trest.local/trest/adapters/otel")
+	tracer := options.Provider.Tracer("github.com/mujhtech/trest/adapters/otel")
 	if isNil(tracer) {
 		return nil, errors.New("trestotel: provider returned a nil tracer")
 	}

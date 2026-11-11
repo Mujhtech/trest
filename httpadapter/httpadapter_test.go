@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/operation"
 )
 
 type greetingInput struct {

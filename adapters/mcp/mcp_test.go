@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	trestmcp "trest.local/trest/adapters/mcp"
-	"trest.local/trest/aitool"
-	"trest.local/trest/operation"
+	trestmcp "github.com/mujhtech/trest/adapters/mcp"
+	"github.com/mujhtech/trest/aitool"
+	"github.com/mujhtech/trest/operation"
 )
 
 type input struct {

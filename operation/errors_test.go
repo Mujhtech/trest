@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 func TestErrorClassificationAndRedaction(t *testing.T) {

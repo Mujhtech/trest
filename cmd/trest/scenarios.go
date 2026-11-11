@@ -8,10 +8,10 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	"trest.local/trest/internal/example/invoiceapi"
-	"trest.local/trest/internal/example/invoices"
-	"trest.local/trest/operation"
-	"trest.local/trest/scenario"
+	"github.com/mujhtech/trest/internal/example/invoiceapi"
+	"github.com/mujhtech/trest/internal/example/invoices"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/scenario"
 )
 
 // invoiceCases is explicit application configuration. Each run constructs fresh

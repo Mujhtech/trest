@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"trest.local/trest/internal/example/existinghandler"
-	"trest.local/trest/internal/example/server"
+	"github.com/mujhtech/trest/internal/example/existinghandler"
+	"github.com/mujhtech/trest/internal/example/server"
 )
 
 func main() {

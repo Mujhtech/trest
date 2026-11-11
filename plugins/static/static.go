@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 // Options controls the mounted file collection. The supplied filesystem is

@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 type headerArrays struct {

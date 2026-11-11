@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 type declaredText string

@@ -12,9 +12,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"trest.local/trest"
-	"trest.local/trest/internal/webinput"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/internal/webinput"
+	"github.com/mujhtech/trest/operation"
 )
 
 type codecUUID [16]byte

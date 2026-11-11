@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest/operation"
-	"trest.local/trest/telemetry"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/telemetry"
 )
 
 func TestTracePhasesIdentityAndRedaction(t *testing.T) {

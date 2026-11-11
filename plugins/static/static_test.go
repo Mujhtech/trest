@@ -6,8 +6,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"trest.local/trest"
-	staticfiles "trest.local/trest/plugins/static"
+	"github.com/mujhtech/trest"
+	staticfiles "github.com/mujhtech/trest/plugins/static"
 )
 
 func TestStaticFilesAndTraversal(t *testing.T) {

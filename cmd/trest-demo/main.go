@@ -11,9 +11,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"trest.local/trest"
-	"trest.local/trest/clientgen"
-	"trest.local/trest/examples/invoices"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/clientgen"
+	"github.com/mujhtech/trest/examples/invoices"
 )
 
 func main() {

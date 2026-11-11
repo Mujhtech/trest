@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/internal/webinput"
+	"github.com/mujhtech/trest/internal/webinput"
 )
 
 func TestBodylessRequestChecksTrustReaderNotContentLength(t *testing.T) {

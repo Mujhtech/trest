@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"testing"
 
-	"trest.local/trest"
-	"trest.local/trest/clientgen"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/clientgen"
 )
 
 type socketMessage struct {
@@ -43,7 +43,7 @@ func TestGeneratedSocketClientsRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	put(t, dir, "go.mod", []byte("module generated.test/socket\n\ngo 1.23.0\n\nrequire (\n trest.local/trest v0.0.0\n trest.local/trest/adapters/websocket v0.0.0\n)\nreplace trest.local/trest => "+strconv.Quote(root)+"\nreplace trest.local/trest/adapters/websocket => "+strconv.Quote(filepath.Join(root, "adapters/websocket"))+"\n"))
+	put(t, dir, "go.mod", []byte("module generated.test/socket\n\ngo 1.23.0\n\nrequire (\n github.com/mujhtech/trest v0.0.0\n github.com/mujhtech/trest/adapters/websocket v0.0.0\n)\nreplace github.com/mujhtech/trest => "+strconv.Quote(root)+"\nreplace github.com/mujhtech/trest/adapters/websocket => "+strconv.Quote(filepath.Join(root, "adapters/websocket"))+"\n"))
 	sum, err := os.ReadFile(filepath.Join(root, "adapters/websocket/go.sum"))
 	if err != nil {
 		t.Fatal(err)
@@ -77,7 +77,7 @@ func TestGeneratedSocketClientsRoundTrip(t *testing.T) {
 }
 
 const socketGoTest = `package generated
-import("context";"errors";"net/http";"net/http/httptest";"os";"os/exec";"strings";"testing";"time";"trest.local/trest";ws "trest.local/trest/adapters/websocket")
+import("context";"errors";"net/http";"net/http/httptest";"os";"os/exec";"strings";"testing";"time";"github.com/mujhtech/trest";ws "github.com/mujhtech/trest/adapters/websocket")
 type incoming struct{Text string ` + "`json:\"text\"`" + `}
 type outgoing struct{Echo string ` + "`json:\"echo\"`" + `}
 func socketServer(t *testing.T)*httptest.Server{

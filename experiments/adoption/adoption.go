@@ -15,9 +15,9 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-	"trest.local/trest/contract"
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/operation"
 )
 
 const Body = `{"customer_id":"customer-acme","amount_minor":12500,"currency":"NGN","idempotency_key":"same-request"}`

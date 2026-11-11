@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 // Parameter describes one path, query, header, or cookie binding.

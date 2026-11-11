@@ -13,9 +13,9 @@ import (
 	"strings"
 	"syscall"
 
-	"trest.local/trest"
-	trestws "trest.local/trest/adapters/websocket"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest"
+	trestws "github.com/mujhtech/trest/adapters/websocket"
+	"github.com/mujhtech/trest/operation"
 )
 
 func main() {

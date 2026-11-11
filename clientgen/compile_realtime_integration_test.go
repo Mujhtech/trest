@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 type streamRequest struct {

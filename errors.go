@@ -1,6 +1,6 @@
 package trest
 
-import "trest.local/trest/operation"
+import "github.com/mujhtech/trest/operation"
 
 // Error is a classified error with a public message and optional private cause.
 type Error = operation.Error

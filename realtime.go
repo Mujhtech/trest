@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"time"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 // StreamInfo describes the typed data carried by a server-sent event stream.

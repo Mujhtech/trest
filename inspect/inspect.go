@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"sort"
 
-	"trest.local/trest/contract"
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/operation"
 )
 
 const SchemaVersion = "trest.inspect.v1"

@@ -9,8 +9,8 @@ import (
 	"os/exec"
 	"testing"
 
-	"trest.local/trest"
-	"trest.local/trest/clientgen"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/clientgen"
 )
 
 type variantRequest struct {

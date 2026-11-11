@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 // Task is one cooperative interval task. The next interval starts after a run

@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"unicode/utf8"
 
-	"trest.local/trest"
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 // MessageError describes a rejected JSON message. Direction is input or output;

@@ -6,9 +6,9 @@ import (
 	"context"
 	"net/http"
 
-	"trest.local/trest/contract"
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Greeting is the public operation's response.

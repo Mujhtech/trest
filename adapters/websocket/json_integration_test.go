@@ -14,7 +14,7 @@ import (
 	"time"
 
 	sdk "github.com/coder/websocket"
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 func jsonServer[I, O any](t *testing.T, options Options, handler func(context.Context, *JSONConn[I, O]) error) (string, context.CancelFunc, <-chan error) {

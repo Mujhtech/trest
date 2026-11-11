@@ -1,9 +1,9 @@
 package docsui_test
 
 import (
+	"github.com/mujhtech/trest/internal/docsui"
 	"strings"
 	"testing"
-	"trest.local/trest/internal/docsui"
 )
 
 func TestPageEscapesConfigurationAndWorksOffline(t *testing.T) {

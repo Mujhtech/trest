@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"trest.local/trest/adapters/mcp/dev"
-	"trest.local/trest/operation"
-	"trest.local/trest/telemetry"
+	"github.com/mujhtech/trest/adapters/mcp/dev"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/telemetry"
 )
 
 func TestReadOnlyDevelopmentServer(t *testing.T) {

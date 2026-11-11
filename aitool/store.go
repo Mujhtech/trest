@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // State is persisted before and after an execution attempt. Uncertain is terminal

@@ -11,7 +11,7 @@ import (
 	"math/big"
 	"time"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Worker runs one operation at a time; run multiple Workers for bounded parallelism.

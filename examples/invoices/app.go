@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 type invoiceID struct {

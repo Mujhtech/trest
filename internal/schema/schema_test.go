@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 type child struct {

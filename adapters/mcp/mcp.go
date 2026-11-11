@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"trest.local/trest/aitool"
+	"github.com/mujhtech/trest/aitool"
 )
 
 // Options makes runtime exposure explicit. Nothing listens automatically.

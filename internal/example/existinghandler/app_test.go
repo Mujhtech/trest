@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/internal/example/existinghandler"
+	"github.com/mujhtech/trest/internal/example/existinghandler"
 )
 
 func TestExistingHandlersCoexist(t *testing.T) {

@@ -11,11 +11,11 @@ import (
 	"io"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"trest.local/trest/check"
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/inspect"
-	"trest.local/trest/operation"
-	"trest.local/trest/telemetry"
+	"github.com/mujhtech/trest/check"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/inspect"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/telemetry"
 )
 
 // Config is an explicit opt-in. Only the local environment is supported.

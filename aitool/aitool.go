@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Tool is an explicit exposure declaration. Side effects are derived from the

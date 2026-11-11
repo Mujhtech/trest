@@ -3,10 +3,10 @@ package trestws
 import (
 	"bytes"
 	"context"
+	"github.com/mujhtech/trest"
 	"net/http/httptest"
 	"testing"
 	"time"
-	"trest.local/trest"
 )
 
 func TestWebSocketConfigurationAndOriginPolicy(t *testing.T) {

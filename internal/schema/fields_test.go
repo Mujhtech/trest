@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 type EmbeddedBase struct {

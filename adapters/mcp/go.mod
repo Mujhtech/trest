@@ -1,8 +1,8 @@
-module trest.local/trest/adapters/mcp
+module github.com/mujhtech/trest/adapters/mcp
 
 go 1.25.0
 
-require trest.local/trest v0.0.0
+require github.com/mujhtech/trest v0.0.0
 
 require (
 	github.com/google/jsonschema-go v0.4.3 // indirect
@@ -16,4 +16,4 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 )
 
-replace trest.local/trest => ../..
+replace github.com/mujhtech/trest => ../..

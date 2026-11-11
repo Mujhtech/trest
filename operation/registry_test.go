@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 type input struct {

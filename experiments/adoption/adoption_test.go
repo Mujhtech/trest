@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"trest.local/trest/experiments/adoption"
+	"github.com/mujhtech/trest/experiments/adoption"
 )
 
 func request(handler http.Handler, path, token, body string) *httptest.ResponseRecorder {

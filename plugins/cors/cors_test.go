@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/operation"
-	"trest.local/trest/plugins/cors"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/plugins/cors"
 )
 
 func TestCORSRequests(t *testing.T) {

@@ -32,7 +32,7 @@ func TestNewCreatesIndependentProjectWithoutOverwriting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Contains(module, []byte("module example.local/my-app")) || !bytes.Contains(module, []byte("replace trest.local/trest =>")) {
+	if !bytes.Contains(module, []byte("module example.local/my-app")) || !bytes.Contains(module, []byte("replace github.com/mujhtech/trest =>")) {
 		t.Fatalf("module=%s", module)
 	}
 	if code := run(context.Background(), []string{"new", destination}, &output, &diagnostics); code != 1 {

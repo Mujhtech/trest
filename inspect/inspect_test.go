@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/inspect"
-	"trest.local/trest/internal/example/invoiceapi"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/inspect"
+	"github.com/mujhtech/trest/internal/example/invoiceapi"
+	"github.com/mujhtech/trest/operation"
 )
 
 func TestBuild(t *testing.T) {

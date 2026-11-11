@@ -1,12 +1,12 @@
-module trest.local/trest/adapters/otel
+module github.com/mujhtech/trest/adapters/otel
 
 go 1.26.0
 
 require (
+	github.com/mujhtech/trest v0.0.0
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/sdk v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
-	trest.local/trest v0.0.0
 )
 
 require (
@@ -20,4 +20,4 @@ require (
 	golang.org/x/sys v0.48.0 // indirect
 )
 
-replace trest.local/trest => ../..
+replace github.com/mujhtech/trest => ../..

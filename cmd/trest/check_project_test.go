@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 func TestProjectBaselineIgnoresDisplayMetadataAndPreservesSchema(t *testing.T) {

@@ -15,8 +15,8 @@ import (
 	"testing/fstest"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/operation"
 )
 
 // protocolResponse records informational responses separately from the final

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 func TestCompiledNumericBoundsRemainExact(t *testing.T) {

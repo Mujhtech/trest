@@ -11,8 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"trest.local/trest/internal/schema"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/internal/schema"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Error carries an HTTP parsing status while retaining the shared operation error.

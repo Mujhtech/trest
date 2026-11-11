@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/internal/example/invoiceapi"
-	"trest.local/trest/internal/example/invoices"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/internal/example/invoiceapi"
+	"github.com/mujhtech/trest/internal/example/invoices"
+	"github.com/mujhtech/trest/operation"
 )
 
 func TestInvoiceAPI(t *testing.T) {

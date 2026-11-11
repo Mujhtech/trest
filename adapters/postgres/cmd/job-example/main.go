@@ -12,9 +12,9 @@ import (
 	"os"
 	"time"
 
-	"trest.local/trest/adapters/postgres"
-	"trest.local/trest/job"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/adapters/postgres"
+	"github.com/mujhtech/trest/job"
+	"github.com/mujhtech/trest/operation"
 )
 
 type deliveryInput struct {

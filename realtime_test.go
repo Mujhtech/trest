@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/operation"
 )
 
 type eventData struct {

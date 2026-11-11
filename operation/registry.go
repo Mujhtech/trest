@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 // Definition is the immutable contract captured by Register.

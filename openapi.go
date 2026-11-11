@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"trest.local/trest/internal/docsui"
-	"trest.local/trest/internal/openapischema"
+	"github.com/mujhtech/trest/internal/docsui"
+	"github.com/mujhtech/trest/internal/openapischema"
 )
 
 // OpenAPI returns a deterministic OpenAPI 3.1 contract from the compiled routes.

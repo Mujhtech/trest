@@ -11,7 +11,7 @@ import (
     "os"
     "os/signal"
 
-    "trest.local/trest"
+    "github.com/mujhtech/trest"
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 
 `New` validates and freezes the application; `Listen` starts it and shuts it down when the context is canceled. An `App` is also an `http.Handler`. Handlers receive ordinary `context.Context` values, and business services remain ordinary Go code with explicitly constructed dependencies.
 
-APIs and the module path `trest.local/trest` are provisional. No public installation or release location has been selected. The project does not claim full Elysia parity.
+The module path is `github.com/mujhtech/trest`. APIs remain provisional, and the project does not claim full Elysia parity.
 
 ## Try the invoice workshop
 
@@ -65,7 +65,7 @@ go run ./cmd/trest new /tmp/my-trest-app
 go run ./cmd/trest dev --dir /tmp/my-trest-app --watch
 ```
 
-The scaffold is an independent Go module with a server, interactive docs, and a request test. Its `go.mod` uses a local `replace` pointing to this checkout until Trest has a public module identity. The development server defaults to `127.0.0.1:8080`; open `/docs` or `/greet/Ada`.
+The scaffold is an independent Go module with a server, interactive docs, and a request test. Its `go.mod` uses a local `replace` for `github.com/mujhtech/trest` pointing to this checkout for local development. The development server defaults to `127.0.0.1:8080`; open `/docs` or `/greet/Ada`.
 
 Export its contract and generate a TypeScript client without starting the server:
 

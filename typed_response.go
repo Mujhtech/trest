@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"trest.local/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/schema"
 )
 
 // Response carries a typed JSON body and an explicitly declared HTTP status.

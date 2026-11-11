@@ -15,6 +15,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mujhtech/trest"
+	trestotel "github.com/mujhtech/trest/adapters/otel"
+	"github.com/mujhtech/trest/operation"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
@@ -22,9 +25,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
-	"trest.local/trest"
-	trestotel "trest.local/trest/adapters/otel"
-	"trest.local/trest/operation"
 )
 
 func instrumentation(t *testing.T) (*trestotel.Instrumentation, *tracetest.InMemoryExporter, *sdktrace.TracerProvider) {

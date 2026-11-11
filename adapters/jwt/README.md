@@ -28,7 +28,7 @@ app, err := trest.New(
 )
 ```
 
-Import the adapter as `trestjwt "trest.local/trest/adapters/jwt"` and the claim types from `github.com/golang-jwt/jwt/v5`. The module path remains provisional. The local example below builds from this checkout.
+Import the adapter as `trestjwt "github.com/mujhtech/trest/adapters/jwt"` and the claim types from `github.com/golang-jwt/jwt/v5`. The local example below builds from this checkout.
 
 `Algorithm`, `Issuer`, `Audience`, `NewClaims`, `Key`, and `Principal` are required. Exactly one configured algorithm is accepted: HS256/384/512, RS256/384/512, PS256/384/512, ES256/384/512, or EdDSA. Unsigned tokens and custom algorithms are rejected. The verifier requires a valid signature, an expiration, the exact issuer, and an audience containing the configured value. It checks `nbf` and `iat` when present. Unsupported critical or payload-encoding headers are rejected. `Principal` runs only after these checks, and an empty principal ID is rejected.
 

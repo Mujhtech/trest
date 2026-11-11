@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	"trest.local/trest/operation"
-	"trest.local/trest/telemetry"
+	"github.com/mujhtech/trest/operation"
+	"github.com/mujhtech/trest/telemetry"
 )
 
 func TestRecorderBoundsAndDetachedSnapshots(t *testing.T) {

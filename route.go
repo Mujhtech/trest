@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest/internal/schema"
-	"trest.local/trest/internal/webinput"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/webinput"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Parameter describes an HTTP input in the application contract.

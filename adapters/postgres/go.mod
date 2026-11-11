@@ -1,10 +1,10 @@
-module trest.local/trest/adapters/postgres
+module github.com/mujhtech/trest/adapters/postgres
 
 go 1.25.0
 
 require (
 	github.com/jackc/pgx/v5 v5.12.0
-	trest.local/trest v0.0.0
+	github.com/mujhtech/trest v0.0.0
 )
 
 require (
@@ -15,4 +15,4 @@ require (
 	golang.org/x/text v0.41.0 // indirect
 )
 
-replace trest.local/trest => ../..
+replace github.com/mujhtech/trest => ../..

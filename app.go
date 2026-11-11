@@ -19,7 +19,7 @@ import (
 	"sync"
 	"time"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Empty is the input for handlers that do not need request data.

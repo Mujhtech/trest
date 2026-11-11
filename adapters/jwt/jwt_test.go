@@ -19,8 +19,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"trest.local/trest"
-	trestjwt "trest.local/trest/adapters/jwt"
+	"github.com/mujhtech/trest"
+	trestjwt "github.com/mujhtech/trest/adapters/jwt"
 )
 
 type claims struct {

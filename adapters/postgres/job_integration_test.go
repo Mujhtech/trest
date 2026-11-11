@@ -18,8 +18,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
-	"trest.local/trest/job"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/job"
+	"github.com/mujhtech/trest/operation"
 )
 
 type input struct {

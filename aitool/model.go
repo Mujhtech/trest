@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Usage reports admission counts, estimates, and reconciled actual usage. Model

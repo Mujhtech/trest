@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/check"
-	"trest.local/trest/contract"
-	"trest.local/trest/internal/example/invoiceapi"
+	"github.com/mujhtech/trest/check"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/internal/example/invoiceapi"
 )
 
 type runner struct {

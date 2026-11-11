@@ -17,9 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/check"
-	"trest.local/trest/internal/example/invoiceapi"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/check"
+	"github.com/mujhtech/trest/internal/example/invoiceapi"
 )
 
 type projectManifest struct {

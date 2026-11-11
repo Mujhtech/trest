@@ -21,7 +21,7 @@ import (
 	"strings"
 	"sync"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 const (

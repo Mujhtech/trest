@@ -19,7 +19,7 @@ app, err := trest.New(
 )
 ```
 
-Import `trestotel "trest.local/trest/adapters/otel"` and `go.opentelemetry.io/otel/propagation`. Both dependencies are required. An empty `propagation.NewCompositeTextMapPropagator()` explicitly disables extraction of remote trace headers. The constructor creates no SDK provider, exporter, network connection, or background worker. It never gets or sets global OTel providers or propagators. The application owns exporter configuration, sampling, startup, flushing, shutdown, and retention.
+Import `trestotel "github.com/mujhtech/trest/adapters/otel"` and `go.opentelemetry.io/otel/propagation`. Both dependencies are required. An empty `propagation.NewCompositeTextMapPropagator()` explicitly disables extraction of remote trace headers. The constructor creates no SDK provider, exporter, network connection, or background worker. It never gets or sets global OTel providers or propagators. The application owns exporter configuration, sampling, startup, flushing, shutdown, and retention.
 
 Install `trest.Observe` at app scope; Trest rejects scoped operation observers. A request span starts in `Middleware`, and its context reaches authentication, guards, business handlers, and downstream calls. The injected propagator establishes an incoming trace parent. The server span name uses the normalized HTTP method and matched route template, such as `GET /invoices/{id}`. When no template is available, only the method is used. There is no fallback to the requested URL.
 

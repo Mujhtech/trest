@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/clientgen"
+	"github.com/mujhtech/trest/clientgen"
 )
 
 func contract(t *testing.T) []byte {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"trest.local/trest/internal/example/invoices"
+	"github.com/mujhtech/trest/internal/example/invoices"
 )
 
 func TestServiceCreate(t *testing.T) {

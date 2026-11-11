@@ -15,7 +15,7 @@ import (
 	"time"
 
 	sdk "github.com/coder/websocket"
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 // MessageType identifies a text or binary WebSocket message.

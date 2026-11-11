@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 // Options defines a fixed origin allowlist. A wildcard origin is allowed only

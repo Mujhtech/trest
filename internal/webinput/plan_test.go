@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest/internal/webinput"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/internal/webinput"
+	"github.com/mujhtech/trest/operation"
 )
 
 func TestCompileMetadataAndDecodeSources(t *testing.T) {

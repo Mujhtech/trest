@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/internal/openapischema"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/internal/openapischema"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Info identifies an application contract.

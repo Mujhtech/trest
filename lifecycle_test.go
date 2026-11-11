@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest"
+	"github.com/mujhtech/trest"
 )
 
 func TestRuntimeDrainsRequestsBeforeResourceCleanup(t *testing.T) {

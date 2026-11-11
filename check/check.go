@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest/contract"
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/inspect"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/inspect"
+	"github.com/mujhtech/trest/operation"
 )
 
 const SchemaVersion = "trest.check.v1"

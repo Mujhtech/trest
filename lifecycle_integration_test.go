@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest"
-	"trest.local/trest/plugins/schedule"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/plugins/schedule"
 )
 
 func TestCustomServerOwnsLifecycleAndDrains(t *testing.T) {

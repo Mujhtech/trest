@@ -1,10 +1,10 @@
-module trest.local/trest/adapters/jwt
+module github.com/mujhtech/trest/adapters/jwt
 
 go 1.23.0
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	trest.local/trest v0.0.0
+	github.com/mujhtech/trest v0.0.0
 )
 
-replace trest.local/trest => ../..
+replace github.com/mujhtech/trest => ../..

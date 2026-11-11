@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"trest.local/trest"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/operation"
 )
 
 func TestResolvedResourceAndResultHooksShareEveryInvocationPath(t *testing.T) {

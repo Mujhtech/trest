@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // RequestID returns the server-generated correlation ID shared with invocations.

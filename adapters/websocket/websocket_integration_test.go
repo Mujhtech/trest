@@ -14,8 +14,8 @@ import (
 	"time"
 
 	sdk "github.com/coder/websocket"
-	"trest.local/trest"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest"
+	"github.com/mujhtech/trest/operation"
 )
 
 func testComponents(endpoint *endpoint) []trest.Component {

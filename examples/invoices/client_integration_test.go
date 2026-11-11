@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"testing"
 
-	"trest.local/trest/clientgen"
+	"github.com/mujhtech/trest/clientgen"
 )
 
 func writeFile(t *testing.T, dir, name string, data []byte) {
@@ -45,7 +45,7 @@ func TestGeneratedGoClientAgainstWorkshop(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
-	writeFile(t, dir, "go.mod", []byte("module workshop-client.test\n\ngo 1.23.0\n\nrequire trest.local/trest v0.0.0\nreplace trest.local/trest => "+strconv.Quote(root)+"\n"))
+	writeFile(t, dir, "go.mod", []byte("module workshop-client.test\n\ngo 1.23.0\n\nrequire github.com/mujhtech/trest v0.0.0\nreplace github.com/mujhtech/trest => "+strconv.Quote(root)+"\n"))
 	writeFile(t, dir, "client.go", source)
 	writeFile(t, dir, "client_test.go", []byte(workshopGoTest))
 	command(t, dir, "go", "test", "-race", "./...")
@@ -97,7 +97,7 @@ workshop(process.env.TREST_WORKSHOP_URL!,'acme-test').then(result=>{
 `
 
 const workshopGoTest = `package invoiceclient
-import("context";"errors";"net/http";"net/http/httptest";"strings";"testing";"trest.local/trest/examples/invoices")
+import("context";"errors";"net/http";"net/http/httptest";"strings";"testing";"github.com/mujhtech/trest/examples/invoices")
 type appTransport struct{handler http.Handler}
 func(t appTransport)RoundTrip(r *http.Request)(*http.Response,error){recorder:=httptest.NewRecorder();t.handler.ServeHTTP(recorder,r);return recorder.Result(),nil}
 func TestWorkshop(t *testing.T){

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 func TestJSONBridgePreparesWithoutEffectsAndReauthorizes(t *testing.T) {

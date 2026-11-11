@@ -14,12 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"trest.local/trest/check"
-	"trest.local/trest/contract"
-	"trest.local/trest/inspect"
-	"trest.local/trest/internal/example/invoiceapi"
-	"trest.local/trest/scenario"
-	"trest.local/trest/telemetry"
+	"github.com/mujhtech/trest/check"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/inspect"
+	"github.com/mujhtech/trest/internal/example/invoiceapi"
+	"github.com/mujhtech/trest/scenario"
+	"github.com/mujhtech/trest/telemetry"
 )
 
 func main() {

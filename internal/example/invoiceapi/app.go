@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"strings"
 
-	"trest.local/trest/contract"
-	"trest.local/trest/httpadapter"
-	"trest.local/trest/internal/example/invoices"
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/contract"
+	"github.com/mujhtech/trest/httpadapter"
+	"github.com/mujhtech/trest/internal/example/invoices"
+	"github.com/mujhtech/trest/operation"
 )
 
 // App owns an explicitly constructed example API and its ephemeral storage.

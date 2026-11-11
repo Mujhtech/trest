@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"trest.local/trest/experiments/adoption"
+	"github.com/mujhtech/trest/experiments/adoption"
 )
 
 type measurement struct {

@@ -8,7 +8,7 @@ import (
 	"sort"
 	"sync"
 
-	"trest.local/trest/operation"
+	"github.com/mujhtech/trest/operation"
 )
 
 // Trace contains retained completion events for one trace ID. The recorder keeps

@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"trest.local/trest/clientgen"
+	"github.com/mujhtech/trest/clientgen"
 )
 
 func runNew(args []string, stdout, stderr io.Writer) int {
@@ -28,7 +28,7 @@ func runNew(args []string, stdout, stderr io.Writer) int {
 	}
 	set := flags("new", stderr)
 	module := set.String("module", "", "Go module path (defaults to example.local/<directory>)")
-	trestDir := set.String("trest-dir", "", "local Trest source directory for the provisional module")
+	trestDir := set.String("trest-dir", "", "local github.com/mujhtech/trest source directory")
 	if set.Parse(args) != nil || set.NArg() != 1 {
 		return 2
 	}
@@ -119,7 +119,7 @@ func findTrestSource(explicit string) (string, error) {
 		if err != nil {
 			return "", false
 		}
-		if strings.Contains(string(data), "module trest.local/trest\n") {
+		if strings.Contains(string(data), "module github.com/mujhtech/trest\n") {
 			return absolute, true
 		}
 		return "", false
@@ -128,7 +128,7 @@ func findTrestSource(explicit string) (string, error) {
 		if path, ok := valid(explicit); ok {
 			return path, nil
 		}
-		return "", errors.New("--trest-dir must contain the local trest.local/trest module")
+		return "", errors.New("--trest-dir must contain the local github.com/mujhtech/trest module")
 	}
 	if directory, err := os.Getwd(); err == nil {
 		for {
@@ -147,7 +147,7 @@ func findTrestSource(explicit string) (string, error) {
 			return path, nil
 		}
 	}
-	return "", errors.New("cannot locate the provisional Trest module; pass --trest-dir with its source directory")
+	return "", errors.New("cannot locate the github.com/mujhtech/trest module; pass --trest-dir with its source directory")
 }
 
 func scaffoldFiles(module, source string) (map[string][]byte, error) {
@@ -159,9 +159,9 @@ func scaffoldFiles(module, source string) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	readme := fmt.Sprintf("# %s\n\nA typed Go application built with Trest.\n\n```sh\ngo test ./...\ngo run ./cmd/server\n```\n\nOpen http://127.0.0.1:8080/docs for interactive API documentation. Try `/greet/Ada`.\n\nThe generated project uses a local `replace` for Trest at %s because its public module identity is not selected yet. Update that replacement when moving the project.\n\nWith the `trest` command installed or built from that source:\n\n```sh\ntrest dev --dir . --watch\ntrest inspect --dir . --json\ntrest check --dir . --run-go-checks\ntrest contract export --dir . --out openapi.json\ntrest contract export --dir . --baseline --out openapi.baseline.json\ntrest check --dir . --baseline openapi.baseline.json\ntrest client --spec openapi.json --lang ts --out client.ts\n# Regenerate a marked client on every successful rebuild:\ntrest dev --dir . --watch --client ts --client-out client.ts\n```\n\nFor a Go client use `--lang go --package client --out client/client.go`; create the output directory first. File replacement requires `--overwrite` on explicit client/contract exports. The development watcher only replaces files carrying Trest's generated-file marker.\n\n`dev` builds and runs your local application and inherits your environment. It expects the `-addr`, `-openapi`, and `-manifest` flags supplied by this starter. Readiness uses `/readyz` and a per-process marker; use `--ready-path` if you move that route. The server is bound to loopback by default.\n", module, strconv.Quote(source))
+	readme := fmt.Sprintf("# %s\n\nA typed Go application built with Trest.\n\n```sh\ngo test ./...\ngo run ./cmd/server\n```\n\nOpen http://127.0.0.1:8080/docs for interactive API documentation. Try `/greet/Ada`.\n\nThe generated project uses a local `replace` for Trest at %s for development against this checkout. Update that replacement when moving the project.\n\nWith the `trest` command installed or built from that source:\n\n```sh\ntrest dev --dir . --watch\ntrest inspect --dir . --json\ntrest check --dir . --run-go-checks\ntrest contract export --dir . --out openapi.json\ntrest contract export --dir . --baseline --out openapi.baseline.json\ntrest check --dir . --baseline openapi.baseline.json\ntrest client --spec openapi.json --lang ts --out client.ts\n# Regenerate a marked client on every successful rebuild:\ntrest dev --dir . --watch --client ts --client-out client.ts\n```\n\nFor a Go client use `--lang go --package client --out client/client.go`; create the output directory first. File replacement requires `--overwrite` on explicit client/contract exports. The development watcher only replaces files carrying Trest's generated-file marker.\n\n`dev` builds and runs your local application and inherits your environment. It expects the `-addr`, `-openapi`, and `-manifest` flags supplied by this starter. Readiness uses `/readyz` and a per-process marker; use `--ready-path` if you move that route. The server is bound to loopback by default.\n", module, strconv.Quote(source))
 	return map[string][]byte{
-		"go.mod":             []byte("module " + module + "\n\ngo 1.23.0\n\nrequire trest.local/trest v0.0.0\n\nreplace trest.local/trest => " + strconv.Quote(filepath.ToSlash(source)) + "\n"),
+		"go.mod":             []byte("module " + module + "\n\ngo 1.23.0\n\nrequire github.com/mujhtech/trest v0.0.0\n\nreplace github.com/mujhtech/trest => " + strconv.Quote(filepath.ToSlash(source)) + "\n"),
 		"cmd/server/main.go": mainCode, "cmd/server/main_test.go": testCode, "README.md": []byte(readme), ".gitignore": []byte("/server\n*.log\n"),
 	}, nil
 }
@@ -179,7 +179,7 @@ import (
  "os/signal"
  "syscall"
 
- "trest.local/trest"
+ "github.com/mujhtech/trest"
 )
 
 type greetInput struct { Name string __BT__path:"name" minLength:"2"__BT__ }
