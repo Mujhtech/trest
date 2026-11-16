@@ -1,0 +1,29 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                               │ /tmp/trest-framework-next/entropy-reservoir-results/before.txt │ /tmp/trest-framework-next/entropy-reservoir-results/after.txt │
+                                               │                             sec/op                             │                 sec/op                   vs base              │
+HelloJSON/framework=trest_app                                                                       2.656µ ± 7%                               2.629µ ± 6%       ~ (p=0.574 n=8)
+DuplicateInvoice/framework=trest_app                                                                4.998µ ± 6%                               4.745µ ± 6%       ~ (p=0.279 n=8)
+CancelableHelloJSON/framework=trest_app                                                             3.595µ ± 7%                               3.550µ ± 6%       ~ (p=0.505 n=8)
+CancelableDuplicateInvoice/framework=trest_app                                                      5.962µ ± 7%                               5.928µ ± 8%       ~ (p=0.981 n=8)
+geomean                                                                                             4.107µ                                    4.025µ       -1.99%
+
+                                               │ /tmp/trest-framework-next/entropy-reservoir-results/before.txt │ /tmp/trest-framework-next/entropy-reservoir-results/after.txt │
+                                               │                              B/op                              │                 B/op                   vs base                │
+HelloJSON/framework=trest_app                                                                      6.315Ki ± 0%                            6.315Ki ± 0%       ~ (p=1.000 n=8) ¹
+DuplicateInvoice/framework=trest_app                                                               7.605Ki ± 0%                            7.605Ki ± 0%       ~ (p=1.000 n=8) ¹
+CancelableHelloJSON/framework=trest_app                                                            6.987Ki ± 0%                            6.987Ki ± 0%       ~ (p=1.000 n=8) ¹
+CancelableDuplicateInvoice/framework=trest_app                                                     8.246Ki ± 0%                            8.246Ki ± 0%       ~ (p=1.000 n=8) ¹
+geomean                                                                                            7.253Ki                                 7.253Ki       +0.00%
+¹ all samples are equal
+
+                                               │ /tmp/trest-framework-next/entropy-reservoir-results/before.txt │ /tmp/trest-framework-next/entropy-reservoir-results/after.txt │
+                                               │                           allocs/op                            │               allocs/op                vs base                │
+HelloJSON/framework=trest_app                                                                        18.00 ± 0%                              18.00 ± 0%       ~ (p=1.000 n=8) ¹
+DuplicateInvoice/framework=trest_app                                                                 34.00 ± 0%                              34.00 ± 0%       ~ (p=1.000 n=8) ¹
+CancelableHelloJSON/framework=trest_app                                                              27.00 ± 0%                              27.00 ± 0%       ~ (p=1.000 n=8) ¹
+CancelableDuplicateInvoice/framework=trest_app                                                       42.00 ± 0%                              42.00 ± 0%       ~ (p=1.000 n=8) ¹
+geomean                                                                                              28.86                                   28.86       +0.00%
+¹ all samples are equal

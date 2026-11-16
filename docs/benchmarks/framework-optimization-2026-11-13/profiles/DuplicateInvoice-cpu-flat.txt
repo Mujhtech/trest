@@ -1,0 +1,38 @@
+File: pass11.test
+Type: cpu
+Time: 2026-11-13 22:50:09 WAT
+Duration: 12.13s, Total samples = 11.47s (94.57%)
+Showing nodes accounting for 9.17s, 79.95% of 11.47s total
+Dropped 306 nodes (cum <= 0.06s)
+Showing top 30 nodes out of 130
+      flat  flat%   sum%        cum   cum%
+     7.36s 64.17% 64.17%      7.36s 64.17%  runtime.kevent
+     0.23s  2.01% 66.17%      0.45s  3.92%  runtime.scanObject
+     0.22s  1.92% 68.09%      0.28s  2.44%  runtime.tryDeferToSpanScan
+     0.12s  1.05% 69.14%      0.13s  1.13%  runtime.typePointers.next
+     0.11s  0.96% 70.10%      0.29s  2.53%  runtime.mallocgcSmallScanNoHeader
+     0.10s  0.87% 70.97%      0.10s  0.87%  internal/bytealg.IndexByteString
+     0.10s  0.87% 71.84%      0.21s  1.83%  runtime.scanObjectsSmall
+     0.07s  0.61% 72.45%      0.07s  0.61%  runtime.memclrNoHeapPointers
+     0.07s  0.61% 73.06%      0.07s  0.61%  runtime.nanotime1
+     0.06s  0.52% 73.58%      0.06s  0.52%  internal/runtime/maps.(*Map).getWithoutKeySmallFastStr
+     0.06s  0.52% 74.11%      0.09s  0.78%  runtime.findObject
+     0.06s  0.52% 74.63%      0.18s  1.57%  runtime.mallocgcSmallNoscan
+     0.04s  0.35% 74.98%      0.09s  0.78%  bytes.(*Buffer).ReadFrom
+     0.04s  0.35% 75.33%      0.14s  1.22%  encoding/json/v2.makeStructArshaler.func2
+     0.04s  0.35% 75.68%      0.11s  0.96%  gcWriteBarrier
+     0.04s  0.35% 76.02%      2.30s 20.05%  github.com/mujhtech/trest.wrapRoute.func2
+     0.04s  0.35% 76.37%      0.86s  7.50%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).runUnobserved
+     0.04s  0.35% 76.72%      0.06s  0.52%  internal/runtime/maps.(*Iter).Next
+     0.04s  0.35% 77.07%      0.29s  2.53%  net/http.Header.Clone (inline)
+     0.04s  0.35% 77.42%      0.17s  1.48%  runtime.bulkBarrierPreWrite
+     0.04s  0.35% 77.77%      0.11s  0.96%  runtime.mallocgcSmallScanNoHeaderSC5
+     0.03s  0.26% 78.03%      1.83s 15.95%  github.com/mujhtech/trest.(*Route[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).mount.func7
+     0.03s  0.26% 78.29%      0.10s  0.87%  github.com/mujhtech/trest/internal/schema.(*wireCursor).scalar
+     0.03s  0.26% 78.55%      0.89s  7.76%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).Invoke (inline)
+     0.03s  0.26% 78.81%      0.09s  0.78%  runtime.concatstrings
+     0.03s  0.26% 79.08%      0.12s  1.05%  runtime.mallocgcSmallScanNoHeaderSC6
+     0.03s  0.26% 79.34%      0.13s  1.13%  runtime.mallocgcSmallScanSlowPath
+     0.03s  0.26% 79.60%      0.37s  3.23%  runtime.newobject
+     0.02s  0.17% 79.77%      0.26s  2.27%  encoding/json/v2.marshalEncode
+     0.02s  0.17% 79.95%      0.52s  4.53%  github.com/mujhtech/trest/experiments/adoption.(*Store).execute

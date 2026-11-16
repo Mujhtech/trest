@@ -1,0 +1,6 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkHelloDynamic/framework=trest_app         	18529252	       935.1 ns/op	     672 B/op	       2 allocs/op
+PASS

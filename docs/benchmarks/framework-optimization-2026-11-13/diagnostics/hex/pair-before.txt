@@ -1,0 +1,48 @@
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5212027	       109.9 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5427631	       114.5 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5349957	       113.6 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5334912	       116.5 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 4918360	       120.8 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5328856	       124.0 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5114881	       110.0 ns/op	      64 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+BenchmarkPair 	 5225967	       110.3 ns/op	      64 B/op	       0 allocs/op
+PASS

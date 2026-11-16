@@ -1,0 +1,95 @@
+package adoption_test
+
+import (
+	"encoding/json"
+	"mime"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/mujhtech/trest/experiments/adoption"
+)
+
+// This diagnostic deliberately excludes httptest request parsing and recorder
+// allocation. It is not a replacement for BenchmarkHelloJSON's end-to-end
+// comparison. Every iteration still invokes an existing framework handler and
+// serializes its returned Hello value; no response bytes are cached here.
+func BenchmarkHelloDynamic(b *testing.B) {
+	for _, factory := range adoption.HelloFactories() {
+		if factory.Name != "trest_app" && factory.Name != "gin" && factory.Name != "echo" {
+			continue
+		}
+		b.Run("framework="+factory.Name, func(b *testing.B) {
+			fixture, err := factory.New()
+			if err != nil {
+				b.Fatal(err)
+			}
+			base := httptest.NewRequest(http.MethodGet, "/hello", nil)
+			writer := &diagnosticResponseWriter{header: make(http.Header), body: make([]byte, 0, 64)}
+			warmup := *base
+			fixture.Handler.ServeHTTP(writer, &warmup)
+			checkDiagnosticHello(b, writer)
+			b.ReportAllocs()
+			for b.Loop() {
+				writer.reset()
+				// A new shallow copy prevents Pattern, routing matches, and any
+				// context replacement from leaking into the next iteration.
+				request := *base
+				fixture.Handler.ServeHTTP(writer, &request)
+				if writer.status != http.StatusOK {
+					b.Fatalf("hello: %d %s", writer.status, writer.body)
+				}
+			}
+			checkDiagnosticHello(b, writer)
+		})
+	}
+}
+
+// The writer owns its reusable body storage and copies every write. Reset drops
+// all prior header values, status, and body length before the next request.
+// It implements only the ResponseWriter operations these JSON handlers use.
+type diagnosticResponseWriter struct {
+	header http.Header
+	status int
+	body   []byte
+}
+
+func (w *diagnosticResponseWriter) Header() http.Header { return w.header }
+
+func (w *diagnosticResponseWriter) WriteHeader(status int) {
+	if w.status == 0 {
+		w.status = status
+	}
+}
+
+func (w *diagnosticResponseWriter) Write(data []byte) (int, error) {
+	if w.status == 0 {
+		w.WriteHeader(http.StatusOK)
+	}
+	w.body = append(w.body, data...)
+	return len(data), nil
+}
+
+func (w *diagnosticResponseWriter) reset() {
+	clear(w.header)
+	w.status = 0
+	w.body = w.body[:0]
+}
+
+func checkDiagnosticHello(b *testing.B, w *diagnosticResponseWriter) {
+	b.Helper()
+	if w.status != http.StatusOK {
+		b.Fatalf("hello: %d %s", w.status, w.body)
+	}
+	contentType, _, err := mime.ParseMediaType(w.header.Get("Content-Type"))
+	if err != nil || contentType != "application/json" {
+		b.Fatalf("content type: %q (%v)", contentType, err)
+	}
+	var got map[string]any
+	if err := json.Unmarshal(w.body, &got); err != nil {
+		b.Fatal(err)
+	}
+	if len(got) != 1 || got["message"] != "hello" {
+		b.Fatalf("unexpected serialized body: %s", w.body)
+	}
+}

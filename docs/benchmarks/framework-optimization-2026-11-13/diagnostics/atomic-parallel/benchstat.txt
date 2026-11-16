@@ -1,0 +1,35 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                               │ /tmp/trest-framework-next/atomic-id-parallel4-results/before.txt │ /tmp/trest-framework-next/atomic-id-parallel4-results/after.txt │
+                                               │                              sec/op                              │                  sec/op                    vs base              │
+ParallelHelloJSON/framework=trest_app-4                                                              1.796µ ± 16%                                1.810µ ±  3%       ~ (p=0.732 n=6)
+ParallelDuplicateInvoice/framework=trest_app-4                                                       2.673µ ±  2%                                2.702µ ±  9%       ~ (p=0.071 n=6)
+ParallelHelloJSON/framework=gin-4                                                                    1.599µ ±  5%                                1.558µ ± 12%       ~ (p=0.485 n=6)
+ParallelDuplicateInvoice/framework=gin-4                                                             2.689µ ±  5%                                2.653µ ±  2%       ~ (p=0.394 n=6)
+ParallelHelloJSON/framework=echo-4                                                                   1.562µ ± 18%                                1.555µ ± 38%       ~ (p=0.513 n=6)
+ParallelDuplicateInvoice/framework=echo-4                                                            2.615µ ± 24%                                2.713µ ± 10%       ~ (p=0.310 n=6)
+geomean                                                                                              2.094µ                                      2.098µ        +0.21%
+
+                                               │ /tmp/trest-framework-next/atomic-id-parallel4-results/before.txt │ /tmp/trest-framework-next/atomic-id-parallel4-results/after.txt │
+                                               │                               B/op                               │                  B/op                    vs base                │
+ParallelHelloJSON/framework=trest_app-4                                                              6.315Ki ± 0%                              6.318Ki ± 0%  +0.05% (p=0.002 n=6)
+ParallelDuplicateInvoice/framework=trest_app-4                                                       7.612Ki ± 0%                              7.615Ki ± 0%  +0.04% (p=0.002 n=6)
+ParallelHelloJSON/framework=gin-4                                                                    6.014Ki ± 0%                              6.014Ki ± 0%       ~ (p=1.000 n=6) ¹
+ParallelDuplicateInvoice/framework=gin-4                                                             7.736Ki ± 0%                              7.736Ki ± 0%       ~ (p=1.000 n=6)
+ParallelHelloJSON/framework=echo-4                                                                   5.990Ki ± 0%                              5.990Ki ± 0%       ~ (p=1.000 n=6) ¹
+ParallelDuplicateInvoice/framework=echo-4                                                            7.658Ki ± 0%                              7.658Ki ± 0%       ~ (p=0.121 n=6)
+geomean                                                                                              6.842Ki                                   6.843Ki       +0.01%
+¹ all samples are equal
+
+                                               │ /tmp/trest-framework-next/atomic-id-parallel4-results/before.txt │ /tmp/trest-framework-next/atomic-id-parallel4-results/after.txt │
+                                               │                            allocs/op                             │                allocs/op                 vs base                │
+ParallelHelloJSON/framework=trest_app-4                                                                18.00 ± 0%                                18.00 ± 0%       ~ (p=1.000 n=6) ¹
+ParallelDuplicateInvoice/framework=trest_app-4                                                         34.00 ± 0%                                34.00 ± 0%       ~ (p=1.000 n=6) ¹
+ParallelHelloJSON/framework=gin-4                                                                      20.00 ± 0%                                20.00 ± 0%       ~ (p=1.000 n=6) ¹
+ParallelDuplicateInvoice/framework=gin-4                                                               40.00 ± 0%                                40.00 ± 0%       ~ (p=1.000 n=6) ¹
+ParallelHelloJSON/framework=echo-4                                                                     19.00 ± 0%                                19.00 ± 0%       ~ (p=1.000 n=6) ¹
+ParallelDuplicateInvoice/framework=echo-4                                                              39.00 ± 0%                                39.00 ± 0%       ~ (p=1.000 n=6) ¹
+geomean                                                                                                26.71                                     26.71       +0.00%
+¹ all samples are equal

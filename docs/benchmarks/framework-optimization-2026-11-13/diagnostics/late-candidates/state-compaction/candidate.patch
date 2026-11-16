@@ -1,0 +1,251 @@
+--- a/app.go
++++ b/app.go
+@@ -517,7 +517,6 @@
+ type requestState struct {
+ 	correlation.Context
+ 	span              spanreserve.Reservation
+-	invocation        any
+ 	err               error
+ 	writer            responseWriter
+ 	requestIDHeader   [1]string
+@@ -529,7 +528,7 @@
+ // shallow clone in one unpooled allocation; typed routes without callbacks need
+ // only the smaller state object.
+ type requestEnvelope struct {
+-	state   requestState
++	requestState
+ 	request http.Request
+ }
+ 
+@@ -538,22 +537,36 @@
+ // requests and lazy deadline storage for Background/TODO parents. Other custom
+ // noncancelable parents can safely fall back at invocation time.
+ type requestWithInvocation[F any] struct {
+-	state      requestState
++	requestState
+ 	invocation F
+ }
+ 
++func (s *requestWithInvocation[F]) Value(key any) any {
++	if invocationctx.IsSlotKey(key) {
++		return &s.invocation
++	}
++	return s.requestState.Value(key)
++}
++
+ type envelopeWithInvocation[F any] struct {
+-	envelope   requestEnvelope
++	requestEnvelope
+ 	invocation F
+ }
+ 
+-func newInvocationRequest[F any](direct bool) (*requestState, *requestEnvelope, any) {
++func (s *envelopeWithInvocation[F]) Value(key any) any {
++	if invocationctx.IsSlotKey(key) {
++		return &s.invocation
++	}
++	return s.requestState.Value(key)
++}
++
++func newInvocationRequest[F any](direct bool) (*requestState, *requestEnvelope, context.Context) {
+ 	if direct {
+ 		storage := new(requestWithInvocation[F])
+-		return &storage.state, nil, &storage.invocation
++		return &storage.requestState, nil, storage
+ 	}
+ 	storage := new(envelopeWithInvocation[F])
+-	return &storage.envelope.state, &storage.envelope, &storage.invocation
++	return &storage.requestState, &storage.requestEnvelope, storage
+ }
+ 
+ type contextRouteHandler interface {
+@@ -576,7 +589,8 @@
+ 		return &s.span
+ 	}
+ 	if invocationctx.IsSlotKey(key) {
+-		return s.invocation
++		// A route without its own reservation must not inherit another request's.
++		return nil
+ 	}
+ 	if invocationctx.IsRequestStateKey(key) {
+ 		return s
+@@ -625,31 +639,32 @@
+ 		}
+ 		var state *requestState
+ 		var envelope *requestEnvelope
+-		var invocation any
++		var requestContext context.Context
+ 		if reserveInvocation {
+ 			// Comparing these concrete standard contexts avoids calling a custom
+ 			// parent's Done or Deadline before binding and panic recovery begin.
+ 			switch r.Context() {
+ 			case context.Background(), context.TODO():
+-				state, envelope, invocation = newInvocationRequest[invocationctx.Slot](direct)
++				state, envelope, requestContext = newInvocationRequest[invocationctx.Slot](direct)
+ 			default:
+-				state, envelope, invocation = newInvocationRequest[invocationctx.TimerSlot](direct)
++				state, envelope, requestContext = newInvocationRequest[invocationctx.TimerSlot](direct)
+ 			}
+ 		} else if direct {
+ 			state = new(requestState)
++			requestContext = state
+ 		} else {
+ 			envelope = new(requestEnvelope)
+-			state = &envelope.state
++			state = &envelope.requestState
++			requestContext = state
+ 		}
+ 		// Every branch above allocates fresh zeroed storage. Assign only live
+ 		// fields, avoiding a second whole-state copy and its GC write barriers.
+ 		state.Context = correlation.New(r.Context(), id)
+ 		state.span = spanreserve.New(span)
+-		state.invocation = invocation
+ 		state.writer.ResponseWriter = w
+ 		state.requestIDHeader[0] = id
+ 		if envelope != nil {
+-			envelope.request = *r.WithContext(state)
++			envelope.request = *r.WithContext(requestContext)
+ 			r = &envelope.request
+ 		}
+ 		// Keep header storage in this request's unpooled state. Unlike a shared
+@@ -665,7 +680,7 @@
+ 				if recorded.status == 0 {
+ 					recoveryContext := r.Context()
+ 					if direct {
+-						recoveryContext = state
++						recoveryContext = requestContext
+ 					}
+ 					writeErrorContext(recorded, r, recoveryContext, s, state.err, 0)
+ 				} else {
+@@ -687,7 +702,7 @@
+ 			}
+ 		}()
+ 		if direct {
+-			typed.ServeContext(recorded, r, state)
++			typed.ServeContext(recorded, r, requestContext)
+ 		} else {
+ 			wrapped.ServeHTTP(recorded, r)
+ 		}
+--- a/app_invocation_frame_test.go
++++ b/app_invocation_frame_test.go
+@@ -33,15 +33,16 @@
+ 					if state == nil {
+ 						t.Fatal("request state missing")
+ 					}
++					invocation := invocationctx.SlotValue(ctx)
+ 					if routeKind != "typed" {
+-						if state.invocation != nil {
++						if invocation != nil {
+ 							t.Fatal("route reserved unused invocation storage")
+ 						}
+ 					} else if parentKind == "background" {
+-						if _, ok := state.invocation.(*invocationctx.Slot); !ok {
++						if _, ok := invocation.(*invocationctx.Slot); !ok {
+ 							t.Fatal("background request did not reserve lazy storage")
+ 						}
+-					} else if _, ok := state.invocation.(*invocationctx.TimerSlot); !ok {
++					} else if _, ok := invocation.(*invocationctx.TimerSlot); !ok {
+ 						t.Fatal("request did not reserve compact timer storage")
+ 					}
+ 				}
+--- a/internal/invocationctx/context.go
++++ b/internal/invocationctx/context.go
+@@ -25,14 +25,18 @@
+ type requestStateKey struct{}
+ type slotKey struct{}
+ 
+-type traceContext struct {
++// traceContext is immutable metadata. Keeping it separate from its optional
++// context wrapper lets a lazy frame reuse its lifetime's parent storage.
++type traceContext struct{ trace Trace }
++
++type tracedContext struct {
+ 	context.Context
+-	trace Trace
++	traceContext
+ }
+ 
+-func (c *traceContext) Value(key any) any {
++func (c *tracedContext) Value(key any) any {
+ 	if IsTraceKey(key) {
+-		return c
++		return &c.traceContext
+ 	}
+ 	return c.Context.Value(key)
+ }
+@@ -43,7 +47,7 @@
+ 	if parent == nil {
+ 		panic("cannot create context from nil parent")
+ 	}
+-	return &traceContext{Context: parent, trace: trace}
++	return &tracedContext{Context: parent, traceContext: traceContext{trace: trace}}
+ }
+ 
+ // TraceFrom returns a copy of the current trace, or its zero value.
+@@ -73,6 +77,9 @@
+ // IsSlotKey recognizes the private request-owned frame reservation key.
+ func IsSlotKey(key any) bool { _, ok := key.(slotKey); return ok }
+ 
++// SlotValue returns the request-owned invocation reservation, when present.
++func SlotValue(ctx context.Context) any { return ctx.Value(slotKey{}) }
++
+ // Slot reserves storage for exactly one invocation. Its zero value is ready for
+ // use. Do not copy, reset, or pool it: handlers may retain the claimed context.
+ // Concurrent and later invocations receive fresh frames instead of sharing it.
+@@ -98,13 +105,13 @@
+ }
+ 
+ type timerFrame struct {
+-	traceContext
++	tracedContext
+ 	cancel context.CancelFunc
+ }
+ 
+ func (c *timerFrame) init(parent context.Context, trace Trace, timeout time.Duration) {
+ 	ctx, cancel := context.WithTimeout(parent, timeout)
+-	c.traceContext = traceContext{Context: ctx, trace: trace}
++	c.tracedContext = tracedContext{Context: ctx, traceContext: traceContext{trace: trace}}
+ 	c.cancel = cancel
+ }
+ 
+@@ -126,7 +133,7 @@
+ 	// Probe the lifetime only after admission, where invocation construction
+ 	// already needs it. HTTP storage selection must not call parent methods
+ 	// before authentication, binding, or the request's panic recovery boundary.
+-	slot := parent.Value(slotKey{})
++	slot := SlotValue(parent)
+ 	_, deadline := parent.Deadline()
+ 	if deadline || parent.Done() != nil {
+ 		var frame *timerFrame
+@@ -149,7 +156,7 @@
+ }
+ 
+ func (c *Frame) init(parent context.Context, trace Trace, timeout time.Duration) {
+-	c.metadata = traceContext{Context: parent, trace: trace}
++	c.metadata = traceContext{trace: trace}
+ 	c.lifetime.Init(parent, timeout)
+ }
+ 
+@@ -162,7 +169,7 @@
+ 		return &c.metadata
+ 	}
+ 	if IsPrincipalKey(key) || IsSlotKey(key) || IsRequestStateKey(key) || correlation.IsKey(key) || spanreserve.IsKey(key) {
+-		return c.metadata.Context.Value(key)
++		return c.lifetime.ParentValue(key)
+ 	}
+ 	return c.lifetime.Value(key)
+ }
+--- a/internal/lazycontext/context.go
++++ b/internal/lazycontext/context.go
+@@ -151,6 +151,11 @@
+ 	return c.materialize().Value(key)
+ }
+ 
++// ParentValue retrieves known framework metadata without observing cancellation.
++// Callers must use Value for all other keys, including unknown standard-library
++// cancellation keys; those require this invocation's own lifetime metadata.
++func (c *Lazy) ParentValue(key any) any { return c.parent.Value(key) }
++
+ // Cancel releases resources and permanently cancels the invocation. If its
+ // unobserved deadline has already passed, expiry wins over this later cancel.
+ // A retained context remains valid after cancellation and is never recycled.

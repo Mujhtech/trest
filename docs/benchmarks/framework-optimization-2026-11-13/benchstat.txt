@@ -1,0 +1,35 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                     │ /tmp/trest-framework-next/final-results/before.txt │ /tmp/trest-framework-next/final-results/after.txt │
+                                     │                       sec/op                       │          sec/op            vs base                │
+HelloJSON/framework=trest_app                                                 3.568µ ± 4%                 2.544µ ± 3%  -28.70% (p=0.000 n=14)
+DuplicateInvoice/framework=trest_app                                          6.600µ ± 1%                 4.798µ ± 2%  -27.31% (p=0.000 n=14)
+HelloJSON/framework=gin                                                       2.159µ ± 3%                 2.163µ ± 1%        ~ (p=0.865 n=14)
+DuplicateInvoice/framework=gin                                                4.712µ ± 4%                 4.766µ ± 2%        ~ (p=0.839 n=14)
+HelloJSON/framework=echo                                                      2.187µ ± 4%                 2.201µ ± 2%        ~ (p=0.334 n=14)
+DuplicateInvoice/framework=echo                                               4.753µ ± 6%                 4.848µ ± 4%        ~ (p=0.232 n=14)
+geomean                                                                       3.681µ                      3.321µ        -9.78%
+
+                                     │ /tmp/trest-framework-next/final-results/before.txt │ /tmp/trest-framework-next/final-results/after.txt │
+                                     │                        B/op                        │          B/op            vs base                  │
+HelloJSON/framework=trest_app                                                6.867Ki ± 0%              6.315Ki ± 0%   -8.03% (p=0.000 n=14)
+DuplicateInvoice/framework=trest_app                                         8.748Ki ± 0%              7.605Ki ± 0%  -13.06% (p=0.000 n=14)
+HelloJSON/framework=gin                                                      6.008Ki ± 0%              6.008Ki ± 0%        ~ (p=1.000 n=14) ¹
+DuplicateInvoice/framework=gin                                               7.720Ki ± 0%              7.720Ki ± 0%        ~ (p=1.000 n=14) ¹
+HelloJSON/framework=echo                                                     5.984Ki ± 0%              5.984Ki ± 0%        ~ (p=1.000 n=14) ¹
+DuplicateInvoice/framework=echo                                              7.642Ki ± 0%              7.642Ki ± 0%        ~ (p=1.000 n=14) ¹
+geomean                                                                      7.094Ki                   6.834Ki        -3.66%
+¹ all samples are equal
+
+                                     │ /tmp/trest-framework-next/final-results/before.txt │ /tmp/trest-framework-next/final-results/after.txt │
+                                     │                     allocs/op                      │        allocs/op         vs base                  │
+HelloJSON/framework=trest_app                                                  32.00 ± 0%                18.00 ± 0%  -43.75% (p=0.000 n=14)
+DuplicateInvoice/framework=trest_app                                           48.00 ± 0%                34.00 ± 0%  -29.17% (p=0.000 n=14)
+HelloJSON/framework=gin                                                        20.00 ± 0%                20.00 ± 0%        ~ (p=1.000 n=14) ¹
+DuplicateInvoice/framework=gin                                                 40.00 ± 0%                40.00 ± 0%        ~ (p=1.000 n=14) ¹
+HelloJSON/framework=echo                                                       19.00 ± 0%                19.00 ± 0%        ~ (p=1.000 n=14) ¹
+DuplicateInvoice/framework=echo                                                39.00 ± 0%                39.00 ± 0%        ~ (p=1.000 n=14) ¹
+geomean                                                                        31.13                     26.71       -14.22%
+¹ all samples are equal

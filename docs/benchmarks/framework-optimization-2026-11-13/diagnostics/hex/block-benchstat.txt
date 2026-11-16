@@ -1,0 +1,17 @@
+goos: darwin
+goarch: arm64
+pkg: example.com/trest-randomid-probe
+cpu: Apple M2 Pro
+         │ /tmp/trest-framework-next/hex-micro/block-before.txt │ /tmp/trest-framework-next/hex-micro/block-after.txt │
+         │                        sec/op                        │            sec/op             vs base               │
+HexBlock                                            223.9n ± 1%                    106.7n ± 2%  -52.34% (p=0.000 n=8)
+
+         │ /tmp/trest-framework-next/hex-micro/block-before.txt │ /tmp/trest-framework-next/hex-micro/block-after.txt │
+         │                         B/op                         │               B/op                vs base           │
+HexBlock                                             0.000 ± 0%                         0.000 ± 0%  ~ (p=1.000 n=8) ¹
+¹ all samples are equal
+
+         │ /tmp/trest-framework-next/hex-micro/block-before.txt │ /tmp/trest-framework-next/hex-micro/block-after.txt │
+         │                      allocs/op                       │            allocs/op              vs base           │
+HexBlock                                             0.000 ± 0%                         0.000 ± 0%  ~ (p=1.000 n=8) ¹
+¹ all samples are equal

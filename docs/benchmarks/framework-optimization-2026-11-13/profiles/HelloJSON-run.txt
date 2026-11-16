@@ -1,0 +1,6 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkHelloJSON/framework=trest_app         	 4134003	      2906 ns/op	    6467 B/op	      18 allocs/op
+PASS

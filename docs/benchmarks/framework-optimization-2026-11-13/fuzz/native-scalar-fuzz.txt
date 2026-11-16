@@ -1,0 +1,15 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/130 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 130/130 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 69932 (23295/sec), new interesting: 139 (total: 269)
+fuzz: elapsed: 6s, execs: 69932 (0/sec), new interesting: 139 (total: 269)
+fuzz: elapsed: 9s, execs: 69932 (0/sec), new interesting: 139 (total: 269)
+fuzz: elapsed: 12s, execs: 337753 (89286/sec), new interesting: 195 (total: 325)
+fuzz: elapsed: 15s, execs: 379129 (13790/sec), new interesting: 224 (total: 354)
+fuzz: elapsed: 18s, execs: 379129 (0/sec), new interesting: 224 (total: 354)
+fuzz: elapsed: 21s, execs: 567672 (62859/sec), new interesting: 229 (total: 359)
+fuzz: elapsed: 24s, execs: 602464 (11595/sec), new interesting: 257 (total: 387)
+fuzz: elapsed: 27s, execs: 602464 (0/sec), new interesting: 257 (total: 387)
+fuzz: elapsed: 30s, execs: 602464 (0/sec), new interesting: 257 (total: 387)
+fuzz: elapsed: 31s, execs: 602464 (0/sec), new interesting: 257 (total: 387)
+PASS
+ok  	github.com/mujhtech/trest/internal/schema	31.643s

@@ -1,0 +1,277 @@
+--- /dev/null
++++ b/internal/randomid/atomic_refill_test.go
+@@ -0,0 +1,109 @@
++package randomid
++
++import (
++	"fmt"
++	"sync"
++	"testing"
++	"time"
++)
++
++func TestConcurrentRefillPreservesConsecutivePairsAndUnusedEntropy(t *testing.T) {
++	for _, warm := range []int{15, 16} {
++		t.Run(fmt.Sprintf("after_%d_IDs", warm), func(t *testing.T) {
++			const workers = 64
++			refilling := make(chan struct{})
++			release := make(chan struct{})
++			var releaseOnce sync.Once
++			unblock := func() { releaseOnce.Do(func() { close(release) }) }
++			defer unblock()
++			readCalls := 0
++			source := countingSource()
++			g := &Generator{read: func(dst []byte) (int, error) {
++				readCalls++
++				if readCalls == 2 {
++					// The replacement is deliberately incomplete while other
++					// callers exhaust the old block and wait for this refill.
++					dst[0] = 0xff
++					close(refilling)
++					<-release
++				}
++				return source(dst)
++			}}
++			for range warm {
++				if _, err := g.ID(); err != nil {
++					t.Fatal(err)
++				}
++			}
++			old := g.current.Load()
++			type result struct {
++				first, second string
++				err           error
++			}
++			firstPair := make(chan result, 1)
++			go func() {
++				first, second, err := g.Pair()
++				firstPair <- result{first, second, err}
++			}()
++			select {
++			case <-refilling:
++			case <-time.After(5 * time.Second):
++				t.Fatal("pair did not reach the controlled refill")
++			}
++			if g.current.Load() != old || old.next.Load() != idsPerBlock {
++				t.Fatal("partially read replacement was published or the old tail remained available")
++			}
++			results := make(chan result, workers)
++			var ready, done sync.WaitGroup
++			ready.Add(workers)
++			done.Add(workers)
++			start := make(chan struct{})
++			for worker := range workers {
++				go func() {
++					defer done.Done()
++					ready.Done()
++					<-start
++					if worker%2 == 0 {
++						id, err := g.ID()
++						results <- result{first: id, err: err}
++						return
++					}
++					first, second, err := g.Pair()
++					results <- result{first, second, err}
++				}()
++			}
++			ready.Wait()
++			close(start)
++			unblock()
++			done.Wait()
++			close(results)
++			pair := <-firstPair
++			if pair.err != nil || idSequence(t, pair.first) != uint64(warm+1) || idSequence(t, pair.second) != uint64(warm+2) {
++				t.Fatalf("refill pair was interleaved: %+v", pair)
++			}
++			seen := map[uint64]bool{uint64(warm + 1): true, uint64(warm + 2): true}
++			last := uint64(warm + 2 + workers*3/2)
++			for result := range results {
++				if result.err != nil {
++					t.Fatal(result.err)
++				}
++				first := idSequence(t, result.first)
++				if result.second != "" && idSequence(t, result.second) != first+1 {
++					t.Fatal("concurrent pair lost consecutive entropy")
++				}
++				for _, id := range []string{result.first, result.second} {
++					if id == "" {
++						continue
++					}
++					sequence := idSequence(t, id)
++					if sequence <= uint64(warm) || sequence > last || seen[sequence] {
++						t.Fatalf("unused entropy was discarded or reused: segment %d", sequence)
++					}
++					seen[sequence] = true
++				}
++			}
++			if len(seen) != 2+workers*3/2 || readCalls != int((last+15)/16) {
++				t.Fatalf("refill accounting: %d IDs, %d reads; want %d IDs, %d reads", len(seen), readCalls, 2+workers*3/2, (last+15)/16)
++			}
++		})
++	}
++}
+--- a/internal/randomid/randomid.go
++++ b/internal/randomid/randomid.go
+@@ -6,16 +6,40 @@
+ 	"crypto/rand"
+ 	"io"
+ 	"sync"
++	"sync/atomic"
+ )
++
++const idsPerBlock = uint32(16)
++
++// encodedBlock publishes immutable bytes and a monotonically increasing ID
++// reservation index. A successful reservation never exceeds idsPerBlock.
++type encodedBlock struct {
++	encoded string
++	next    atomic.Uint32
++}
++
++func (b *encodedBlock) reserve(count uint32) (uint32, bool) {
++	for next := b.next.Load(); next <= idsPerBlock-count; next = b.next.Load() {
++		if b.next.CompareAndSwap(next, next+count) {
++			return next, true
++		}
++	}
++	return 0, false
++}
++
++func (b *encodedBlock) id(index uint32) string {
++	start := index * 32
++	return b.encoded[start : start+32]
++}
+ 
+ // Generator amortizes calls to crypto/rand and hexadecimal string allocations
+ // without replacing its entropy source. Each immutable encoded block holds 16
+ // IDs; retaining one ID can retain at most that 512-byte block. Its zero value is
+ // ready to use. A Generator must not be copied after use.
+ type Generator struct {
++	current atomic.Pointer[encodedBlock]
+ 	mu      sync.Mutex
+ 	buffer  [256]byte
+-	encoded string
+ 	// Tests can supply an instance-local source. Production always uses
+ 	// crypto/rand.Read, including its platform-specific failure semantics.
+ 	read func([]byte) (int, error)
+@@ -28,58 +52,85 @@
+ // ID returns 32 hexadecimal characters representing fresh 128-bit entropy.
+ // The string retains immutable storage and is unchanged by subsequent refills.
+ func (g *Generator) ID() (string, error) {
++	if block := g.current.Load(); block != nil {
++		if index, ok := block.reserve(1); ok {
++			return block.id(index), nil
++		}
++	}
++	first, _, err := g.takeSlow(1)
++	return first, err
++}
++
++// Pair reserves two consecutive independent 128-bit IDs in one atomic step.
++// A pair spanning blocks uses the refill lock so no other call can consume its
++// second ID first. Failure returns neither ID and discards the consumed tail.
++func (g *Generator) Pair() (string, string, error) {
++	if block := g.current.Load(); block != nil {
++		if index, ok := block.reserve(2); ok {
++			return block.id(index), block.id(index + 1), nil
++		}
++	}
++	return g.takeSlow(2)
++}
++
++func (g *Generator) takeSlow(count uint32) (string, string, error) {
+ 	g.mu.Lock()
+ 	defer g.mu.Unlock()
+-	return g.takeID()
+-}
+-
+-// Pair returns two independent 128-bit IDs backed by immutable encoded blocks.
+-// Each ID consumes its own fresh entropy, including when a refill separates
+-// the pair. Failure returns neither ID and never exposes partially read bytes.
+-func (g *Generator) Pair() (string, string, error) {
+-	g.mu.Lock()
+-	defer g.mu.Unlock()
+-	first, err := g.takeID()
++	// Another caller may have published a refill while this call waited.
++	// Recheck and reserve it before considering another entropy read.
++	if block := g.current.Load(); block != nil {
++		if index, ok := block.reserve(count); ok {
++			if count == 1 {
++				return block.id(index), "", nil
++			}
++			return block.id(index), block.id(index + 1), nil
++		}
++		if count == 2 {
++			// At most one ID remains after reserve(2) fails. Claim that tail
++			// while holding the refill lock, then reserve the next block's first
++			// ID before publishing it, preserving a pair's consecutive entropy.
++			if index, ok := block.reserve(1); ok {
++				first := block.id(index)
++				next, err := g.refill()
++				if err != nil {
++					return "", "", err
++				}
++				next.next.Store(1)
++				g.current.Store(next)
++				return first, next.id(0), nil
++			}
++		}
++	}
++	next, err := g.refill()
+ 	if err != nil {
+ 		return "", "", err
+ 	}
+-	second, err := g.takeID()
+-	if err != nil {
+-		return "", "", err
++	// Reserve this caller's result before publication. All other callers see
++	// only the unclaimed suffix; no fast-path call takes a partially read ID.
++	next.next.Store(count)
++	g.current.Store(next)
++	if count == 1 {
++		return next.id(0), "", nil
+ 	}
+-	return first, second, nil
++	return next.id(0), next.id(1), nil
+ }
+ 
+-// takeID runs with the generator locked. Consuming the old tail before refill
+-// also discards that tail if the second ID in a pair cannot be generated.
+-func (g *Generator) takeID() (string, error) {
+-	if len(g.encoded) == 0 {
+-		if err := g.refill(); err != nil {
+-			return "", err
+-		}
+-	}
+-	id := g.encoded[:32]
+-	g.encoded = g.encoded[32:]
+-	return id, nil
+-}
+-
+-func (g *Generator) refill() error {
+-	// Publish no encoded bytes until the whole read succeeds. Errors, short
+-	// reads, and panics leave the generator empty for a complete retry.
+-	g.encoded = ""
++// refill runs under mu and publishes nothing. Until the complete read and
++// encoding succeed, current remains the old exhausted block (or nil). Errors,
++// short reads, and panics therefore leave no partially generated ID available.
++func (g *Generator) refill() (*encodedBlock, error) {
+ 	read := g.read
+ 	if read == nil {
+ 		read = rand.Read
+ 	}
+ 	n, err := read(g.buffer[:])
+ 	if err != nil {
+-		return err
++		return nil, err
+ 	}
+ 	if n != len(g.buffer) {
+-		return io.ErrUnexpectedEOF
++		return nil, io.ErrUnexpectedEOF
+ 	}
+ 	var encoded [512]byte
+ 	encodeHexBlock(&encoded, &g.buffer)
+-	g.encoded = string(encoded[:])
+-	return nil
++	return &encodedBlock{encoded: string(encoded[:])}, nil
+ }

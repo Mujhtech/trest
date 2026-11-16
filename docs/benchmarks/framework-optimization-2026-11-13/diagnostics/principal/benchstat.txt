@@ -1,0 +1,29 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                               │ /tmp/trest-framework-next/principal-probe-results/before.txt │ /tmp/trest-framework-next/principal-probe-results/after.txt │
+                                               │                            sec/op                            │                sec/op                  vs base              │
+HelloJSON/framework=trest_app                                                                    2.709µ ±  7%                            2.712µ ±  8%       ~ (p=0.959 n=8)
+DuplicateInvoice/framework=trest_app                                                             5.100µ ± 10%                            4.991µ ± 17%       ~ (p=0.959 n=8)
+CancelableHelloJSON/framework=trest_app                                                          3.804µ ±  9%                            3.769µ ± 12%       ~ (p=1.000 n=8)
+CancelableDuplicateInvoice/framework=trest_app                                                   6.495µ ± 13%                            6.179µ ±  7%       ~ (p=0.505 n=8)
+geomean                                                                                          4.298µ                                  4.213µ        -1.97%
+
+                                               │ /tmp/trest-framework-next/principal-probe-results/before.txt │ /tmp/trest-framework-next/principal-probe-results/after.txt │
+                                               │                             B/op                             │                B/op                  vs base                │
+HelloJSON/framework=trest_app                                                                    6.312Ki ± 0%                          6.312Ki ± 0%       ~ (p=1.000 n=8) ¹
+DuplicateInvoice/framework=trest_app                                                             7.603Ki ± 0%                          7.618Ki ± 0%  +0.21% (p=0.000 n=8)
+CancelableHelloJSON/framework=trest_app                                                          6.984Ki ± 0%                          6.984Ki ± 0%       ~ (p=1.000 n=8) ¹
+CancelableDuplicateInvoice/framework=trest_app                                                   8.243Ki ± 0%                          8.259Ki ± 0%  +0.19% (p=0.000 n=8)
+geomean                                                                                          7.250Ki                               7.257Ki       +0.10%
+¹ all samples are equal
+
+                                               │ /tmp/trest-framework-next/principal-probe-results/before.txt │ /tmp/trest-framework-next/principal-probe-results/after.txt │
+                                               │                          allocs/op                           │              allocs/op               vs base                │
+HelloJSON/framework=trest_app                                                                      18.00 ± 0%                            18.00 ± 0%       ~ (p=1.000 n=8) ¹
+DuplicateInvoice/framework=trest_app                                                               34.00 ± 0%                            33.00 ± 0%  -2.94% (p=0.000 n=8)
+CancelableHelloJSON/framework=trest_app                                                            27.00 ± 0%                            27.00 ± 0%       ~ (p=1.000 n=8) ¹
+CancelableDuplicateInvoice/framework=trest_app                                                     42.00 ± 0%                            41.00 ± 0%  -2.38% (p=0.000 n=8)
+geomean                                                                                            28.86                                 28.48       -1.34%
+¹ all samples are equal

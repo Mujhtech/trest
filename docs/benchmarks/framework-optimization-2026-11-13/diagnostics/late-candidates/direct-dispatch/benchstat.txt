@@ -1,0 +1,23 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                        │ /tmp/trest-framework-next/direct-dispatch-results/before.txt │ /tmp/trest-framework-next/direct-dispatch-results/after.txt │
+                                        │                            sec/op                            │                sec/op                  vs base              │
+HelloJSON/framework=trest_app                                                              2.585µ ± 2%                             2.583µ ± 2%       ~ (p=0.900 n=8)
+CancelableHelloJSON/framework=trest_app                                                    3.380µ ± 1%                             3.377µ ± 1%       ~ (p=0.555 n=8)
+geomean                                                                                    2.956µ                                  2.953µ       -0.09%
+
+                                        │ /tmp/trest-framework-next/direct-dispatch-results/before.txt │ /tmp/trest-framework-next/direct-dispatch-results/after.txt │
+                                        │                             B/op                             │                B/op                  vs base                │
+HelloJSON/framework=trest_app                                                             6.315Ki ± 0%                          6.315Ki ± 0%       ~ (p=1.000 n=8) ¹
+CancelableHelloJSON/framework=trest_app                                                   6.987Ki ± 0%                          6.987Ki ± 0%       ~ (p=1.000 n=8) ¹
+geomean                                                                                   6.643Ki                               6.643Ki       +0.00%
+¹ all samples are equal
+
+                                        │ /tmp/trest-framework-next/direct-dispatch-results/before.txt │ /tmp/trest-framework-next/direct-dispatch-results/after.txt │
+                                        │                          allocs/op                           │              allocs/op               vs base                │
+HelloJSON/framework=trest_app                                                               18.00 ± 0%                            18.00 ± 0%       ~ (p=1.000 n=8) ¹
+CancelableHelloJSON/framework=trest_app                                                     27.00 ± 0%                            27.00 ± 0%       ~ (p=1.000 n=8) ¹
+geomean                                                                                     22.05                                 22.05       +0.00%
+¹ all samples are equal

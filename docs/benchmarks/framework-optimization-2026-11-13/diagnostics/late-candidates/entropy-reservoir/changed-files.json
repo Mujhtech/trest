@@ -1,0 +1,8 @@
+[
+  "internal/randomid/atomic_refill_test.go",
+  "internal/randomid/hex.go",
+  "internal/randomid/randomid.go",
+  "internal/randomid/randomid_pair_test.go",
+  "internal/randomid/randomid_test.go",
+  "internal/randomid/reservoir_test.go"
+]

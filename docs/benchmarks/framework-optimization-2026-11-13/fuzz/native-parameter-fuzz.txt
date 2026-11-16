@@ -1,0 +1,12 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/60 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 60/60 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 22358 (7448/sec), new interesting: 64 (total: 124)
+fuzz: elapsed: 6s, execs: 72552 (16731/sec), new interesting: 73 (total: 133)
+fuzz: elapsed: 9s, execs: 72552 (0/sec), new interesting: 73 (total: 133)
+fuzz: elapsed: 12s, execs: 72552 (0/sec), new interesting: 73 (total: 133)
+fuzz: elapsed: 15s, execs: 72552 (0/sec), new interesting: 73 (total: 133)
+fuzz: elapsed: 18s, execs: 72552 (0/sec), new interesting: 73 (total: 133)
+fuzz: elapsed: 21s, execs: 72552 (0/sec), new interesting: 73 (total: 133)
+fuzz: elapsed: 21s, execs: 72552 (0/sec), new interesting: 73 (total: 133)
+PASS
+ok  	github.com/mujhtech/trest/internal/webinput	21.395s

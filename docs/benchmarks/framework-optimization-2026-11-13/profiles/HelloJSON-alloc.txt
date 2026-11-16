@@ -1,0 +1,37 @@
+File: pass11.test
+Type: alloc_objects
+Time: 2026-11-13 22:50:09 WAT
+Showing nodes accounting for 75285458, 100% of 75297931 total
+Dropped 34 nodes (cum <= 376489)
+Showing top 30 nodes out of 36
+      flat  flat%   sum%        cum   cum%
+  12518048 16.62% 16.62%   12518048 16.62%  net/http.Header.Clone (inline)
+  12258583 16.28% 32.90%   12258583 16.28%  net/http/httptest.NewRecorder (inline)
+   8157052 10.83% 43.74%    8157052 10.83%  bufio.NewReaderSize (inline)
+   4762391  6.32% 50.06%    4762391  6.32%  net/textproto.(*Reader).ReadLine (inline)
+   4242218  5.63% 55.70%    4242218  5.63%  net/url.parse
+   4228233  5.62% 61.31%    4228233  5.62%  github.com/mujhtech/trest.newInvocationRequest[go.shape.struct { github.com/mujhtech/trest/internal/invocationctx.claimed sync/atomic.Bool; github.com/mujhtech/trest/internal/invocationctx.frame github.com/mujhtech/trest/internal/invocationctx.Frame }] (inline)
+   4216341  5.60% 66.91%    4216341  5.60%  net/textproto.readMIMEHeader
+   4179195  5.55% 72.46%    4179195  5.55%  net/http.(*Request).WithContext (inline)
+   4138222  5.50% 77.96%   17359172 23.05%  net/http.readRequestLimit
+   4063479  5.40% 83.35%    4063479  5.40%  bytes.(*Buffer).grow
+   4049696  5.38% 88.73%   25801444 34.27%  github.com/mujhtech/trest.wrapRoute.func2
+   3823020  5.08% 93.81%   37237720 49.45%  net/http/httptest.NewRequestWithContext
+   3719281  4.94% 98.75%    3719281  4.94%  strings.NewReader (inline)
+    929699  1.23%   100%     929699  1.23%  github.com/mujhtech/trest/internal/randomid.(*Generator).refill
+         0     0%   100%    8157052 10.83%  bufio.NewReader (inline)
+         0     0%   100%    4063479  5.40%  bytes.(*Buffer).Write
+         0     0%   100%   25801444 34.27%  github.com/mujhtech/trest.(*App).ServeHTTP
+         0     0%   100%   16593816 22.04%  github.com/mujhtech/trest.(*Route[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).mount.func7
+         0     0%   100%    4063479  5.40%  github.com/mujhtech/trest.(*responseWriter).Write
+         0     0%   100%   12518048 16.62%  github.com/mujhtech/trest.(*responseWriter).WriteHeader
+         0     0%   100%   16593816 22.04%  github.com/mujhtech/trest.compileJSONOutput[go.shape.struct { Message string "json:\"message\"" }].func2
+         0     0%   100%   16593816 22.04%  github.com/mujhtech/trest.contextRouteFunc.ServeContext
+         0     0%   100%   75297747   100%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkHelloJSON.func1
+         0     0%   100%   75297747   100%  github.com/mujhtech/trest/experiments/adoption_test.helloRequest
+         0     0%   100%     929699  1.23%  github.com/mujhtech/trest/internal/randomid.(*Generator).Pair
+         0     0%   100%     929699  1.23%  github.com/mujhtech/trest/internal/randomid.(*Generator).takeSlow
+         0     0%   100%   25801444 34.27%  net/http.(*ServeMux).ServeHTTP
+         0     0%   100%   25801444 34.27%  net/http.HandlerFunc.ServeHTTP
+         0     0%   100%   17359172 23.05%  net/http.ReadRequest
+         0     0%   100%   17359172 23.05%  net/http.readRequest (inline)

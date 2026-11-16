@@ -1,0 +1,120 @@
+{
+  "before": {
+    "DuplicateInvoice/echo": {
+      "samples": 14,
+      "ns_per_op_median": 4752.5,
+      "bytes_per_op_median": 7825.0,
+      "reported_allocs_per_op_median": 39.0
+    },
+    "DuplicateInvoice/gin": {
+      "samples": 14,
+      "ns_per_op_median": 4712.0,
+      "bytes_per_op_median": 7905.0,
+      "reported_allocs_per_op_median": 40.0
+    },
+    "DuplicateInvoice/trest_app": {
+      "samples": 14,
+      "ns_per_op_median": 6600.0,
+      "bytes_per_op_median": 8958.0,
+      "reported_allocs_per_op_median": 48.0
+    },
+    "HelloJSON/echo": {
+      "samples": 14,
+      "ns_per_op_median": 2186.5,
+      "bytes_per_op_median": 6128.0,
+      "reported_allocs_per_op_median": 19.0
+    },
+    "HelloJSON/gin": {
+      "samples": 14,
+      "ns_per_op_median": 2158.5,
+      "bytes_per_op_median": 6152.0,
+      "reported_allocs_per_op_median": 20.0
+    },
+    "HelloJSON/trest_app": {
+      "samples": 14,
+      "ns_per_op_median": 3568.0,
+      "bytes_per_op_median": 7032.0,
+      "reported_allocs_per_op_median": 32.0
+    }
+  },
+  "after": {
+    "DuplicateInvoice/echo": {
+      "samples": 14,
+      "ns_per_op_median": 4848.0,
+      "bytes_per_op_median": 7825.0,
+      "reported_allocs_per_op_median": 39.0
+    },
+    "DuplicateInvoice/gin": {
+      "samples": 14,
+      "ns_per_op_median": 4765.5,
+      "bytes_per_op_median": 7905.0,
+      "reported_allocs_per_op_median": 40.0
+    },
+    "DuplicateInvoice/trest_app": {
+      "samples": 14,
+      "ns_per_op_median": 4797.5,
+      "bytes_per_op_median": 7788.0,
+      "reported_allocs_per_op_median": 34.0
+    },
+    "HelloJSON/echo": {
+      "samples": 14,
+      "ns_per_op_median": 2201.0,
+      "bytes_per_op_median": 6128.0,
+      "reported_allocs_per_op_median": 19.0
+    },
+    "HelloJSON/gin": {
+      "samples": 14,
+      "ns_per_op_median": 2162.5,
+      "bytes_per_op_median": 6152.0,
+      "reported_allocs_per_op_median": 20.0
+    },
+    "HelloJSON/trest_app": {
+      "samples": 14,
+      "ns_per_op_median": 2544.0,
+      "bytes_per_op_median": 6467.0,
+      "reported_allocs_per_op_median": 18.0
+    }
+  },
+  "cancelable": {
+    "CancelableDuplicateInvoice/echo": {
+      "samples": 14,
+      "ns_per_op_median": 5014.0,
+      "bytes_per_op_median": 7905.0,
+      "reported_allocs_per_op_median": 40.0
+    },
+    "CancelableDuplicateInvoice/gin": {
+      "samples": 14,
+      "ns_per_op_median": 4942.0,
+      "bytes_per_op_median": 7985.0,
+      "reported_allocs_per_op_median": 41.0
+    },
+    "CancelableDuplicateInvoice/trest_app": {
+      "samples": 14,
+      "ns_per_op_median": 5802.0,
+      "bytes_per_op_median": 8444.0,
+      "reported_allocs_per_op_median": 42.0
+    },
+    "CancelableHelloJSON/echo": {
+      "samples": 14,
+      "ns_per_op_median": 2405.0,
+      "bytes_per_op_median": 6224.0,
+      "reported_allocs_per_op_median": 21.0
+    },
+    "CancelableHelloJSON/gin": {
+      "samples": 14,
+      "ns_per_op_median": 2357.5,
+      "bytes_per_op_median": 6248.0,
+      "reported_allocs_per_op_median": 22.0
+    },
+    "CancelableHelloJSON/trest_app": {
+      "samples": 14,
+      "ns_per_op_median": 3482.5,
+      "bytes_per_op_median": 7155.0,
+      "reported_allocs_per_op_median": 27.0
+    }
+  },
+  "trest_change_percent": {
+    "HelloJSON": -28.69955156950673,
+    "DuplicateInvoice": -27.31060606060606
+  }
+}

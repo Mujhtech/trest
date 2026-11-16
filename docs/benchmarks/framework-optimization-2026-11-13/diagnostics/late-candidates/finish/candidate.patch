@@ -1,0 +1,343 @@
+--- a/internal/invocationctx/context.go
++++ b/internal/invocationctx/context.go
+@@ -95,6 +95,7 @@
+ type Context interface {
+ 	context.Context
+ 	Cancel()
++	Finish() error
+ }
+ 
+ type timerFrame struct {
+@@ -109,6 +110,12 @@
+ }
+ 
+ func (c *timerFrame) Cancel() { c.cancel() }
++
++func (c *timerFrame) Finish() error {
++	err := c.Err()
++	c.cancel()
++	return err
++}
+ 
+ // Frame combines invocation metadata with its independent timeout. It is never
+ // reused, including after cancellation. Known framework values bypass lazy
+@@ -169,3 +176,6 @@
+ 
+ // Cancel ends this invocation without canceling its parent or reusing storage.
+ func (c *Frame) Cancel() { c.lifetime.Cancel() }
++
++// Finish checks the final lifetime error and then ends the invocation.
++func (c *Frame) Finish() error { return c.lifetime.Finish() }
+--- a/internal/invocationctx/context_test.go
++++ b/internal/invocationctx/context_test.go
+@@ -220,3 +220,43 @@
+ 		t.Fatal("frame cancellation changed first cause or trace")
+ 	}
+ }
++
++func TestFinishCompletesLazyAndTimerFrames(t *testing.T) {
++	for _, cancelable := range []bool{false, true} {
++		name := "lazy"
++		if cancelable {
++			name = "timer"
++		}
++		t.Run(name, func(t *testing.T) {
++			parent := context.Background()
++			if cancelable {
++				var cancel context.CancelFunc
++				parent, cancel = context.WithCancel(parent)
++				defer cancel()
++			}
++			frame := Start(parent, Trace{SpanID: "retained"}, time.Minute)
++			defer frame.Cancel()
++			if err := frame.Finish(); err != nil {
++				t.Fatalf("active Finish = %v", err)
++			}
++			if frame.Err() != context.Canceled || context.Cause(frame) != context.Canceled || TraceFrom(frame).SpanID != "retained" || parent.Err() != nil {
++				t.Fatal("Finish lost frame state or canceled its parent")
++			}
++			if err := frame.Finish(); err != context.Canceled {
++				t.Fatalf("repeated Finish = %v", err)
++			}
++		})
++	}
++}
++
++func TestTimerFrameFinishPreservesParentCause(t *testing.T) {
++	parent, cancelParent := context.WithCancelCause(context.Background())
++	defer cancelParent(nil)
++	frame := Start(parent, Trace{}, time.Minute)
++	defer frame.Cancel()
++	cause := errors.New("parent stopped before finish")
++	cancelParent(cause)
++	if err := frame.Finish(); err != context.Canceled || context.Cause(frame) != cause {
++		t.Fatalf("Finish/cause = %v/%v", err, context.Cause(frame))
++	}
++}
+--- a/internal/lazycontext/context.go
++++ b/internal/lazycontext/context.go
+@@ -71,6 +71,16 @@
+ 		return
+ 	}
+ 	c.lazy.Cancel()
++}
++
++// Finish returns the lifetime error before completion and then cancels it.
++func (c *Context) Finish() error {
++	if c.eager != nil {
++		err := c.eager.Err()
++		c.cancel()
++		return err
++	}
++	return c.lazy.Finish()
+ }
+ 
+ // Lazy is a cooperative invocation deadline for a parent already known to have
+@@ -155,6 +165,9 @@
+ // unobserved deadline has already passed, expiry wins over this later cancel.
+ // A retained context remains valid after cancellation and is never recycled.
+ func (c *Lazy) Cancel() {
++	if c.state.Load() != active {
++		return
++	}
+ 	c.mu.Lock()
+ 	defer c.mu.Unlock()
+ 	if timer := c.timer.Load(); timer != nil {
+@@ -168,6 +181,34 @@
+ 		}
+ 		c.state.Store(state)
+ 	}
++}
++
++// Finish checks the invocation's final error and releases its resources in one
++// step. An active, unobserved invocation reads its deadline once and records
++// cancellation before returning success. Retained contexts remain canceled.
++// Callers must still defer Cancel so panic and early-return paths release it.
++func (c *Lazy) Finish() error {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	if timer := c.timer.Load(); timer != nil {
++		// Preserve the standard-library Err-before-cancel boundary once the
++		// lifetime has been exposed through Done or Value.
++		err := timer.Err()
++		timer.cancel()
++		return err
++	}
++	switch c.state.Load() {
++	case canceled:
++		return context.Canceled
++	case expired:
++		return context.DeadlineExceeded
++	}
++	if time.Until(c.deadline) <= 0 {
++		c.state.Store(expired)
++		return context.DeadlineExceeded
++	}
++	c.state.Store(canceled)
++	return nil
+ }
+ 
+ func (c *Lazy) materialize() context.Context {
+--- a/internal/lazycontext/context_test.go
++++ b/internal/lazycontext/context_test.go
+@@ -268,6 +268,96 @@
+ 	}
+ }
+ 
++func TestLazyFinishReturnsPriorStateAndPreservesCompletion(t *testing.T) {
++	for _, test := range []struct {
++		name        string
++		timeout     time.Duration
++		materialize bool
++		cancel      bool
++		wantError   error
++		wantCause   error
++	}{
++		{name: "active", timeout: time.Minute, wantCause: context.Canceled},
++		{name: "previously canceled", timeout: time.Minute, cancel: true, wantError: context.Canceled, wantCause: context.Canceled},
++		{name: "expired", timeout: -time.Second, wantError: context.DeadlineExceeded, wantCause: context.DeadlineExceeded},
++		{name: "materialized active", timeout: time.Minute, materialize: true, wantCause: context.Canceled},
++		{name: "materialized canceled", timeout: time.Minute, materialize: true, cancel: true, wantError: context.Canceled, wantCause: context.Canceled},
++		{name: "materialized expired", timeout: -time.Second, materialize: true, wantError: context.DeadlineExceeded, wantCause: context.DeadlineExceeded},
++	} {
++		t.Run(test.name, func(t *testing.T) {
++			var ctx lazycontext.Lazy
++			ctx.Init(context.WithValue(context.Background(), valueKey{}, "retained"), test.timeout)
++			defer ctx.Cancel()
++			if test.materialize {
++				_ = ctx.Done()
++			}
++			if test.cancel {
++				ctx.Cancel()
++			}
++			if got := ctx.Finish(); got != test.wantError {
++				t.Fatalf("Finish = %v, want %v", got, test.wantError)
++			}
++			ctx.Cancel()
++			if got := ctx.Finish(); got != test.wantCause {
++				t.Fatalf("repeated Finish = %v, want %v", got, test.wantCause)
++			}
++			if ctx.Err() != test.wantCause || context.Cause(&ctx) != test.wantCause {
++				t.Fatalf("retained error/cause = %v/%v, want %v", ctx.Err(), context.Cause(&ctx), test.wantCause)
++			}
++			assertClosed(t, ctx.Done())
++			if ctx.Value(valueKey{}) != "retained" {
++				t.Fatal("Finish discarded parent values")
++			}
++		})
++	}
++}
++
++func TestContextFinishPreservesParentCause(t *testing.T) {
++	parent, cancelParent := context.WithCancelCause(context.Background())
++	defer cancelParent(nil)
++	var ctx lazycontext.Context
++	ctx.Init(parent, time.Minute)
++	defer ctx.Cancel()
++	child, cancelChild := context.WithCancel(&ctx)
++	defer cancelChild()
++	cause := errors.New("parent stopped before completion")
++	cancelParent(cause)
++	if err := ctx.Finish(); err != context.Canceled {
++		t.Fatalf("Finish = %v, want canceled", err)
++	}
++	if context.Cause(&ctx) != cause || context.Cause(child) != cause {
++		t.Fatalf("Finish changed parent cause: context=%v child=%v", context.Cause(&ctx), context.Cause(child))
++	}
++}
++
++func TestLazyConcurrentFinishAndObservation(t *testing.T) {
++	var ctx lazycontext.Lazy
++	ctx.Init(context.WithValue(context.Background(), valueKey{}, "parent"), time.Minute)
++	defer ctx.Cancel()
++	start := make(chan struct{})
++	var wg sync.WaitGroup
++	for range 16 {
++		wg.Add(1)
++		go func() {
++			defer wg.Done()
++			<-start
++			for range 100 {
++				if err := ctx.Finish(); err != nil && err != context.Canceled {
++					t.Errorf("Finish = %v", err)
++				}
++				if ctx.Value(valueKey{}) != "parent" || ctx.Err() != context.Canceled || context.Cause(&ctx) != context.Canceled {
++					t.Error("concurrent completion lost values or cancellation")
++				}
++				ctx.Cancel()
++				_ = ctx.Done()
++			}
++		}()
++	}
++	close(start)
++	wg.Wait()
++	assertClosed(t, ctx.Done())
++}
++
+ func assertClosed(t *testing.T, done <-chan struct{}) {
+ 	t.Helper()
+ 	select {
+--- a/operation/registry.go
++++ b/operation/registry.go
+@@ -436,6 +436,22 @@
+ 	defer r.active.Add(-1)
+ 	invocation := invocationctx.Start(ctx, invocationctx.Trace(trace), h.metadata.Timeout)
+ 	defer invocation.Cancel()
++	if h.direct {
++		if err := invocation.Err(); err != nil {
++			return zero, invocationError(err)
++		}
++		if !runHandler {
++			return zero, nil
++		}
++		out, err := h.handler(invocation, in)
++		if cancellation := invocation.Finish(); cancellation != nil {
++			return zero, invocationError(cancellation)
++		}
++		if err != nil {
++			return zero, err
++		}
++		return out, nil
++	}
+ 	return h.runPhases(invocation, in, runHandler)
+ }
+ 
+--- a/operation/registry_direct_test.go
++++ b/operation/registry_direct_test.go
+@@ -3,6 +3,7 @@
+ import (
+ 	"context"
+ 	"encoding/json"
++	"errors"
+ 	"reflect"
+ 	"testing"
+ 
+@@ -84,3 +85,68 @@
+ 		t.Fatalf("constraint bypassed: handler=%v error=%v", called, err)
+ 	}
+ }
++
++func TestPublicNativeCompletionKeepsHandlerResultAndCancelsContext(t *testing.T) {
++	for _, lifetime := range []string{"lazy", "materialized", "cancelable"} {
++		for _, fail := range []bool{false, true} {
++			outcome := "success"
++			if fail {
++				outcome = "handler error"
++			}
++			t.Run(lifetime+"/"+outcome, func(t *testing.T) {
++				parent := context.Background()
++				if lifetime == "cancelable" {
++					var cancel context.CancelFunc
++					parent, cancel = context.WithCancel(parent)
++					defer cancel()
++				}
++				handlerErr := errors.New("handler failed")
++				registry := operation.NewRegistry(nil)
++				var retained context.Context
++				handle := register(t, registry, public("native.completion.v1"), func(ctx context.Context, _ input) (output, error) {
++					retained = ctx
++					if lifetime == "materialized" {
++						_ = ctx.Done()
++					}
++					if fail {
++						return output{Name: "discard"}, handlerErr
++					}
++					return output{Name: "keep"}, nil
++				})
++				freeze(t, registry)
++				out, err := handle.Invoke(parent, input{})
++				if fail {
++					if err != handlerErr || out != (output{}) {
++						t.Fatalf("handler failure returned output=%#v error=%v", out, err)
++					}
++				} else if err != nil || out != (output{Name: "keep"}) {
++					t.Fatalf("handler success returned output=%#v error=%v", out, err)
++				}
++				if retained.Err() != context.Canceled || context.Cause(retained) != context.Canceled || parent.Err() != nil {
++					t.Fatal("completion lost cancellation or canceled the parent")
++				}
++			})
++		}
++	}
++}
++
++func TestPublicNativeCancellationPrecedesHandlerError(t *testing.T) {
++	parent, cancelParent := context.WithCancelCause(context.Background())
++	defer cancelParent(nil)
++	cause := errors.New("parent stopped")
++	registry := operation.NewRegistry(nil)
++	var retained context.Context
++	handle := register(t, registry, public("native.error.precedence.v1"), func(ctx context.Context, _ input) (output, error) {
++		retained = ctx
++		cancelParent(cause)
++		return output{Name: "discard"}, errors.New("handler failed")
++	})
++	freeze(t, registry)
++	out, err := handle.Invoke(parent, input{})
++	if out != (output{}) || operation.CodeOf(err) != operation.Canceled || !errors.Is(err, context.Canceled) {
++		t.Fatalf("cancellation did not precede handler failure: output=%#v error=%v", out, err)
++	}
++	if context.Cause(retained) != cause {
++		t.Fatalf("completion changed the parent's cause: %v", context.Cause(retained))
++	}
++}

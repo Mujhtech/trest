@@ -1,0 +1,1 @@
+ok  	github.com/mujhtech/trest/experiments/adoption	1.768s

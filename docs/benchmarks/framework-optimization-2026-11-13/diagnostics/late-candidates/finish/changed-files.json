@@ -1,0 +1,8 @@
+[
+  "internal/invocationctx/context.go",
+  "internal/invocationctx/context_test.go",
+  "internal/lazycontext/context.go",
+  "internal/lazycontext/context_test.go",
+  "operation/registry.go",
+  "operation/registry_direct_test.go"
+]

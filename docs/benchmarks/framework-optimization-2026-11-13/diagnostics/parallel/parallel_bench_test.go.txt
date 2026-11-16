@@ -1,0 +1,137 @@
+package adoption_test
+
+import (
+	"net/http"
+	"sync"
+	"testing"
+
+	"github.com/mujhtech/trest/experiments/adoption"
+)
+
+func parallelFactories(factories []adoption.Factory) []adoption.Factory {
+	selected := make([]adoption.Factory, 0, 3)
+	for _, factory := range factories {
+		switch factory.Name {
+		case "trest_app", "gin", "echo":
+			selected = append(selected, factory)
+		}
+	}
+	return selected
+}
+
+// BenchmarkParallelHelloJSON retains the serial request helper and creates a
+// fresh request and recorder in each worker iteration. RunParallel uses one
+// worker per GOMAXPROCS; reported ns/op measures aggregate throughput.
+func BenchmarkParallelHelloJSON(b *testing.B) {
+	for _, factory := range parallelFactories(adoption.HelloFactories()) {
+		b.Run("framework="+factory.Name, func(b *testing.B) {
+			fixture, err := factory.New()
+			if err != nil {
+				b.Fatal(err)
+			}
+			checkHello(b, helloRequest(fixture.Handler))
+			var failure sync.Once
+			b.ReportAllocs()
+			b.ResetTimer()
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					w := helloRequest(fixture.Handler)
+					if w.Code != http.StatusOK {
+						failure.Do(func() { b.Errorf("hello: %d %s", w.Code, w.Body) })
+					}
+				}
+			})
+			b.StopTimer()
+		})
+	}
+}
+
+// BenchmarkParallelDuplicateInvoice warms one shared fixture before timing,
+// then uses the unchanged duplicate-only request helper in every worker.
+func BenchmarkParallelDuplicateInvoice(b *testing.B) {
+	for _, factory := range parallelFactories(adoption.Factories()) {
+		b.Run("framework="+factory.Name, func(b *testing.B) {
+			fixture, err := factory.New()
+			if err != nil {
+				b.Fatal(err)
+			}
+			warm := request(fixture.Handler, "/invoices", "acme-test", adoption.Body)
+			if warm.Code != http.StatusCreated || fixture.Store.Count() != 1 {
+				b.Fatalf("warmup: %d %s", warm.Code, warm.Body)
+			}
+			var failure sync.Once
+			b.ReportAllocs()
+			b.ResetTimer()
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					w := request(fixture.Handler, "/invoices", "acme-test", adoption.Body)
+					if w.Code != http.StatusCreated {
+						failure.Do(func() { b.Errorf("request: %d %s", w.Code, w.Body) })
+					}
+				}
+			})
+			b.StopTimer()
+			if fixture.Store.Count() != 1 {
+				b.Fatal("duplicate request caused another write")
+			}
+		})
+	}
+}
+
+// BenchmarkParallelCancelableHelloJSON gives each worker iteration its own
+// cancelable context using the unchanged supplemental serial request helper.
+func BenchmarkParallelCancelableHelloJSON(b *testing.B) {
+	for _, factory := range parallelFactories(adoption.HelloFactories()) {
+		b.Run("framework="+factory.Name, func(b *testing.B) {
+			fixture, err := factory.New()
+			if err != nil {
+				b.Fatal(err)
+			}
+			checkHello(b, cancelableHelloRequest(fixture.Handler))
+			var failure sync.Once
+			b.ReportAllocs()
+			b.ResetTimer()
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					w := cancelableHelloRequest(fixture.Handler)
+					if w.Code != http.StatusOK {
+						failure.Do(func() { b.Errorf("hello: %d %s", w.Code, w.Body) })
+					}
+				}
+			})
+			b.StopTimer()
+		})
+	}
+}
+
+// BenchmarkParallelCancelableDuplicateInvoice uses a fresh cancelable parent
+// for each warmed duplicate request, including creation and cancellation in time.
+func BenchmarkParallelCancelableDuplicateInvoice(b *testing.B) {
+	for _, factory := range parallelFactories(adoption.Factories()) {
+		b.Run("framework="+factory.Name, func(b *testing.B) {
+			fixture, err := factory.New()
+			if err != nil {
+				b.Fatal(err)
+			}
+			warm := cancelableInvoiceRequest(fixture.Handler)
+			if warm.Code != http.StatusCreated || fixture.Store.Count() != 1 {
+				b.Fatalf("warmup: %d %s", warm.Code, warm.Body)
+			}
+			var failure sync.Once
+			b.ReportAllocs()
+			b.ResetTimer()
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					w := cancelableInvoiceRequest(fixture.Handler)
+					if w.Code != http.StatusCreated {
+						failure.Do(func() { b.Errorf("request: %d %s", w.Code, w.Body) })
+					}
+				}
+			})
+			b.StopTimer()
+			if fixture.Store.Count() != 1 {
+				b.Fatal("duplicate request caused another write")
+			}
+		})
+	}
+}

@@ -1,0 +1,216 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=trest_app-4         	  262414	      1857 ns/op	    6470 B/op	      18 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=trest_app-4         	  157618	      2945 ns/op	    7798 B/op	      34 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=gin-4         	  255992	      1742 ns/op	    6158 B/op	      20 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=gin-4         	  189192	      2660 ns/op	    7923 B/op	      40 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=echo-4         	  270133	      2146 ns/op	    6134 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=echo-4         	  175220	      2745 ns/op	    7841 B/op	      39 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=gin-4         	  170006	      2700 ns/op	    7922 B/op	      40 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=gin-4         	  291882	      1599 ns/op	    6158 B/op	      20 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=echo-4         	  179139	      2681 ns/op	    7842 B/op	      39 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=echo-4         	  313959	      1495 ns/op	    6134 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=trest_app-4         	  179210	      2788 ns/op	    7798 B/op	      34 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=trest_app-4         	  257079	      1871 ns/op	    6470 B/op	      18 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=echo-4         	  306115	      1549 ns/op	    6134 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=echo-4         	  147579	      2771 ns/op	    7841 B/op	      39 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=trest_app-4         	  254635	      1815 ns/op	    6470 B/op	      18 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=trest_app-4         	  172988	      2708 ns/op	    7798 B/op	      34 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=gin-4         	  325779	      1490 ns/op	    6158 B/op	      20 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=gin-4         	  183770	      2646 ns/op	    7922 B/op	      40 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=echo-4         	  167077	      2676 ns/op	    7842 B/op	      39 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=echo-4         	  286604	      1561 ns/op	    6134 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=gin-4         	  181959	      2618 ns/op	    7922 B/op	      40 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=gin-4         	  296421	      1561 ns/op	    6158 B/op	      20 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=trest_app-4         	  172956	      2684 ns/op	    7798 B/op	      34 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=trest_app-4         	  276543	      1801 ns/op	    6470 B/op	      18 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=trest_app-4         	  252399	      1774 ns/op	    6470 B/op	      18 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=trest_app-4         	  199656	      2696 ns/op	    7798 B/op	      34 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=echo-4         	  296960	      1572 ns/op	    6134 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=echo-4         	  183788	      2985 ns/op	    7842 B/op	      39 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=gin-4         	  318470	      1555 ns/op	    6158 B/op	      20 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=gin-4         	  180476	      2682 ns/op	    7921 B/op	      40 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=gin-4         	  178159	      2600 ns/op	    7922 B/op	      40 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=gin-4         	  319354	      1534 ns/op	    6158 B/op	      20 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=trest_app-4         	  162415	      2682 ns/op	    7798 B/op	      34 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=trest_app-4         	  280906	      1804 ns/op	    6470 B/op	      18 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelDuplicateInvoice/framework=echo-4         	  195153	      2660 ns/op	    7841 B/op	      39 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkParallelHelloJSON/framework=echo-4         	  304149	      1540 ns/op	    6134 B/op	      19 allocs/op
+PASS

@@ -1,0 +1,8 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 166063 (55335/sec), new interesting: 0 (total: 3)
+fuzz: elapsed: 6s, execs: 255660 (29866/sec), new interesting: 0 (total: 3)
+fuzz: elapsed: 9s, execs: 255660 (0/sec), new interesting: 0 (total: 3)
+fuzz: elapsed: 11s, execs: 255660 (0/sec), new interesting: 0 (total: 3)
+PASS
+ok  	example.com/trest-randomid-probe	11.363s

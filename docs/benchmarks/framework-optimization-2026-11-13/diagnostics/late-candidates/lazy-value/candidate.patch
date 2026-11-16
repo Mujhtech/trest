@@ -1,0 +1,214 @@
+--- a/internal/lazycontext/context.go
++++ b/internal/lazycontext/context.go
+@@ -78,11 +78,11 @@
+ // Initialize it exactly once before use; afterward all methods are safe for
+ // concurrent use. Never copy, recycle, or reuse it, even after cancellation.
+ //
+-// Done and Value install a standard-library deadline context on first use.
+-// Value deliberately delegates every key through that context: even private
+-// cancellation keys used by context.Cause and derived contexts must retain their
+-// standard-library meaning. An outer wrapper may handle its own known metadata
+-// keys before calling Value, but must delegate all other keys here.
++// Done installs a standard-library deadline context on first use. Until then,
++// Value masks the parent's cancellation metadata so context.Cause uses this
++// context's own Err. Derived contexts call Done before looking up cancellation
++// metadata, so they observe the installed standard-library context. An outer
++// wrapper may handle its own metadata keys before delegating other keys here.
+ type Lazy struct {
+ 	parent   context.Context
+ 	deadline time.Time
+@@ -115,8 +115,8 @@
+ 	return c.materialize().Done()
+ }
+ 
+-// Err checks an unobserved deadline without creating a timer. Once Done or Value
+-// has exposed the standard-library context, its cancellation result is final.
++// Err checks an unobserved deadline without creating a timer. Once Done has
++// exposed the standard-library context, its cancellation result is final.
+ func (c *Lazy) Err() error {
+ 	if timer := c.timer.Load(); timer != nil {
+ 		return timer.Err()
+@@ -124,7 +124,7 @@
+ 	state := c.state.Load()
+ 	if state == active && time.Until(c.deadline) <= 0 {
+ 		c.mu.Lock()
+-		// A concurrent Done/Value call may have exposed a real timer. Its
++		// A concurrent Done call may have exposed a real timer. Its
+ 		// result then owns the observable ordering with explicit cancellation.
+ 		if timer := c.timer.Load(); timer != nil {
+ 			c.mu.Unlock()
+@@ -146,9 +146,13 @@
+ 	}
+ }
+ 
+-// Value preserves all parent values and standard-library cancellation metadata.
++// Value preserves parent values without creating a timer. WithoutCancel masks
++// private parent cancellation metadata until Done installs our own context.
+ func (c *Lazy) Value(key any) any {
+-	return c.materialize().Value(key)
++	if timer := c.timer.Load(); timer != nil {
++		return timer.Value(key)
++	}
++	return context.WithoutCancel(c.parent).Value(key)
+ }
+ 
+ // Cancel releases resources and permanently cancels the invocation. If its
+--- a/internal/lazycontext/context_test.go
++++ b/internal/lazycontext/context_test.go
+@@ -187,8 +187,8 @@
+ }
+ 
+ // This valid noncancelable wrapper still forwards all values, including private
+-// keys. The lazy context must install its own cancellation metadata before any
+-// unknown lookup rather than accidentally returning the canceled parent's cause.
++// keys. The lazy context must mask that cancellation metadata on unknown
++// lookups rather than accidentally returning the canceled parent's cause.
+ type noncancelableParent struct{ context.Context }
+ 
+ func (noncancelableParent) Done() <-chan struct{}       { return nil }
+--- /dev/null
++++ b/internal/lazycontext/context_value_test.go
+@@ -0,0 +1,143 @@
++package lazycontext
++
++import (
++	"context"
++	"errors"
++	"sync"
++	"testing"
++	"time"
++)
++
++type lazyValueKey struct{}
++
++// The wrapper is noncancelable but still delegates private value lookups to a
++// canceled parent. Lazy must expose its own cause instead of that hidden cause.
++type lazyValueParent struct{ context.Context }
++
++func (lazyValueParent) Done() <-chan struct{}       { return nil }
++func (lazyValueParent) Deadline() (time.Time, bool) { return time.Time{}, false }
++func (lazyValueParent) Err() error                  { return nil }
++
++func TestLazyValueAndCauseDoNotCreateTimer(t *testing.T) {
++	parent, cancelParent := context.WithCancelCause(context.Background())
++	cancelParent(errors.New("hidden parent cause"))
++	parent = context.WithValue(parent, lazyValueKey{}, "parent value")
++	for _, test := range []struct {
++		name    string
++		timeout time.Duration
++		cancel  bool
++		wantErr error
++	}{
++		{name: "active", timeout: time.Minute},
++		{name: "canceled", timeout: time.Minute, cancel: true, wantErr: context.Canceled},
++		{name: "expired", timeout: -time.Second, wantErr: context.DeadlineExceeded},
++	} {
++		t.Run(test.name, func(t *testing.T) {
++			var ctx Lazy
++			ctx.Init(lazyValueParent{Context: parent}, test.timeout)
++			defer ctx.Cancel()
++			if test.cancel {
++				ctx.Cancel()
++			}
++			if got := ctx.Value(lazyValueKey{}); got != "parent value" {
++				t.Fatalf("Value = %v, want parent value", got)
++			}
++			if got := ctx.Value(struct{}{}); got != nil {
++				t.Fatalf("unknown Value = %v, want nil", got)
++			}
++			if got := context.Cause(&ctx); got != test.wantErr {
++				t.Fatalf("Cause = %v, want %v", got, test.wantErr)
++			}
++			if ctx.timer.Load() != nil {
++				t.Fatal("Value or Cause created a timer")
++			}
++			// Once Done publishes a timer, both lookup paths must still agree.
++			_ = ctx.Done()
++			if got := ctx.Value(lazyValueKey{}); got != "parent value" {
++				t.Fatalf("materialized Value = %v", got)
++			}
++			if got := context.Cause(&ctx); got != test.wantErr {
++				t.Fatalf("materialized Cause = %v, want %v", got, test.wantErr)
++			}
++		})
++	}
++}
++
++func TestLazyValueDerivedChildCancellation(t *testing.T) {
++	for _, test := range []struct {
++		name        string
++		timeout     time.Duration
++		cancelFirst bool
++		wantErr     error
++	}{
++		{name: "child before cancel", timeout: time.Minute, wantErr: context.Canceled},
++		{name: "child after cancel", timeout: time.Minute, cancelFirst: true, wantErr: context.Canceled},
++		{name: "child after expiry", timeout: -time.Second, wantErr: context.DeadlineExceeded},
++	} {
++		t.Run(test.name, func(t *testing.T) {
++			var ctx Lazy
++			ctx.Init(context.WithValue(context.Background(), lazyValueKey{}, "parent value"), test.timeout)
++			defer ctx.Cancel()
++			_ = context.Cause(&ctx)
++			if test.cancelFirst {
++				ctx.Cancel()
++			}
++			child, cancelChild := context.WithCancel(&ctx)
++			defer cancelChild()
++			ctx.Cancel()
++			select {
++			case <-child.Done():
++			default:
++				t.Fatal("child did not inherit cancellation")
++			}
++			if got := context.Cause(child); got != test.wantErr {
++				t.Fatalf("child Cause = %v, want %v", got, test.wantErr)
++			}
++			if got := child.Value(lazyValueKey{}); got != "parent value" {
++				t.Fatalf("child Value = %v", got)
++			}
++		})
++	}
++}
++
++func TestLazyValueConcurrentMaterializationAndCancellation(t *testing.T) {
++	var ctx Lazy
++	ctx.Init(context.WithValue(context.Background(), lazyValueKey{}, "parent value"), time.Minute)
++	defer ctx.Cancel()
++	start := make(chan struct{})
++	var wg sync.WaitGroup
++	for worker := range 12 {
++		wg.Add(1)
++		go func() {
++			defer wg.Done()
++			<-start
++			for range 100 {
++				switch worker % 3 {
++				case 0:
++					if got := ctx.Value(lazyValueKey{}); got != "parent value" {
++						t.Errorf("Value = %v", got)
++						return
++					}
++					if cause := context.Cause(&ctx); cause != nil && cause != context.Canceled {
++						t.Errorf("Cause = %v", cause)
++						return
++					}
++				case 1:
++					child, cancelChild := context.WithCancel(&ctx)
++					cancelChild()
++					if got := context.Cause(child); got != context.Canceled {
++						t.Errorf("child Cause = %v", got)
++						return
++					}
++				case 2:
++					ctx.Cancel()
++				}
++			}
++		}()
++	}
++	close(start)
++	wg.Wait()
++	if got := context.Cause(&ctx); got != context.Canceled {
++		t.Fatalf("final Cause = %v", got)
++	}
++}

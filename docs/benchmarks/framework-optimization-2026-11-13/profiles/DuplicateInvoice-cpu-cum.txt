@@ -1,0 +1,45 @@
+File: pass11.test
+Type: cpu
+Time: 2026-11-13 22:50:09 WAT
+Duration: 12.13s, Total samples = 11.47s (94.57%)
+Active filters:
+   focus=github.com/mujhtech/trest
+Showing nodes accounting for 0.46s, 4.01% of 11.47s total
+Dropped 118 nodes (cum <= 0.06s)
+Showing top 35 nodes out of 286
+      flat  flat%   sum%        cum   cum%
+     0.01s 0.087% 0.087%      3.97s 34.61%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkDuplicateInvoice.func1
+         0     0% 0.087%      3.97s 34.61%  testing.(*B).run1.func1
+         0     0% 0.087%      3.97s 34.61%  testing.(*B).runN
+     0.01s 0.087%  0.17%      3.96s 34.52%  github.com/mujhtech/trest/experiments/adoption_test.request
+         0     0%  0.17%      2.38s 20.75%  github.com/mujhtech/trest.(*App).ServeHTTP
+         0     0%  0.17%      2.38s 20.75%  net/http.(*ServeMux).ServeHTTP
+     0.04s  0.35%  0.52%      2.30s 20.05%  github.com/mujhtech/trest.wrapRoute.func2
+     0.01s 0.087%  0.61%      2.30s 20.05%  net/http.HandlerFunc.ServeHTTP
+         0     0%  0.61%      1.90s 16.56%  github.com/mujhtech/trest.wrapRoute.func1
+     0.03s  0.26%  0.87%      1.83s 15.95%  github.com/mujhtech/trest.(*Route[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).mount.func7
+         0     0%  0.87%      1.83s 15.95%  github.com/mujhtech/trest.contextRouteFunc.ServeContext
+         0     0%  0.87%      1.45s 12.64%  runtime.mallocgc
+         0     0%  0.87%      1.33s 11.60%  net/http/httptest.NewRequest (inline)
+         0     0%  0.87%      1.33s 11.60%  net/http/httptest.NewRequestWithContext
+         0     0%  0.87%      1.11s  9.68%  runtime.systemstack
+     0.03s  0.26%  1.13%      0.89s  7.76%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).Invoke (inline)
+         0     0%  1.13%      0.86s  7.50%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).execute
+     0.04s  0.35%  1.48%      0.86s  7.50%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).runUnobserved
+         0     0%  1.48%      0.80s  6.97%  runtime.gcAssistAlloc
+         0     0%  1.48%      0.79s  6.89%  runtime.gcAssistAlloc.func2
+         0     0%  1.48%      0.79s  6.89%  runtime.gcAssistAlloc1
+     0.01s 0.087%  1.57%      0.79s  6.89%  runtime.gcDrainN
+         0     0%  1.57%      0.72s  6.28%  runtime.deductAssistCredit
+         0     0%  1.57%      0.71s  6.19%  bufio.NewReader (inline)
+         0     0%  1.57%      0.71s  6.19%  bufio.NewReaderSize (inline)
+     0.01s 0.087%  1.66%      0.67s  5.84%  runtime.makeslice
+     0.01s 0.087%  1.74%      0.63s  5.49%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).runPhases
+         0     0%  1.74%      0.54s  4.71%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).call
+     0.01s 0.087%  1.83%      0.53s  4.62%  github.com/mujhtech/trest/experiments/adoption.NewTrestApp.func2
+     0.02s  0.17%  2.01%      0.52s  4.53%  github.com/mujhtech/trest/experiments/adoption.(*Store).execute
+     0.23s  2.01%  4.01%      0.45s  3.92%  runtime.scanObject
+         0     0%  4.01%      0.44s  3.84%  github.com/mujhtech/trest/internal/webinput.(*Plan).DecodeIntoReadOnly
+         0     0%  4.01%      0.44s  3.84%  github.com/mujhtech/trest/internal/webinput.(*Plan).decodeInto
+         0     0%  4.01%      0.43s  3.75%  github.com/mujhtech/trest.compileJSONOutput[go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }].func2
+         0     0%  4.01%      0.42s  3.66%  github.com/mujhtech/trest/internal/webinput.(*Plan).decode

@@ -1,0 +1,34 @@
+ok  	github.com/mujhtech/trest	2.318s
+ok  	github.com/mujhtech/trest/aitool	2.015s
+?   	github.com/mujhtech/trest/cmd/existing-handler	[no test files]
+?   	github.com/mujhtech/trest/cmd/invoices	[no test files]
+?   	github.com/mujhtech/trest/cmd/trest-demo	[no test files]
+ok  	github.com/mujhtech/trest/check	1.542s
+ok  	github.com/mujhtech/trest/clientgen	(cached)
+ok  	github.com/mujhtech/trest/cmd/trest	1.875s
+ok  	github.com/mujhtech/trest/contract	1.545s
+?   	github.com/mujhtech/trest/internal/correlation	[no test files]
+?   	github.com/mujhtech/trest/internal/example/server	[no test files]
+?   	github.com/mujhtech/trest/internal/openapischema	[no test files]
+ok  	github.com/mujhtech/trest/examples/invoices	1.673s
+ok  	github.com/mujhtech/trest/httpadapter	1.535s
+ok  	github.com/mujhtech/trest/inspect	1.524s
+ok  	github.com/mujhtech/trest/internal/docsui	(cached)
+ok  	github.com/mujhtech/trest/internal/example/existinghandler	1.524s
+ok  	github.com/mujhtech/trest/internal/example/invoiceapi	1.558s
+ok  	github.com/mujhtech/trest/internal/example/invoices	(cached)
+ok  	github.com/mujhtech/trest/internal/invocationctx	(cached)
+ok  	github.com/mujhtech/trest/internal/jsonoutput	(cached)
+ok  	github.com/mujhtech/trest/internal/lazycontext	(cached)
+ok  	github.com/mujhtech/trest/internal/randomid	1.622s
+ok  	github.com/mujhtech/trest/internal/schema	(cached)
+ok  	github.com/mujhtech/trest/internal/spanreserve	(cached)
+ok  	github.com/mujhtech/trest/internal/webinput	1.608s
+ok  	github.com/mujhtech/trest/job	1.499s
+ok  	github.com/mujhtech/trest/operation	1.601s
+ok  	github.com/mujhtech/trest/plugins/cookie	(cached)
+ok  	github.com/mujhtech/trest/plugins/cors	1.553s
+ok  	github.com/mujhtech/trest/plugins/schedule	1.537s
+ok  	github.com/mujhtech/trest/plugins/static	1.584s
+ok  	github.com/mujhtech/trest/scenario	(cached)
+ok  	github.com/mujhtech/trest/telemetry	(cached)

@@ -1,0 +1,5 @@
+=== RUN   TestDiagnosticRequestStorageSizes
+    storage_size_probe_test.go:11: requestState=136 frame=112 lazySlot=120 timerSlot=80 requestLazy=256 requestTimer=216 envelopeLazy=560 envelopeTimer=520
+--- PASS: TestDiagnosticRequestStorageSizes (0.00s)
+PASS
+ok  	github.com/mujhtech/trest	0.586s

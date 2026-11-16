@@ -1,0 +1,3 @@
+ok  	github.com/mujhtech/trest/internal/lazycontext	1.610s
+ok  	github.com/mujhtech/trest/internal/invocationctx	1.543s
+ok  	github.com/mujhtech/trest/operation	1.598s

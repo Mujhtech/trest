@@ -1,0 +1,485 @@
+--- a/app.go
++++ b/app.go
+@@ -547,13 +547,31 @@
+ 	invocation F
+ }
+ 
+-func newInvocationRequest[F any](direct bool) (*requestState, *requestEnvelope, any) {
++// Only authenticated typed routes without middleware initialize the reserved
++// principal wrapper. That route shape enters authentication exactly once; other
++// paths retain fresh wrappers for repeated or concurrent middleware calls.
++type authenticatedEnvelope struct {
++	envelope  requestEnvelope
++	principal invocationctx.PrincipalContext
++}
++
++type authenticatedEnvelopeWithInvocation[F any] struct {
++	envelope   requestEnvelope
++	invocation F
++	principal  invocationctx.PrincipalContext
++}
++
++func newInvocationRequest[F any](direct, reservePrincipal bool) (*requestState, *requestEnvelope, any, *invocationctx.PrincipalContext) {
+ 	if direct {
+ 		storage := new(requestWithInvocation[F])
+-		return &storage.state, nil, &storage.invocation
++		return &storage.state, nil, &storage.invocation, nil
++	}
++	if reservePrincipal {
++		storage := new(authenticatedEnvelopeWithInvocation[F])
++		return &storage.envelope.state, &storage.envelope, &storage.invocation, &storage.principal
+ 	}
+ 	storage := new(envelopeWithInvocation[F])
+-	return &storage.envelope.state, &storage.envelope, &storage.invocation
++	return &storage.envelope.state, &storage.envelope, &storage.invocation, nil
+ }
+ 
+ type contextRouteHandler interface {
+@@ -589,7 +607,8 @@
+ 	typed, hasContext := h.(contextRouteHandler)
+ 	direct := hasContext && len(s.middleware) == 0 && s.authenticate == nil
+ 	reserveInvocation := hasContext && !s.observed
+-	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++	reservePrincipal := hasContext && len(s.middleware) == 0 && s.authenticate != nil
++	serve := func(w http.ResponseWriter, r *http.Request, principal *invocationctx.PrincipalContext) {
+ 		ctx := r.Context()
+ 		if s.authenticate != nil {
+ 			p, err := s.authenticate(r)
+@@ -597,7 +616,12 @@
+ 				writeError(w, r, s, err, 0)
+ 				return
+ 			}
+-			ctx = operation.WithPrincipal(r.Context(), p)
++			if principal != nil {
++				principal.Init(r.Context(), invocationctx.Principal(p))
++				ctx = principal
++			} else {
++				ctx = operation.WithPrincipal(r.Context(), p)
++			}
+ 			if !hasContext {
+ 				r = r.WithContext(ctx)
+ 			}
+@@ -607,8 +631,10 @@
+ 			return
+ 		}
+ 		h.ServeHTTP(w, r)
++	}
++	var wrapped http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		serve(w, r, nil)
+ 	})
+-	var wrapped http.Handler = inner
+ 	for i := len(s.middleware) - 1; i >= 0; i-- {
+ 		wrapped = s.middleware[i](wrapped)
+ 	}
+@@ -626,17 +652,22 @@
+ 		var state *requestState
+ 		var envelope *requestEnvelope
+ 		var invocation any
++		var principal *invocationctx.PrincipalContext
+ 		if reserveInvocation {
+ 			// Comparing these concrete standard contexts avoids calling a custom
+ 			// parent's Done or Deadline before binding and panic recovery begin.
+ 			switch r.Context() {
+ 			case context.Background(), context.TODO():
+-				state, envelope, invocation = newInvocationRequest[invocationctx.Slot](direct)
++				state, envelope, invocation, principal = newInvocationRequest[invocationctx.Slot](direct, reservePrincipal)
+ 			default:
+-				state, envelope, invocation = newInvocationRequest[invocationctx.TimerSlot](direct)
++				state, envelope, invocation, principal = newInvocationRequest[invocationctx.TimerSlot](direct, reservePrincipal)
+ 			}
+ 		} else if direct {
+ 			state = new(requestState)
++		} else if reservePrincipal {
++			storage := new(authenticatedEnvelope)
++			envelope, principal = &storage.envelope, &storage.principal
++			state = &envelope.state
+ 		} else {
+ 			envelope = new(requestEnvelope)
+ 			state = &envelope.state
+@@ -686,6 +717,8 @@
+ 		}()
+ 		if direct {
+ 			typed.ServeContext(recorded, r, state)
++		} else if principal != nil {
++			serve(recorded, r, principal)
+ 		} else {
+ 			wrapped.ServeHTTP(recorded, r)
+ 		}
+--- /dev/null
++++ b/app_principal_storage_test.go
+@@ -0,0 +1,202 @@
++package trest
++
++import (
++	"context"
++	"fmt"
++	"net/http"
++	"net/http/httptest"
++	"sync"
++	"testing"
++
++	"github.com/mujhtech/trest/operation"
++)
++
++func TestAuthenticatedEnvelopePreservesBeforeAndAfterContexts(t *testing.T) {
++	type authenticationKey struct{}
++	for _, observed := range []bool{false, true} {
++		for _, cancelable := range []bool{false, true} {
++			t.Run(fmt.Sprintf("observed=%t/cancelable=%t", observed, cancelable), func(t *testing.T) {
++				parent := context.Background()
++				if cancelable {
++					var cancel context.CancelFunc
++					parent, cancel = context.WithCancel(parent)
++					defer cancel()
++				}
++				upstream := Principal{ID: "upstream", TenantID: "outer"}
++				parent = operation.WithPrincipal(parent, upstream)
++				var before, after, retained []context.Context
++				components := []Component{
++					Authenticate(func(r *http.Request) (Principal, error) {
++						before = append(before, r.Context())
++						id := r.Header.Get("X-Identity")
++						ctx := context.WithValue(r.Context(), authenticationKey{}, id)
++						*r = *r.WithContext(ctx)
++						after = append(after, r.Context())
++						return Principal{ID: id, TenantID: "verified"}, nil
++					}),
++					Get("/", func(ctx context.Context, _ Empty) (string, error) {
++						principal, ok := Identity(ctx)
++						if !ok || principal.ID != ctx.Value(authenticationKey{}) || principal.TenantID != "verified" {
++							t.Errorf("handler identity or post-callback parent lost: %+v", principal)
++						}
++						retained = append(retained, ctx)
++						return principal.ID, nil
++					}),
++				}
++				if observed {
++					components = append(components, Observe(operation.ObserverFunc(func(context.Context, operation.Event) {})))
++				}
++				app, err := New(components...)
++				if err != nil {
++					t.Fatal(err)
++				}
++				for _, id := range []string{"first", "second"} {
++					r := httptest.NewRequest(http.MethodGet, "/", nil).WithContext(parent)
++					r.Header.Set("X-Identity", id)
++					w := httptest.NewRecorder()
++					app.ServeHTTP(w, r)
++					if w.Code != http.StatusOK || w.Body.String() != id || r.Context() != parent {
++						t.Fatalf("response=%d %q original context changed=%t", w.Code, w.Body.String(), r.Context() != parent)
++					}
++				}
++				if len(retained) != 2 || len(before) != 2 || len(after) != 2 {
++					t.Fatal("missing request contexts")
++				}
++				for index, id := range []string{"first", "second"} {
++					for _, ctx := range []context.Context{before[index], after[index]} {
++						if principal, ok := Identity(ctx); !ok || principal != upstream {
++							t.Fatal("post-authentication identity became visible through an earlier context")
++						}
++					}
++					if before[index].Value(authenticationKey{}) != nil || after[index].Value(authenticationKey{}) != id {
++						t.Fatal("authentication changed a retained parent or lost its replacement")
++					}
++					principal, ok := Identity(retained[index])
++					if !ok || principal != (Principal{ID: id, TenantID: "verified"}) || retained[index].Err() != context.Canceled {
++						t.Fatal("later request changed retained authenticated identity or lifetime")
++					}
++					principal.ID = "changed copy"
++					if got, _ := Identity(retained[index]); got.ID != id {
++						t.Fatal("principal accessor exposed mutable storage")
++					}
++				}
++			})
++		}
++	}
++}
++
++func TestAuthenticatedEnvelopeConcurrentRequestsKeepIdentity(t *testing.T) {
++	t.Parallel()
++	type captured struct {
++		context context.Context
++		id      string
++	}
++	const count = 64
++	contexts := make(chan captured, count)
++	app, err := New(
++		Authenticate(func(r *http.Request) (Principal, error) {
++			return Principal{ID: r.Header.Get("X-Identity")}, nil
++		}),
++		Get("/", func(ctx context.Context, _ Empty) (string, error) {
++			principal, _ := Identity(ctx)
++			contexts <- captured{ctx, principal.ID}
++			return principal.ID, nil
++		}),
++	)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var wg sync.WaitGroup
++	for index := range count {
++		wg.Add(1)
++		go func() {
++			defer wg.Done()
++			id := fmt.Sprint(index)
++			r := httptest.NewRequest(http.MethodGet, "/", nil)
++			r.Header.Set("X-Identity", id)
++			w := httptest.NewRecorder()
++			app.ServeHTTP(w, r)
++			if w.Code != http.StatusOK || w.Body.String() != id {
++				t.Errorf("identity %s: response=%d %q", id, w.Code, w.Body.String())
++			}
++		}()
++	}
++	wg.Wait()
++	close(contexts)
++	seen := make(map[string]bool, count)
++	for captured := range contexts {
++		principal, ok := Identity(captured.context)
++		if !ok || principal.ID != captured.id || seen[principal.ID] || captured.context.Err() != context.Canceled {
++			t.Fatal("concurrent requests shared identity storage or lifetime")
++		}
++		seen[principal.ID] = true
++	}
++	if len(seen) != count {
++		t.Fatalf("retained %d identities, want %d", len(seen), count)
++	}
++}
++
++func TestRepeatedMiddlewareAuthenticationUsesIndependentIdentityWrappers(t *testing.T) {
++	var contexts []context.Context
++	count := 0
++	s := scope{
++		authenticate: func(*http.Request) (Principal, error) {
++			count++
++			return Principal{ID: fmt.Sprint(count)}, nil
++		},
++		middleware: []Middleware{func(next http.Handler) http.Handler {
++			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++				next.ServeHTTP(w, r)
++				next.ServeHTTP(w, r)
++			})
++		}},
++	}
++	handler := wrapRoute(s, RouteInfo{}, contextRouteFunc(func(_ http.ResponseWriter, _ *http.Request, ctx context.Context) {
++		contexts = append(contexts, ctx)
++	}))
++	r := httptest.NewRequest(http.MethodGet, "/", nil)
++	w := httptest.NewRecorder()
++	handler.ServeHTTP(w, r)
++	if len(contexts) != 2 {
++		t.Fatalf("received %d authenticated contexts", len(contexts))
++	}
++	for index, ctx := range contexts {
++		if principal, ok := Identity(ctx); !ok || principal.ID != fmt.Sprint(index+1) {
++			t.Fatal("repeated middleware call changed retained identity")
++		}
++	}
++	if _, ok := Identity(r.Context()); ok {
++		t.Fatal("middleware authentication changed the caller's context")
++	}
++}
++
++func TestFailedAuthenticationDoesNotPublishReservedIdentity(t *testing.T) {
++	t.Parallel()
++	upstream := Principal{ID: "upstream"}
++	called, mapped := false, false
++	app, err := New(
++		Authenticate(func(*http.Request) (Principal, error) {
++			return Principal{ID: "rejected"}, operation.NewError(operation.Unauthenticated, "rejected", nil)
++		}),
++		OnError(func(ctx context.Context, err error) error {
++			mapped = true
++			if principal, ok := Identity(ctx); !ok || principal != upstream {
++				t.Error("failed authentication published its returned identity")
++			}
++			return err
++		}),
++		Get("/", func(context.Context, Empty) (string, error) {
++			called = true
++			return "unexpected", nil
++		}),
++	)
++	if err != nil {
++		t.Fatal(err)
++	}
++	r := httptest.NewRequest(http.MethodGet, "/", nil).WithContext(operation.WithPrincipal(context.Background(), upstream))
++	w := httptest.NewRecorder()
++	app.ServeHTTP(w, r)
++	if called || !mapped || w.Code != http.StatusUnauthorized {
++		t.Fatalf("handler=%t mapped=%t status=%d", called, mapped, w.Code)
++	}
++}
+--- /dev/null
++++ b/internal/invocationctx/principal.go
+@@ -0,0 +1,54 @@
++package invocationctx
++
++import "context"
++
++// Principal is the immutable identity shared with operation's public type.
++type Principal struct {
++	ID       string `json:"id"`
++	TenantID string `json:"tenant_id,omitempty"`
++}
++
++// PrincipalContext owns one immutable identity wrapper. An HTTP envelope may
++// reserve its storage, but must initialize it exactly once before publication.
++// Its parent and principal never change; retained pre-authentication contexts
++// continue to resolve their own identity independently of this wrapper.
++type PrincipalContext struct {
++	context.Context
++	principal Principal
++}
++
++// Init attaches identity without probing the parent. It panics for a nil parent
++// or reused storage. The caller owns single-use initialization before sharing.
++func (c *PrincipalContext) Init(parent context.Context, principal Principal) {
++	if parent == nil {
++		panic("cannot create context from nil parent")
++	}
++	if c.Context != nil {
++		panic("cannot reuse a principal context")
++	}
++	c.Context = parent
++	c.principal = principal
++}
++
++func (c *PrincipalContext) Value(key any) any {
++	if IsPrincipalKey(key) {
++		return c
++	}
++	return c.Context.Value(key)
++}
++
++// WithPrincipal creates an independent identity wrapper without parent probes.
++func WithPrincipal(parent context.Context, principal Principal) context.Context {
++	value := new(PrincipalContext)
++	value.Init(parent, principal)
++	return value
++}
++
++// PrincipalFrom returns a copy of the current identity and whether it is set.
++func PrincipalFrom(ctx context.Context) (Principal, bool) {
++	value, _ := PrincipalValue(ctx).(*PrincipalContext)
++	if value == nil {
++		return Principal{}, false
++	}
++	return value.principal, value.principal.ID != ""
++}
+--- /dev/null
++++ b/internal/invocationctx/principal_test.go
+@@ -0,0 +1,23 @@
++package invocationctx
++
++import (
++	"context"
++	"testing"
++)
++
++func TestPrincipalStorageRejectsReuseWithoutChangingRetainedIdentity(t *testing.T) {
++	var storage PrincipalContext
++	first := Principal{ID: "first", TenantID: "tenant"}
++	storage.Init(context.Background(), first)
++	func() {
++		defer func() {
++			if recover() == nil {
++				t.Fatal("principal storage was reused")
++			}
++		}()
++		storage.Init(context.Background(), Principal{ID: "second"})
++	}()
++	if principal, ok := PrincipalFrom(&storage); !ok || principal != first {
++		t.Fatal("failed reinitialization changed retained identity")
++	}
++}
+--- a/operation/principal.go
++++ b/operation/principal.go
+@@ -13,37 +13,15 @@
+ 	TenantID string `json:"tenant_id,omitempty"`
+ }
+ 
+-// Keep the immutable identity in its context wrapper rather than allocating a
+-// separate interface box. Value exposes only the private wrapper; the public
+-// accessor returns a copy that cannot change later authorization decisions.
+-type principalContext struct {
+-	context.Context
+-	principal Principal
+-}
+-
+-func (c *principalContext) Value(key any) any {
+-	if invocationctx.IsPrincipalKey(key) {
+-		return c
+-	}
+-	return c.Context.Value(key)
+-}
+-
+ // WithPrincipal attaches trusted identity. It does not verify credentials.
+ func WithPrincipal(ctx context.Context, p Principal) context.Context {
+-	if ctx == nil {
+-		panic("cannot create context from nil parent")
+-	}
+-	return &principalContext{Context: ctx, principal: p}
++	return invocationctx.WithPrincipal(ctx, invocationctx.Principal(p))
+ }
+ 
+ // PrincipalFromContext returns trusted identity, if present and nonempty.
+ func PrincipalFromContext(ctx context.Context) (Principal, bool) {
+-	value, _ := invocationctx.PrincipalValue(ctx).(*principalContext)
+-	if value == nil {
+-		return Principal{}, false
+-	}
+-	p := value.principal
+-	return p, p.ID != ""
++	value, ok := invocationctx.PrincipalFrom(ctx)
++	return Principal(value), ok
+ }
+ 
+ // Access requires an explicit choice between public and permission-based access.
+--- /dev/null
++++ b/operation/principal_storage_test.go
+@@ -0,0 +1,44 @@
++package operation_test
++
++import (
++	"context"
++	"testing"
++	"time"
++
++	"github.com/mujhtech/trest/operation"
++)
++
++type unprobedPrincipalParent struct{}
++
++func (unprobedPrincipalParent) Deadline() (time.Time, bool) { panic("unexpected Deadline probe") }
++func (unprobedPrincipalParent) Done() <-chan struct{}       { panic("unexpected Done probe") }
++func (unprobedPrincipalParent) Err() error                  { panic("unexpected Err probe") }
++func (unprobedPrincipalParent) Value(any) any               { panic("unexpected Value probe") }
++
++func TestWithPrincipalDoesNotProbeParent(t *testing.T) {
++	for _, test := range []struct {
++		name      string
++		principal operation.Principal
++	}{
++		{"identified", operation.Principal{ID: "actor", TenantID: "tenant"}},
++		{"empty ID", operation.Principal{TenantID: "tenant"}},
++	} {
++		t.Run(test.name, func(t *testing.T) {
++			ctx := operation.WithPrincipal(unprobedPrincipalParent{}, test.principal)
++			got, ok := operation.PrincipalFromContext(ctx)
++			if got != test.principal || ok != (test.principal.ID != "") {
++				t.Fatalf("principal=%+v, present=%t", got, ok)
++			}
++		})
++	}
++}
++
++func TestWithPrincipalRejectsNilParent(t *testing.T) {
++	defer func() {
++		if recover() == nil {
++			t.Fatal("nil parent was accepted")
++		}
++	}()
++	var parent context.Context
++	_ = operation.WithPrincipal(parent, operation.Principal{ID: "actor"})
++}

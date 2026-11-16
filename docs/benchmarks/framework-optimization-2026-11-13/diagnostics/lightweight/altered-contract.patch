@@ -1,0 +1,75 @@
+--- a/app.go
++++ b/app.go
+@@ -19,7 +19,6 @@
+ 
+ 	"github.com/mujhtech/trest/internal/correlation"
+ 	"github.com/mujhtech/trest/internal/invocationctx"
+-	"github.com/mujhtech/trest/internal/randomid"
+ 	"github.com/mujhtech/trest/internal/spanreserve"
+ 	"github.com/mujhtech/trest/operation"
+ )
+@@ -585,10 +584,9 @@
+ }
+ 
+ func wrapRoute(s scope, info RouteInfo, h http.Handler) http.Handler {
+-	ids := randomid.New()
+ 	typed, hasContext := h.(contextRouteHandler)
+ 	direct := hasContext && len(s.middleware) == 0 && s.authenticate == nil
+-	reserveInvocation := hasContext && !s.observed
++	reserveInvocation := false // Diagnostic: no unobserved invocation frame.
+ 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		ctx := r.Context()
+ 		if s.authenticate != nil {
+@@ -618,11 +616,9 @@
+ 		if len(s.after) > 0 {
+ 			started = time.Now()
+ 		}
+-		id, span, err := ids.Pair()
+-		if err != nil {
+-			http.Error(w, "internal error", 500)
+-			return
+-		}
++		// DIAGNOSTIC ABLATION ONLY: omit generated request/span IDs and the
++		// request-ID response header. Keep request state and response hooks.
++		id, span := "", ""
+ 		var state *requestState
+ 		var envelope *requestEnvelope
+ 		var invocation any
+@@ -650,9 +646,6 @@
+ 			envelope.request = *r.WithContext(state)
+ 			r = &envelope.request
+ 		}
+-		// Keep header storage in this request's unpooled state. Unlike a shared
+-		// static slice, it remains safe for middleware to retain or modify.
+-		w.Header()["X-Request-Id"] = state.requestIDHeader[:]
+ 		recorded := &state.writer
+ 		defer func() {
+ 			abort := false
+--- a/operation/registry.go
++++ b/operation/registry.go
+@@ -421,12 +421,8 @@
+ func (h *Handle[I, O]) runUnobserved(ctx context.Context, in I, runHandler bool) (O, error) {
+ 	var zero O
+ 	r := h.registry
+-	// Allocate a fresh span before cancellation/capacity rejection, in the
+-	// same order as the standard path. The deadline starts after admission.
+-	trace, err := r.nextTrace(ctx)
+-	if err != nil {
+-		return zero, NewError(Internal, "could not start invocation", err)
+-	}
++	// DIAGNOSTIC ABLATION ONLY: omit generated traces and per-operation
++	// deadlines. Keep inherited cancellation, admission, and every phase.
+ 	if err := ctx.Err(); err != nil {
+ 		return zero, invocationError(err)
+ 	}
+@@ -434,9 +430,7 @@
+ 		return zero, NewError(RateLimited, "invocation capacity exceeded", nil)
+ 	}
+ 	defer r.active.Add(-1)
+-	invocation := invocationctx.Start(ctx, invocationctx.Trace(trace), h.metadata.Timeout)
+-	defer invocation.Cancel()
+-	return h.runPhases(invocation, in, runHandler)
++	return h.runPhases(ctx, in, runHandler)
+ }
+ 
+ // Every context implementation follows the same application enforcement path.

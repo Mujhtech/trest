@@ -1,0 +1,45 @@
+File: pass11.test
+Type: cpu
+Time: 2026-11-13 22:50:21 WAT
+Duration: 12.02s, Total samples = 11.39s (94.73%)
+Active filters:
+   focus=github.com/mujhtech/trest
+Showing nodes accounting for 0.62s, 5.44% of 11.39s total
+Dropped 109 nodes (cum <= 0.06s)
+Showing top 35 nodes out of 226
+      flat  flat%   sum%        cum   cum%
+     0.01s 0.088% 0.088%      3.76s 33.01%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkCancelableHelloJSON.func1
+         0     0% 0.088%      3.76s 33.01%  testing.(*B).run1.func1
+         0     0% 0.088%      3.76s 33.01%  testing.(*B).runN
+         0     0% 0.088%      3.75s 32.92%  github.com/mujhtech/trest/experiments/adoption_test.cancelableHelloRequest
+     0.08s   0.7%  0.79%         2s 17.56%  runtime.mallocgc
+         0     0%  0.79%      1.78s 15.63%  github.com/mujhtech/trest.(*App).ServeHTTP
+     0.01s 0.088%  0.88%      1.78s 15.63%  net/http.(*ServeMux).ServeHTTP
+         0     0%  0.88%      1.72s 15.10%  net/http/httptest.NewRequestWithContext
+     0.01s 0.088%  0.97%      1.67s 14.66%  net/http.HandlerFunc.ServeHTTP
+     0.02s  0.18%  1.14%      1.66s 14.57%  github.com/mujhtech/trest.wrapRoute.func2
+         0     0%  1.14%      1.39s 12.20%  github.com/mujhtech/trest.(*Route[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).mount.func7
+         0     0%  1.14%      1.39s 12.20%  github.com/mujhtech/trest.contextRouteFunc.ServeContext
+         0     0%  1.14%      1.29s 11.33%  runtime.systemstack
+         0     0%  1.14%      1.03s  9.04%  runtime.gcAssistAlloc
+         0     0%  1.14%      1.03s  9.04%  runtime.gcAssistAlloc.func2
+         0     0%  1.14%      1.03s  9.04%  runtime.gcAssistAlloc1
+     0.01s 0.088%  1.23%      1.03s  9.04%  runtime.gcDrainN
+         0     0%  1.23%      1.03s  9.04%  runtime.makeslice
+         0     0%  1.23%      1.02s  8.96%  bufio.NewReader (inline)
+         0     0%  1.23%      1.02s  8.96%  bufio.NewReaderSize (inline)
+         0     0%  1.23%      0.95s  8.34%  runtime.deductAssistCredit
+     0.01s 0.088%  1.32%      0.92s  8.08%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).Invoke (inline)
+     0.02s  0.18%  1.49%      0.91s  7.99%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).execute
+     0.05s  0.44%  1.93%      0.89s  7.81%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).runUnobserved
+         0     0%  1.93%      0.68s  5.97%  github.com/mujhtech/trest/internal/invocationctx.Start
+     0.34s  2.99%  4.92%      0.66s  5.79%  runtime.scanObject
+         0     0%  4.92%      0.57s  5.00%  runtime.newobject
+     0.02s  0.18%  5.09%      0.53s  4.65%  github.com/mujhtech/trest/internal/invocationctx.(*timerFrame).init (inline)
+     0.01s 0.088%  5.18%      0.50s  4.39%  context.WithTimeout
+     0.01s 0.088%  5.27%      0.47s  4.13%  github.com/mujhtech/trest.compileJSONOutput[go.shape.struct { Message string "json:\"message\"" }].func2
+         0     0%  5.27%      0.44s  3.86%  net/http.ReadRequest
+         0     0%  5.27%      0.44s  3.86%  net/http.readRequest (inline)
+         0     0%  5.27%      0.44s  3.86%  net/http.readRequestLimit
+         0     0%  5.27%      0.42s  3.69%  context.WithDeadline (inline)
+     0.02s  0.18%  5.44%      0.42s  3.69%  context.WithDeadlineCause

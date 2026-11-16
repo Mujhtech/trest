@@ -1,0 +1,37 @@
+File: pass11.test
+Type: alloc_objects
+Time: 2026-11-13 22:50:33 WAT
+Showing nodes accounting for 86125371, 100% of 86139324 total
+Dropped 36 nodes (cum <= 430696)
+Showing top 30 nodes out of 49
+      flat  flat%   sum%        cum   cum%
+   9828537 11.41% 11.41%   19366704 22.48%  context.WithDeadlineCause
+   9758238 11.33% 22.74%    9758238 11.33%  net/http.Header.Clone (inline)
+   9402161 10.92% 33.65%    9402161 10.92%  net/http/httptest.NewRecorder
+   6335343  7.35% 41.01%    6335343  7.35%  bufio.NewReaderSize (inline)
+   6270381  7.28% 48.29%    6270381  7.28%  context.(*cancelCtx).propagateCancel
+   3368807  3.91% 52.20%    3368807  3.91%  context.withCancel (inline)
+   3358822  3.90% 56.10%    3358822  3.90%  strings.NewReader (inline)
+   3289272  3.82% 59.92%   12560064 14.58%  net/http.readRequestLimit
+   3276950  3.80% 63.72%    3276950  3.80%  net/textproto.readMIMEHeader
+   3274920  3.80% 67.52%   42467203 49.30%  github.com/mujhtech/trest.wrapRoute.func2
+   3267786  3.79% 71.32%    3267786  3.79%  time.newTimer
+   3162304  3.67% 74.99%    3162304  3.67%  bytes.(*Buffer).grow
+   3140132  3.65% 78.63%    3140132  3.65%  net/http.(*Request).WithContext (inline)
+   3136700  3.64% 82.27%    3136700  3.64%  context.(*cancelCtx).Done
+   3040559  3.53% 85.80%    3040559  3.53%  net/url.parse
+   3039381  3.53% 89.33%    3039381  3.53%  github.com/mujhtech/trest.newInvocationRequest[go.shape.struct { github.com/mujhtech/trest/internal/invocationctx.claimed sync/atomic.Bool; github.com/mujhtech/trest/internal/invocationctx.frame github.com/mujhtech/trest/internal/invocationctx.timerFrame }] (inline)
+   2949187  3.42% 92.76%    2949187  3.42%  net/textproto.(*Reader).ReadLine (inline)
+   2818091  3.27% 96.03%    6186898  7.18%  context.WithCancel
+   2687037  3.12% 99.15%   28081398 32.60%  net/http/httptest.NewRequestWithContext
+    720763  0.84%   100%     720763  0.84%  github.com/mujhtech/trest/internal/randomid.(*Generator).refill
+         0     0%   100%    6335343  7.35%  bufio.NewReader (inline)
+         0     0%   100%    3162304  3.67%  bytes.(*Buffer).Write
+         0     0%   100%   19366704 22.48%  context.WithDeadline (inline)
+         0     0%   100%   19366704 22.48%  context.WithTimeout
+         0     0%   100%   42467203 49.30%  github.com/mujhtech/trest.(*App).ServeHTTP
+         0     0%   100%   35432139 41.13%  github.com/mujhtech/trest.(*Route[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).mount.func7
+         0     0%   100%    3162304  3.67%  github.com/mujhtech/trest.(*responseWriter).Write
+         0     0%   100%    9758238 11.33%  github.com/mujhtech/trest.(*responseWriter).WriteHeader
+         0     0%   100%   12928735 15.01%  github.com/mujhtech/trest.compileJSONOutput[go.shape.struct { Message string "json:\"message\"" }].func2
+         0     0%   100%   35432139 41.13%  github.com/mujhtech/trest.contextRouteFunc.ServeContext

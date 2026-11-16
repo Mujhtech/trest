@@ -1,0 +1,25 @@
+--- a/operation/registry.go
++++ b/operation/registry.go
+@@ -436,6 +436,22 @@
+ 	defer r.active.Add(-1)
+ 	invocation := invocationctx.Start(ctx, invocationctx.Trace(trace), h.metadata.Timeout)
+ 	defer invocation.Cancel()
++	if h.direct {
++		if err := invocation.Err(); err != nil {
++			return zero, invocationError(err)
++		}
++		if !runHandler {
++			return zero, nil
++		}
++		out, err := h.handler(invocation, in)
++		if cancellation := invocation.Err(); cancellation != nil {
++			return zero, invocationError(cancellation)
++		}
++		if err != nil {
++			return zero, err
++		}
++		return out, nil
++	}
+ 	return h.runPhases(invocation, in, runHandler)
+ }
+ 

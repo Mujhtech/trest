@@ -1,0 +1,125 @@
+--- a/randomid.go
++++ b/randomid.go
+@@ -4,7 +4,6 @@
+ 
+ import (
+ 	"crypto/rand"
+-	"encoding/hex"
+ 	"io"
+ 	"sync"
+ )
+@@ -80,7 +79,7 @@
+ 		return io.ErrUnexpectedEOF
+ 	}
+ 	var encoded [512]byte
+-	hex.Encode(encoded[:], g.buffer[:])
++	encodeHexBlock(&encoded, &g.buffer)
+ 	g.encoded = string(encoded[:])
+ 	return nil
+ }
+--- /dev/null
++++ b/hex.go
+@@ -0,0 +1,17 @@
++package randomid
++
++import "encoding/binary"
++
++// encodeHexBlock encodes exactly one entropy refill without unsafe operations.
++// Spreading four input bytes into eight separate nibbles permits independent
++// ASCII conversion within one uint64; each byte remains below its carry range.
++func encodeHexBlock(dst *[512]byte, src *[256]byte) {
++	for offset := 0; offset < len(src); offset += 4 {
++		v := uint64(binary.BigEndian.Uint32(src[offset : offset+4]))
++		v = (v | v<<16) & 0x0000ffff0000ffff
++		v = (v | v<<8) & 0x00ff00ff00ff00ff
++		v = (v | v<<4) & 0x0f0f0f0f0f0f0f0f
++		ascii := v + 0x3030303030303030 + (((v+0x0606060606060606)&0x1010101010101010)>>4)*39
++		binary.BigEndian.PutUint64(dst[offset*2:offset*2+8], ascii)
++	}
++}
+--- /dev/null
++++ b/hex_test.go
+@@ -0,0 +1,83 @@
++package randomid
++
++import (
++	"encoding/hex"
++	"math/rand"
++	"testing"
++)
++
++func assertHexBlock(t testing.TB, raw [256]byte) {
++	t.Helper()
++	var got, want [512]byte
++	encodeHexBlock(&got, &raw)
++	hex.Encode(want[:], raw[:])
++	if got != want {
++		t.Fatalf("hex mismatch for %x: got %s; want %s", raw, got, want)
++	}
++}
++
++func TestHexBlockMatchesStandardLibrary(t *testing.T) {
++	var raw [256]byte
++	for value := range 256 {
++		for index := range raw {
++			raw[index] = byte(value)
++		}
++		assertHexBlock(t, raw)
++	}
++	for start := range 256 {
++		for index := range raw {
++			raw[index] = byte(start + index)
++		}
++		assertHexBlock(t, raw)
++	}
++	rng := rand.New(rand.NewSource(1))
++	for range 4096 {
++		if _, err := rng.Read(raw[:]); err != nil {
++			t.Fatal(err)
++		}
++		assertHexBlock(t, raw)
++	}
++}
++
++func FuzzHexBlockMatchesStandardLibrary(f *testing.F) {
++	f.Add([]byte{})
++	f.Add([]byte{0, 1, 9, 10, 15, 16, 0x7f, 0x80, 0x9f, 0xa0, 0xff})
++	seed := make([]byte, 256)
++	for index := range seed {
++		seed[index] = byte(index)
++	}
++	f.Add(seed)
++	f.Fuzz(func(t *testing.T, data []byte) {
++		if len(data) > 4096 {
++			t.Skip()
++		}
++		var raw [256]byte
++		copy(raw[:], data)
++		assertHexBlock(t, raw)
++	})
++}
++
++func BenchmarkHexBlock(b *testing.B) {
++	var raw [256]byte
++	for index := range raw {
++		raw[index] = byte(index)
++	}
++	for _, variant := range []struct {
++		name   string
++		encode func(*[512]byte, *[256]byte)
++	}{
++		{"standard", func(dst *[512]byte, src *[256]byte) { hex.Encode(dst[:], src[:]) }},
++		{"swar", encodeHexBlock},
++	} {
++		b.Run(variant.name, func(b *testing.B) {
++			var encoded [512]byte
++			b.ReportAllocs()
++			for i := 0; i < b.N; i++ {
++				variant.encode(&encoded, &raw)
++			}
++			if encoded[0] != '0' || encoded[511] != 'f' {
++				b.Fatal("unexpected encoded block")
++			}
++		})
++	}
++}

@@ -1,0 +1,248 @@
+--- a/internal/randomid/atomic_refill_test.go
++++ b/internal/randomid/atomic_refill_test.go
+@@ -8,7 +8,7 @@
+ )
+ 
+ func TestConcurrentRefillPreservesConsecutivePairsAndUnusedEntropy(t *testing.T) {
+-	for _, warm := range []int{15, 16} {
++	for _, warm := range []int{63, 64} {
+ 		t.Run(fmt.Sprintf("after_%d_IDs", warm), func(t *testing.T) {
+ 			const workers = 64
+ 			refilling := make(chan struct{})
+@@ -101,8 +101,8 @@
+ 					seen[sequence] = true
+ 				}
+ 			}
+-			if len(seen) != 2+workers*3/2 || readCalls != int((last+15)/16) {
+-				t.Fatalf("refill accounting: %d IDs, %d reads; want %d IDs, %d reads", len(seen), readCalls, 2+workers*3/2, (last+15)/16)
++			if len(seen) != 2+workers*3/2 || readCalls != int((last+63)/64) {
++				t.Fatalf("refill accounting: %d IDs, %d reads; want %d IDs, %d reads", len(seen), readCalls, 2+workers*3/2, (last+63)/64)
+ 			}
+ 		})
+ 	}
+--- a/internal/randomid/hex.go
++++ b/internal/randomid/hex.go
+@@ -2,7 +2,7 @@
+ 
+ import "encoding/binary"
+ 
+-// encodeHexBlock encodes exactly one entropy refill without unsafe operations.
++// encodeHexBlock encodes one 256-byte entropy block without unsafe operations.
+ // Spreading four input bytes into eight separate nibbles permits independent
+ // ASCII conversion within one uint64; each byte remains below its carry range.
+ // This saved about 19 ns per complete Pair call in paired measurements on an
+--- a/internal/randomid/randomid.go
++++ b/internal/randomid/randomid.go
+@@ -35,18 +35,23 @@
+ // Generator amortizes calls to crypto/rand and hexadecimal string allocations
+ // without replacing its entropy source. Each immutable encoded block holds 16
+ // IDs; retaining one ID can retain at most that 512-byte block. Its zero value is
+-// ready to use. A Generator must not be copied after use.
++// ready to use. Its private 1024-byte entropy reservoir supplies four encoded
++// blocks without increasing the storage retained by returned IDs. A Generator
++// must not be copied after use.
+ type Generator struct {
+ 	current atomic.Pointer[encodedBlock]
+ 	mu      sync.Mutex
+-	buffer  [256]byte
++	buffer  [1024]byte
++	// available counts unread raw bytes and is protected by mu. Only complete
++	// successful reads replenish it, and every encoded block consumes 256 bytes.
++	available int
+ 	// Tests can supply an instance-local source. Production always uses
+ 	// crypto/rand.Read, including its platform-specific failure semantics.
+ 	read func([]byte) (int, error)
+ }
+ 
+ // New constructs an independent generator without reading entropy or starting
+-// a goroutine. Entropy is requested lazily on the first ID and each refill.
++// a goroutine. Entropy is requested lazily when the raw reservoir is exhausted.
+ func New() *Generator { return new(Generator) }
+ 
+ // ID returns 32 hexadecimal characters representing fresh 128-bit entropy.
+@@ -115,22 +120,29 @@
+ 	return next.id(0), next.id(1), nil
+ }
+ 
+-// refill runs under mu and publishes nothing. Until the complete read and
+-// encoding succeed, current remains the old exhausted block (or nil). Errors,
+-// short reads, and panics therefore leave no partially generated ID available.
++// refill runs under mu and publishes nothing. Raw bytes are claimed once before
++// encoding. Until encoding succeeds, current remains the old exhausted block
++// (or nil). Failed, short, and panicking raw reads leave available at zero, so a
++// later call must fully overwrite the reservoir before exposing another ID.
+ func (g *Generator) refill() (*encodedBlock, error) {
+-	read := g.read
+-	if read == nil {
+-		read = rand.Read
++	if g.available == 0 {
++		read := g.read
++		if read == nil {
++			read = rand.Read
++		}
++		n, err := read(g.buffer[:])
++		if err != nil {
++			return nil, err
++		}
++		if n != len(g.buffer) {
++			return nil, io.ErrUnexpectedEOF
++		}
++		g.available = len(g.buffer)
+ 	}
+-	n, err := read(g.buffer[:])
+-	if err != nil {
+-		return nil, err
+-	}
+-	if n != len(g.buffer) {
+-		return nil, io.ErrUnexpectedEOF
+-	}
++	start := len(g.buffer) - g.available
++	raw := (*[256]byte)(g.buffer[start : start+256])
++	g.available -= 256
+ 	var encoded [512]byte
+-	encodeHexBlock(&encoded, &g.buffer)
++	encodeHexBlock(&encoded, raw)
+ 	return &encodedBlock{encoded: string(encoded[:])}, nil
+ }
+--- a/internal/randomid/randomid_pair_test.go
++++ b/internal/randomid/randomid_pair_test.go
+@@ -39,7 +39,7 @@
+ 
+ func TestPairConsumesConsecutiveIDsAtEveryRefillBoundary(t *testing.T) {
+ 	t.Parallel()
+-	for warm := range 32 {
++	for warm := range 128 {
+ 		t.Run(fmt.Sprintf("after_%d_IDs", warm), func(t *testing.T) {
+ 			g := &Generator{read: countingSource()}
+ 			for range warm {
+@@ -161,7 +161,8 @@
+ 		want uint64
+ 	}{
+ 		{name: "empty", want: 1},
+-		{name: "one ID remains", warm: 15, want: 17},
++		{name: "one ID remains before raw refill", warm: 63, want: 65},
++		{name: "raw reservoir exhausted", warm: 64, want: 65},
+ 	} {
+ 		for _, outcome := range []struct {
+ 			name string
+@@ -171,8 +172,9 @@
+ 		}{
+ 			{name: "error", err: failure, want: failure},
+ 			{name: "partial error", n: 12, err: failure, want: failure},
+-			{name: "full buffer with error", n: 256, err: failure, want: failure},
++			{name: "full buffer with error", n: 1024, err: failure, want: failure},
+ 			{name: "short success", n: 12, want: io.ErrUnexpectedEOF},
++			{name: "one encoded block short success", n: 256, want: io.ErrUnexpectedEOF},
+ 		} {
+ 			t.Run(boundary.name+"/"+outcome.name, func(t *testing.T) {
+ 				calls, failOn := 0, 1
+@@ -216,7 +218,8 @@
+ 		want uint64
+ 	}{
+ 		{name: "empty", want: 1},
+-		{name: "one ID remains", warm: 15, want: 17},
++		{name: "one ID remains before raw refill", warm: 63, want: 65},
++		{name: "raw reservoir exhausted", warm: 64, want: 65},
+ 	} {
+ 		t.Run(boundary.name, func(t *testing.T) {
+ 			calls, panicOn := 0, 1
+--- a/internal/randomid/randomid_test.go
++++ b/internal/randomid/randomid_test.go
+@@ -99,8 +99,9 @@
+ 	}{
+ 		{name: "error", n: 0, err: failure, want: failure},
+ 		{name: "partial error", n: 12, err: failure, want: failure},
+-		{name: "full buffer with error", n: 256, err: failure, want: failure},
++		{name: "full buffer with error", n: 1024, err: failure, want: failure},
+ 		{name: "short success", n: 12, want: io.ErrUnexpectedEOF},
++		{name: "one encoded block short success", n: 256, want: io.ErrUnexpectedEOF},
+ 	} {
+ 		t.Run(test.name, func(t *testing.T) {
+ 			calls := 0
+--- /dev/null
++++ b/internal/randomid/reservoir_test.go
+@@ -0,0 +1,84 @@
++package randomid
++
++import (
++	"errors"
++	"fmt"
++	"testing"
++)
++
++func TestReservoirBatchesReadsWithoutGrowingRetainedBlocks(t *testing.T) {
++	t.Parallel()
++	calls := 0
++	source := countingSource()
++	g := &Generator{read: func(dst []byte) (int, error) {
++		calls++
++		if len(dst) != 1024 {
++			t.Errorf("entropy read length=%d, want 1024", len(dst))
++		}
++		return source(dst)
++	}}
++	var retained []string
++	var previous *encodedBlock
++	blocks := 0
++	for sequence := 1; sequence <= 128; sequence++ {
++		id, err := g.ID()
++		if err != nil {
++			t.Fatal(err)
++		}
++		retained = append(retained, id)
++		if got := idSequence(t, id); got != uint64(sequence) {
++			t.Fatalf("ID %d consumed entropy segment %d", sequence, got)
++		}
++		if want := (sequence + 63) / 64; calls != want {
++			t.Fatalf("ID %d caused %d raw reads, want %d", sequence, calls, want)
++		}
++		block := g.current.Load()
++		if len(block.encoded) != 512 {
++			t.Fatalf("encoded block grew to %d bytes", len(block.encoded))
++		}
++		if block != previous {
++			blocks++
++			previous = block
++		}
++	}
++	if blocks != 8 {
++		t.Fatalf("128 IDs used %d encoded blocks, want 8", blocks)
++	}
++	// All raw bytes have been consumed. Rewriting that private scratch storage
++	// must not affect any returned ID or its separately owned encoded block.
++	clear(g.buffer[:])
++	for index, id := range retained {
++		if got := idSequence(t, id); got != uint64(index+1) {
++			t.Fatalf("retained ID %d changed after raw storage was cleared: %d", index, got)
++		}
++	}
++}
++
++func TestPairUsesUnreadReservoirAcrossEncodedBlockBoundaries(t *testing.T) {
++	t.Parallel()
++	for _, warm := range []int{15, 31, 47} {
++		t.Run(fmt.Sprintf("after_%d_IDs", warm), func(t *testing.T) {
++			calls := 0
++			source := countingSource()
++			g := &Generator{read: func(dst []byte) (int, error) {
++				calls++
++				if calls > 1 {
++					return 0, errors.New("raw entropy was requested before the reservoir was exhausted")
++				}
++				return source(dst)
++			}}
++			for range warm {
++				if _, err := g.ID(); err != nil {
++					t.Fatal(err)
++				}
++			}
++			first, second, err := g.Pair()
++			if err != nil {
++				t.Fatal(err)
++			}
++			if idSequence(t, first) != uint64(warm+1) || idSequence(t, second) != uint64(warm+2) || calls != 1 {
++				t.Fatalf("pair lost consecutive prefetched entropy: %q %q, reads=%d", first, second, calls)
++			}
++		})
++	}
++}

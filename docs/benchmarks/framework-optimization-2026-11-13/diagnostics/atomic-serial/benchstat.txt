@@ -1,0 +1,28 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                               │ /tmp/trest-framework-next/atomic-id-serial-results/before.txt │ /tmp/trest-framework-next/atomic-id-serial-results/after.txt │
+                                               │                            sec/op                             │                 sec/op                  vs base              │
+HelloJSON/framework=trest_app                                                                     2.746µ ± 18%                              2.672µ ± 1%  -2.69% (p=0.002 n=6)
+DuplicateInvoice/framework=trest_app                                                              5.064µ ±  1%                              5.086µ ± 4%       ~ (p=0.937 n=6)
+CancelableHelloJSON/framework=trest_app                                                           3.617µ ±  8%                              3.698µ ± 3%       ~ (p=0.310 n=6)
+CancelableDuplicateInvoice/framework=trest_app                                                    6.461µ ± 10%                              6.064µ ± 2%       ~ (p=0.240 n=6)
+geomean                                                                                           4.246µ                                    4.178µ       -1.60%
+
+                                               │ /tmp/trest-framework-next/atomic-id-serial-results/before.txt │ /tmp/trest-framework-next/atomic-id-serial-results/after.txt │
+                                               │                             B/op                              │                  B/op                   vs base              │
+HelloJSON/framework=trest_app                                                                     6.312Ki ± 0%                             6.315Ki ± 0%  +0.05% (p=0.002 n=6)
+DuplicateInvoice/framework=trest_app                                                              7.603Ki ± 0%                             7.605Ki ± 0%  +0.04% (p=0.002 n=6)
+CancelableHelloJSON/framework=trest_app                                                           6.984Ki ± 0%                             6.987Ki ± 0%  +0.04% (p=0.002 n=6)
+CancelableDuplicateInvoice/framework=trest_app                                                    8.243Ki ± 0%                             8.246Ki ± 0%  +0.04% (p=0.002 n=6)
+geomean                                                                                           7.250Ki                                  7.253Ki       +0.04%
+
+                                               │ /tmp/trest-framework-next/atomic-id-serial-results/before.txt │ /tmp/trest-framework-next/atomic-id-serial-results/after.txt │
+                                               │                           allocs/op                           │              allocs/op                vs base                │
+HelloJSON/framework=trest_app                                                                       18.00 ± 0%                             18.00 ± 0%       ~ (p=1.000 n=6) ¹
+DuplicateInvoice/framework=trest_app                                                                34.00 ± 0%                             34.00 ± 0%       ~ (p=1.000 n=6) ¹
+CancelableHelloJSON/framework=trest_app                                                             27.00 ± 0%                             27.00 ± 0%       ~ (p=1.000 n=6) ¹
+CancelableDuplicateInvoice/framework=trest_app                                                      42.00 ± 0%                             42.00 ± 0%       ~ (p=1.000 n=6) ¹
+geomean                                                                                             28.86                                  28.86       +0.00%
+¹ all samples are equal

@@ -1,0 +1,39 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                     │     gin      │                echo                │              trest_app              │
+                                     │    sec/op    │    sec/op     vs base              │    sec/op     vs base               │
+ParallelHelloJSON 2                    1.616µ ±  9%   1.613µ ±  7%       ~ (p=0.937 n=6)   2.011µ ± 42%  +24.48% (p=0.002 n=6)
+ParallelHelloJSON 4                    1.542µ ±  9%   1.584µ ±  9%       ~ (p=0.310 n=6)   1.836µ ± 15%  +19.07% (p=0.002 n=6)
+ParallelDuplicateInvoice 2             3.232µ ±  9%   3.207µ ±  7%       ~ (p=0.589 n=6)   3.307µ ± 49%        ~ (p=0.394 n=6)
+ParallelDuplicateInvoice 4             2.680µ ±  9%   2.716µ ± 18%       ~ (p=0.669 n=6)   2.736µ ±  3%   +2.09% (p=0.024 n=6)
+ParallelCancelableHelloJSON 2          1.703µ ± 12%   1.717µ ± 11%       ~ (p=0.818 n=6)   2.513µ ±  7%  +47.58% (p=0.002 n=6)
+ParallelCancelableHelloJSON 4          1.628µ ± 19%   1.631µ ± 16%       ~ (p=0.900 n=6)   2.203µ ±  9%  +35.33% (p=0.002 n=6)
+ParallelCancelableDuplicateInvoice 2   3.240µ ±  9%   3.270µ ±  7%       ~ (p=0.699 n=6)   3.884µ ±  9%  +19.88% (p=0.002 n=6)
+ParallelCancelableDuplicateInvoice 4   2.707µ ± 15%   2.686µ ±  9%       ~ (p=0.416 n=6)   3.100µ ±  8%        ~ (p=0.065 n=6)
+geomean                                2.187µ         2.199µ        +0.54%                 2.621µ        +19.81%
+
+                                     │     gin      │                echo                │              trest_app              │
+                                     │     B/op     │     B/op      vs base              │     B/op      vs base               │
+ParallelHelloJSON 2                    6.010Ki ± 0%   5.986Ki ± 0%  -0.39% (p=0.002 n=6)   6.313Ki ± 0%   +5.05% (p=0.002 n=6)
+ParallelHelloJSON 4                    6.014Ki ± 0%   5.990Ki ± 0%  -0.39% (p=0.002 n=6)   6.315Ki ± 0%   +5.02% (p=0.002 n=6)
+ParallelDuplicateInvoice 2             7.723Ki ± 0%   7.645Ki ± 0%  -1.01% (p=0.002 n=6)   7.605Ki ± 0%   -1.52% (p=0.002 n=6)
+ParallelDuplicateInvoice 4             7.736Ki ± 0%   7.657Ki ± 0%  -1.02% (p=0.002 n=6)   7.612Ki ± 0%   -1.60% (p=0.002 n=6)
+ParallelCancelableHelloJSON 2          6.104Ki ± 0%   6.080Ki ± 0%  -0.38% (p=0.002 n=6)   6.985Ki ± 0%  +14.45% (p=0.002 n=6)
+ParallelCancelableHelloJSON 4          6.107Ki ± 0%   6.084Ki ± 0%  -0.38% (p=0.002 n=6)   6.988Ki ± 0%  +14.42% (p=0.002 n=6)
+ParallelCancelableDuplicateInvoice 2   7.801Ki ± 0%   7.723Ki ± 0%  -1.00% (p=0.002 n=6)   8.246Ki ± 0%   +5.71% (p=0.002 n=6)
+ParallelCancelableDuplicateInvoice 4   7.814Ki ± 0%   7.736Ki ± 0%  -1.00% (p=0.002 n=6)   8.254Ki ± 0%   +5.62% (p=0.002 n=6)
+geomean                                6.860Ki        6.812Ki       -0.70%                 7.254Ki        +5.74%
+
+                                     │    gin     │               echo               │             trest_app             │
+                                     │ allocs/op  │ allocs/op   vs base              │ allocs/op   vs base               │
+ParallelHelloJSON 2                    20.00 ± 0%   19.00 ± 0%  -5.00% (p=0.002 n=6)   18.00 ± 0%  -10.00% (p=0.002 n=6)
+ParallelHelloJSON 4                    20.00 ± 0%   19.00 ± 0%  -5.00% (p=0.002 n=6)   18.00 ± 0%  -10.00% (p=0.002 n=6)
+ParallelDuplicateInvoice 2             40.00 ± 0%   39.00 ± 0%  -2.50% (p=0.002 n=6)   34.00 ± 0%  -15.00% (p=0.002 n=6)
+ParallelDuplicateInvoice 4             40.00 ± 0%   39.00 ± 0%  -2.50% (p=0.002 n=6)   34.00 ± 0%  -15.00% (p=0.002 n=6)
+ParallelCancelableHelloJSON 2          22.00 ± 0%   21.00 ± 0%  -4.55% (p=0.002 n=6)   27.00 ± 0%  +22.73% (p=0.002 n=6)
+ParallelCancelableHelloJSON 4          22.00 ± 0%   21.00 ± 0%  -4.55% (p=0.002 n=6)   27.00 ± 0%  +22.73% (p=0.002 n=6)
+ParallelCancelableDuplicateInvoice 2   41.00 ± 0%   40.00 ± 0%  -2.44% (p=0.002 n=6)   42.00 ± 0%   +2.44% (p=0.002 n=6)
+ParallelCancelableDuplicateInvoice 4   41.00 ± 0%   40.00 ± 0%  -2.44% (p=0.002 n=6)   42.00 ± 0%   +2.44% (p=0.002 n=6)
+geomean                                29.15        28.09       -3.63%                 28.86        -0.97%
