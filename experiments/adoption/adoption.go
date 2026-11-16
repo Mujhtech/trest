@@ -1,4 +1,4 @@
-// Package adoption provides equal application tasks through three HTTP stacks.
+// Package adoption provides common application tasks through several HTTP stacks.
 // This isolated experiment is not a production billing or idempotency library.
 package adoption
 
@@ -70,11 +70,17 @@ type Store struct {
 	mu      sync.Mutex
 	records map[string]stored
 	writes  int
+	// Set only by correctness tests, before serving requests. Timed fixtures
+	// leave this nil so observation does not add synchronization overhead.
+	onExecute func()
 }
 
 func (s *Store) Count() int { s.mu.Lock(); defer s.mu.Unlock(); return s.writes }
 func newStore() *Store      { return &Store{records: make(map[string]stored)} }
 func (s *Store) execute(ctx context.Context, tenant string, in Input, preview bool) (Invoice, error) {
+	if s.onExecute != nil {
+		s.onExecute()
+	}
 	if err := ctx.Err(); err != nil {
 		return Invoice{}, err
 	}
@@ -120,7 +126,11 @@ type Fixture struct {
 }
 
 func Factories() []Factory {
-	return []Factory{{"net_http", NewPlain}, {"trest", NewTrest}, {"huma", NewHuma}}
+	return []Factory{
+		{"net_http", NewPlain}, {"trest_app", NewTrestApp},
+		{"trest", NewTrest}, {"huma", NewHuma},
+		{"chi", NewChi}, {"gin", NewGin}, {"echo", NewEcho},
+	}
 }
 func tenant(r *http.Request) string {
 	switch r.Header.Get("Authorization") {
@@ -285,6 +295,9 @@ func NewHuma() (*Fixture, error) {
 	store := newStore()
 	mux := http.NewServeMux()
 	config := huma.DefaultConfig("Adoption experiment", "1")
+	// Keep the response payload equal to the other fixtures. DefaultConfig's
+	// create hook otherwise injects a $schema field and Link header per response.
+	config.CreateHooks = nil
 	config.OpenAPIPath = ""
 	config.DocsPath = ""
 	config.SchemasPath = ""

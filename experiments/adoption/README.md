@@ -1,6 +1,18 @@
 # Reproducible adoption experiment
 
-This optional nested Go module compares equal application behavior through plain `net/http`, Trest, and [Huma's official `net/http` adapter](https://pkg.go.dev/github.com/danielgtaylor/huma/v2/adapters/humago). It pins Huma **v2.40.0**. Huma requires Go 1.26 in this version; the Trest core retains its Go 1.23 baseline and has no Huma dependency.
+This optional nested Go module compares common application behavior through plain `net/http`, Trest's main `App` API, Trest's HTTP adapter, [Huma's official `net/http` adapter](https://pkg.go.dev/github.com/danielgtaylor/huma/v2/adapters/humago), Gin, Echo, and Chi. Framework dependencies are isolated here; the Trest core retains its Go 1.23 baseline and standard-library-only dependency graph.
+
+| Benchmark name | Implementation | Pinned version |
+| --- | --- | --- |
+| `net_http` | Standard-library `http.ServeMux` | Running Go toolchain |
+| `trest_app` | `trest.New` with typed routes | Local checkout |
+| `trest` | Operation registry + HTTP adapter | Local checkout |
+| `huma` | Huma + `humago` | v2.40.0 |
+| `gin` | Gin | v1.12.0 |
+| `echo` | Echo | v5.4.4 |
+| `chi` | Chi | v5.5.0 |
+
+The experiment requires Go 1.26. See the [latest framework optimization report — 13 November](../../docs/benchmarks/framework-optimization-2026-11-13/README.md) for paired results, profiles, raw samples, and provenance. Trest's target of beating both Gin and Echo remains unmet. The [11 November optimization](../../docs/benchmarks/framework-optimization-2026-11-11/README.md) and [earlier framework comparison](../../docs/benchmarks/frameworks-2026-11-11/README.md) remain available as historical evidence.
 
 ## What is actually compared
 
@@ -10,7 +22,11 @@ Each implementation shares the same domain rules and in-memory idempotency store
 2. Diagnosing an invalid amount: all return `400` with no stored effect.
 3. Sixteen concurrent identical invoice requests: exactly one stored invoice and the same result for every caller. A changed input under the same scoped key returns `409`.
 
-The same application policy is checked at the adapter boundary and again inside the domain function. Trest uses operation validation and authorization hooks; Huma and plain HTTP use explicit application calls. Huma has broader schema and transport support than Trest's supported schema subset. Exact error envelopes, parser edge behavior, default headers, and framework feature sets differ. The suite demonstrates the common business tasks, not universal behavioral equivalence.
+The same application policy is checked before entering the domain function and again inside it. Trest uses operation validation and authorization hooks; the other fixtures use explicit application calls. Tests instrument domain entry to prove malformed input, invalid values, and denied authorization never reach it. The observer is nil in timed fixtures. Each correctness subtest has its own state, and concurrent duplicate requests verify all invoice fields and one stored effect.
+
+Gin, Echo, and Chi use a shared, strict standard-library JSON decoder for the invoice workload, with a 1 MiB body limit, unknown-field rejection, and trailing-value rejection. They retain their native routers; Gin and Echo use their JSON response APIs, while Chi uses the standard-library JSON writer. This measures these frameworks with explicit application binding, not their default binders. Huma and Trest retain their native typed binding and schema processing. Huma's optional schema-link response transform is disabled so it does not add a `$schema` field to the shared response. Trest's default deadline, capacity, request identity, and structural checks remain enabled. Gin uses `gin.New` in release mode; no optional request logger is installed for any framework.
+
+Exact parser edge behavior, error envelopes, headers, and framework feature sets still differ. The suite establishes common business behavior, not universal framework equivalence.
 
 The store is an in-memory, mutex-protected teaching fixture. It scopes keys by tenant, operation version, and synthetic caller; it does not claim crash durability, cross-process atomicity, or exactly-once external effects.
 
@@ -18,12 +34,47 @@ The store is an in-memory, mutex-protected teaching fixture. It scopes keys by t
 
 ```sh
 cd experiments/adoption
-go test -race ./...
-go test -run '^$' -bench BenchmarkDuplicateInvoice -benchmem -count 3
-go run ./cmd/measure > measured-new.json
+GIN_MODE=release go test -race ./...
+GIN_MODE=release go test -run '^$' -bench 'Benchmark(HelloJSON|DuplicateInvoice)' -benchmem -count 10
+# Install benchstat separately if it is not already available.
+python3 benchmark.py /tmp/trest-framework-results --rounds 14 --benchtime 500ms --gomaxprocs 1
 ```
 
-Dependencies are isolated by this directory's `go.mod` and `go.sum`. The compiled measurement binary imports one third-party module, Huma; its test dependencies recorded in `go.sum` are separate from the Trest core. Use `go list -deps -f '{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}' ./cmd/measure` to inspect the compiled module graph.
+`benchmark.py` requires Python 3, Go, and `benchstat` on `PATH`. It builds one test binary and runs every sample serially in its own process. Fourteen rounds rotate each framework through every position twice, reverse order for the second cycle, and alternate workload order. It sets `GIN_MODE=release` and an explicit `GOMAXPROCS`, retains raw samples, and saves medians, benchstat output, dependency versions, source hashes, binary hash, and execution order. Choose a new output directory each time; existing results are never overwritten. Avoid other CPU-heavy work during measurement.
+
+`BenchmarkHelloJSON` serves `GET /hello` and serializes the same `{"message":"hello"}` value on each request. `BenchmarkDuplicateInvoice` warms `POST /invoices` before timing, then repeatedly submits the same scoped idempotency key. Both include fresh `httptest` request and response-recorder creation. They exclude network traffic, TLS, databases, application startup, and contract export. They measure serial in-process cost, not concurrent server throughput or production latency.
+
+Dependencies are isolated by this directory's `go.mod` and `go.sum`. Use `go list -deps -f '{{if .Module}}{{.Module.Path}}@{{.Module.Version}}{{end}}' ./cmd/measure` to inspect the compiled module graph. The older `GIN_MODE=release go run ./cmd/measure > measured-new.json` utility remains available for exploratory startup and latency sampling; use the rotating benchmark runner for framework comparisons.
+
+Current benchmarks use `b.Loop`, prewarm the duplicate invoice, and disable Huma's schema-link transform. The November 11 and 13 runs fix `GOMAXPROCS=1`; older runs below used 12. Do not calculate performance changes by comparing these different configurations. Historical files remain unchanged.
+
+## Latest optimization — 13 November 2026
+
+**The target of beating both Gin and Echo remains unmet.** The [new report](../../docs/benchmarks/framework-optimization-2026-11-13/README.md) measures additional optimization against the already-optimized 11 November baseline, using fourteen paired 500 ms samples, frozen binaries, and unchanged original fixtures on an Apple M2 Pro, macOS arm64, Go 1.27.3, `GOMAXPROCS=1`.
+
+| Main `App` API workload | Before | After | Time change | Allocations before → after |
+| --- | ---: | ---: | ---: | ---: |
+| JSON hello | 3.568 µs | 2.544 µs | −28.70% | 32 → 18 |
+| Duplicate invoice | 6.600 µs | 4.798 µs | −27.31% | 48 → 34 |
+
+Both improvements have `p < 0.001`; unchanged Gin/Echo controls show no significant timing change. Current Gin medians are 2.163/4.766 µs and Echo medians are 2.201/4.848 µs. Trest hello still takes 17.64% more time than Gin; invoice versus Gin is statistically inconclusive (`p = 0.701`), not a win. IDs, deadlines, capacity, validation, and authorization remain enabled. See [paired analysis](../../docs/benchmarks/framework-optimization-2026-11-13/benchstat.txt) and [current comparisons](../../docs/benchmarks/framework-optimization-2026-11-13/gin-echo-comparison.txt).
+
+Supplemental current-only benchmarks give every request a fresh cancelable parent. Trest records 3.483/5.802 µs, Gin 2.357/4.942 µs, and Echo 2.405/5.014 µs. These expose a larger remaining gap and do not replace the original workload or establish production latency. See the [cancelable-parent analysis](../../docs/benchmarks/framework-optimization-2026-11-13/cancelable/benchstat.txt).
+
+All seven modules passed race tests, vet, and builds with generated-client and WebSocket checks enabled. Core Go 1.23 compatibility checks and lint passed; differential fuzzing completed 1,743,257 executions. The report includes source hashes, raw samples, profiles, rejected diagnostics, and material tradeoffs. Measurements come from a shared host; compare the paired samples, not isolated numbers from different runs.
+
+## Historical optimization — 11 November 2026
+
+The [framework optimization report](../../docs/benchmarks/framework-optimization-2026-11-11/README.md) compares frozen before/after binaries with fourteen paired 500 ms samples on an Apple M2 Pro, macOS arm64, Go 1.27.3, and `GOMAXPROCS=1`. The benchmark fixtures are unchanged between the pair.
+
+| Main `App` API workload | Before | After | Time change | Allocations before → after |
+| --- | ---: | ---: | ---: | ---: |
+| JSON hello | 4.273 µs | 3.548 µs | −16.98% | 35 → 32 |
+| Duplicate invoice | 8.079 µs | 6.640 µs | −17.81% | 57 → 48 |
+
+Gin's corresponding medians were 2.174 µs and 4.770 µs; Echo's were 2.216 µs and 4.757 µs. Trest's gap narrowed, but its main `App` API still takes about 60–63% more time for JSON hello and 39–40% more time for duplicate invoices. Unchanged control implementations showed no statistically significant timing change. Validation, authorization, invocation limits/deadlines, and request identity remain enabled. These serial in-process measurements include request/recorder construction and exclude network/database I/O; they do not establish concurrent throughput or production latency.
+
+All-module race tests, vet, and build passed, including live generated clients and WebSockets. Core Go 1.23 race tests, lint, and 248,579 differential fuzz executions also passed. Real PostgreSQL integration tests were not rerun in this pass. See the report for verification records, [before samples](../../docs/benchmarks/framework-optimization-2026-11-11/before.txt), [after samples](../../docs/benchmarks/framework-optimization-2026-11-11/after.txt), and [benchstat](../../docs/benchmarks/framework-optimization-2026-11-11/benchstat.txt).
 
 ## Optimization rerun — 10 November 2026
 
