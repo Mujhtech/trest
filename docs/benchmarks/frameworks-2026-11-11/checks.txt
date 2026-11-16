@@ -1,0 +1,53 @@
+
+Checking .
+ok  	github.com/mujhtech/trest	1.882s
+ok  	github.com/mujhtech/trest/aitool	1.640s
+ok  	github.com/mujhtech/trest/check	1.627s
+ok  	github.com/mujhtech/trest/clientgen	1.800s
+?   	github.com/mujhtech/trest/cmd/existing-handler	[no test files]
+?   	github.com/mujhtech/trest/cmd/invoices	[no test files]
+ok  	github.com/mujhtech/trest/cmd/trest	1.920s
+?   	github.com/mujhtech/trest/cmd/trest-demo	[no test files]
+ok  	github.com/mujhtech/trest/contract	1.640s
+ok  	github.com/mujhtech/trest/examples/invoices	1.802s
+ok  	github.com/mujhtech/trest/httpadapter	2.188s
+ok  	github.com/mujhtech/trest/inspect	1.620s
+ok  	github.com/mujhtech/trest/internal/docsui	2.164s
+ok  	github.com/mujhtech/trest/internal/example/existinghandler	1.620s
+ok  	github.com/mujhtech/trest/internal/example/invoiceapi	1.633s
+ok  	github.com/mujhtech/trest/internal/example/invoices	1.532s
+?   	github.com/mujhtech/trest/internal/example/server	[no test files]
+?   	github.com/mujhtech/trest/internal/openapischema	[no test files]
+ok  	github.com/mujhtech/trest/internal/schema	1.616s
+ok  	github.com/mujhtech/trest/internal/webinput	1.572s
+ok  	github.com/mujhtech/trest/job	1.531s
+ok  	github.com/mujhtech/trest/operation	1.561s
+ok  	github.com/mujhtech/trest/plugins/cookie	1.551s
+ok  	github.com/mujhtech/trest/plugins/cors	1.528s
+ok  	github.com/mujhtech/trest/plugins/schedule	1.510s
+ok  	github.com/mujhtech/trest/plugins/static	1.563s
+ok  	github.com/mujhtech/trest/scenario	1.528s
+ok  	github.com/mujhtech/trest/telemetry	1.521s
+
+Checking adapters/mcp
+ok  	github.com/mujhtech/trest/adapters/mcp	(cached)
+ok  	github.com/mujhtech/trest/adapters/mcp/dev	(cached)
+
+Checking adapters/postgres
+?   	github.com/mujhtech/trest/adapters/postgres	[no test files]
+?   	github.com/mujhtech/trest/adapters/postgres/cmd/job-example	[no test files]
+
+Checking adapters/websocket
+ok  	github.com/mujhtech/trest/adapters/websocket	(cached)
+?   	github.com/mujhtech/trest/adapters/websocket/cmd/echo	[no test files]
+
+Checking adapters/jwt
+ok  	github.com/mujhtech/trest/adapters/jwt	(cached)
+?   	github.com/mujhtech/trest/adapters/jwt/cmd/demo	[no test files]
+
+Checking adapters/otel
+ok  	github.com/mujhtech/trest/adapters/otel	(cached)
+
+Checking experiments/adoption
+ok  	github.com/mujhtech/trest/experiments/adoption	(cached)
+?   	github.com/mujhtech/trest/experiments/adoption/cmd/measure	[no test files]

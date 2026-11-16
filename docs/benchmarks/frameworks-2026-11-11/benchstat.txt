@@ -1,0 +1,57 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                                     │ /Users/muhideenmujeeb/Projects/trest/docs/benchmarks/frameworks-2026-11-11/samples.txt │
+                                     │                                         sec/op                                         │
+HelloJSON/framework=net_http                                                                                      2.161µ ± 3%
+DuplicateInvoice/framework=net_http                                                                               4.709µ ± 1%
+HelloJSON/framework=trest_app                                                                                     4.245µ ± 0%
+DuplicateInvoice/framework=trest_app                                                                              7.849µ ± 0%
+HelloJSON/framework=trest                                                                                         4.317µ ± 2%
+DuplicateInvoice/framework=trest                                                                                  7.673µ ± 2%
+HelloJSON/framework=huma                                                                                          2.458µ ± 1%
+DuplicateInvoice/framework=huma                                                                                   7.173µ ± 1%
+HelloJSON/framework=chi                                                                                           2.299µ ± 2%
+DuplicateInvoice/framework=chi                                                                                    4.931µ ± 1%
+HelloJSON/framework=gin                                                                                           2.161µ ± 1%
+DuplicateInvoice/framework=gin                                                                                    4.713µ ± 1%
+HelloJSON/framework=echo                                                                                          2.188µ ± 0%
+DuplicateInvoice/framework=echo                                                                                   4.782µ ± 1%
+geomean                                                                                                           3.967µ
+
+                                     │ /Users/muhideenmujeeb/Projects/trest/docs/benchmarks/frameworks-2026-11-11/samples.txt │
+                                     │                                          B/op                                          │
+HelloJSON/framework=net_http                                                                                     6.008Ki ± 0%
+DuplicateInvoice/framework=net_http                                                                              7.720Ki ± 0%
+HelloJSON/framework=trest_app                                                                                    6.930Ki ± 0%
+DuplicateInvoice/framework=trest_app                                                                             9.063Ki ± 0%
+HelloJSON/framework=trest                                                                                        7.414Ki ± 0%
+DuplicateInvoice/framework=trest                                                                                 8.985Ki ± 0%
+HelloJSON/framework=huma                                                                                         6.181Ki ± 0%
+DuplicateInvoice/framework=huma                                                                                  8.119Ki ± 0%
+HelloJSON/framework=chi                                                                                          6.368Ki ± 0%
+DuplicateInvoice/framework=chi                                                                                   8.079Ki ± 0%
+HelloJSON/framework=gin                                                                                          6.008Ki ± 0%
+DuplicateInvoice/framework=gin                                                                                   7.720Ki ± 0%
+HelloJSON/framework=echo                                                                                         5.984Ki ± 0%
+DuplicateInvoice/framework=echo                                                                                  7.642Ki ± 0%
+geomean                                                                                                          7.228Ki
+
+                                     │ /Users/muhideenmujeeb/Projects/trest/docs/benchmarks/frameworks-2026-11-11/samples.txt │
+                                     │                                       allocs/op                                        │
+HelloJSON/framework=net_http                                                                                       20.00 ± 0%
+DuplicateInvoice/framework=net_http                                                                                40.00 ± 0%
+HelloJSON/framework=trest_app                                                                                      35.00 ± 0%
+DuplicateInvoice/framework=trest_app                                                                               57.00 ± 0%
+HelloJSON/framework=trest                                                                                          36.00 ± 0%
+DuplicateInvoice/framework=trest                                                                                   56.00 ± 0%
+HelloJSON/framework=huma                                                                                           24.00 ± 0%
+DuplicateInvoice/framework=huma                                                                                    55.00 ± 0%
+HelloJSON/framework=chi                                                                                            22.00 ± 0%
+DuplicateInvoice/framework=chi                                                                                     42.00 ± 0%
+HelloJSON/framework=gin                                                                                            20.00 ± 0%
+DuplicateInvoice/framework=gin                                                                                     40.00 ± 0%
+HelloJSON/framework=echo                                                                                           19.00 ± 0%
+DuplicateInvoice/framework=echo                                                                                    39.00 ± 0%
+geomean                                                                                                            33.59

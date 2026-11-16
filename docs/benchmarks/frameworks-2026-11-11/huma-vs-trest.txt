@@ -1,0 +1,21 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                 │    huma     │              trest_app              │
+                 │   sec/op    │   sec/op     vs base                │
+HelloJSON          2.458µ ± 1%   4.245µ ± 0%  +72.74% (p=0.000 n=14)
+DuplicateInvoice   7.173µ ± 1%   7.849µ ± 0%   +9.43% (p=0.000 n=14)
+geomean            4.199µ        5.772µ       +37.49%
+
+                 │     huma     │              trest_app               │
+                 │     B/op     │     B/op      vs base                │
+HelloJSON          6.181Ki ± 0%   6.930Ki ± 0%  +12.12% (p=0.000 n=14)
+DuplicateInvoice   8.119Ki ± 0%   9.063Ki ± 0%  +11.63% (p=0.000 n=14)
+geomean            7.084Ki        7.925Ki       +11.87%
+
+                 │    huma    │             trest_app              │
+                 │ allocs/op  │ allocs/op   vs base                │
+HelloJSON          24.00 ± 0%   35.00 ± 0%  +45.83% (p=0.000 n=14)
+DuplicateInvoice   55.00 ± 0%   57.00 ± 0%   +3.64% (p=0.000 n=14)
+geomean            36.33        44.67       +22.94%

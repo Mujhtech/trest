@@ -1,0 +1,23 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/experiments/adoption
+cpu: Apple M2 Pro
+                 │  net_http   │                chi                 │                gin                 │                echo                │                huma                 │                trest                │              trest_app              │
+                 │   sec/op    │   sec/op     vs base               │   sec/op     vs base               │   sec/op     vs base               │   sec/op     vs base                │   sec/op     vs base                │   sec/op     vs base                │
+HelloJSON          2.161µ ± 3%   2.299µ ± 2%  +6.36% (p=0.000 n=14)   2.161µ ± 1%       ~ (p=0.972 n=14)   2.188µ ± 0%       ~ (p=0.382 n=14)   2.458µ ± 1%  +13.72% (p=0.000 n=14)   4.317µ ± 2%  +99.75% (p=0.000 n=14)   4.245µ ± 0%  +96.44% (p=0.000 n=14)
+DuplicateInvoice   4.709µ ± 1%   4.931µ ± 1%  +4.71% (p=0.000 n=14)   4.713µ ± 1%       ~ (p=0.454 n=14)   4.782µ ± 1%  +1.55% (p=0.000 n=14)   7.173µ ± 1%  +52.34% (p=0.000 n=14)   7.673µ ± 2%  +62.96% (p=0.000 n=14)   7.849µ ± 0%  +66.71% (p=0.000 n=14)
+geomean            3.190µ        3.366µ       +5.54%                  3.191µ       +0.04%                  3.234µ       +1.40%                  4.199µ       +31.62%                  5.755µ       +80.42%                  5.772µ       +80.96%
+
+                 │   net_http   │                 chi                 │                  gin                  │                echo                 │                huma                 │                trest                 │              trest_app               │
+                 │     B/op     │     B/op      vs base               │     B/op      vs base                 │     B/op      vs base               │     B/op      vs base               │     B/op      vs base                │     B/op      vs base                │
+HelloJSON          6.008Ki ± 0%   6.368Ki ± 0%  +6.00% (p=0.000 n=14)   6.008Ki ± 0%       ~ (p=1.000 n=14) ¹   5.984Ki ± 0%  -0.39% (p=0.000 n=14)   6.181Ki ± 0%  +2.88% (p=0.000 n=14)   7.414Ki ± 0%  +23.41% (p=0.000 n=14)   6.930Ki ± 0%  +15.34% (p=0.000 n=14)
+DuplicateInvoice   7.720Ki ± 0%   8.079Ki ± 0%  +4.66% (p=0.000 n=14)   7.720Ki ± 0%       ~ (p=1.000 n=14) ¹   7.642Ki ± 0%  -1.01% (p=0.000 n=14)   8.119Ki ± 0%  +5.17% (p=0.000 n=14)   8.985Ki ± 0%  +16.39% (p=0.000 n=14)   9.063Ki ± 0%  +17.41% (p=0.000 n=14)
+geomean            6.810Ki        7.173Ki       +5.32%                  6.810Ki       +0.00%                    6.762Ki       -0.70%                  7.084Ki       +4.02%                  8.162Ki       +19.85%                  7.925Ki       +16.37%
+¹ all samples are equal
+
+                 │  net_http  │                chi                 │                 gin                 │               echo                │                huma                │               trest                │             trest_app              │
+                 │ allocs/op  │ allocs/op   vs base                │ allocs/op   vs base                 │ allocs/op   vs base               │ allocs/op   vs base                │ allocs/op   vs base                │ allocs/op   vs base                │
+HelloJSON          20.00 ± 0%   22.00 ± 0%  +10.00% (p=0.000 n=14)   20.00 ± 0%       ~ (p=1.000 n=14) ¹   19.00 ± 0%  -5.00% (p=0.000 n=14)   24.00 ± 0%  +20.00% (p=0.000 n=14)   36.00 ± 0%  +80.00% (p=0.000 n=14)   35.00 ± 0%  +75.00% (p=0.000 n=14)
+DuplicateInvoice   40.00 ± 0%   42.00 ± 0%   +5.00% (p=0.000 n=14)   40.00 ± 0%       ~ (p=1.000 n=14) ¹   39.00 ± 0%  -2.50% (p=0.000 n=14)   55.00 ± 0%  +37.50% (p=0.000 n=14)   56.00 ± 0%  +40.00% (p=0.000 n=14)   57.00 ± 0%  +42.50% (p=0.000 n=14)
+geomean            28.28        30.40        +7.47%                  28.28       +0.00%                    27.22       -3.76%                  36.33       +28.45%                  44.90       +58.75%                  44.67       +57.92%
+¹ all samples are equal
