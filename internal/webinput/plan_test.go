@@ -232,12 +232,12 @@ func TestMultipartUploadsStayUsableUntilCleanup(t *testing.T) {
 	}
 	r := httptest.NewRequest("POST", "/upload", bytes.NewReader(body.Bytes()))
 	r.Header.Set("Content-Type", writer.FormDataContentType())
-	v, cleanup, err := plan.Decode(httptest.NewRecorder(), r, 1<<20)
+	var got input
+	cleanup, err := plan.DecodeInto(httptest.NewRecorder(), r, 1<<20, &got)
 	defer cleanup()
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := v.Interface().(input)
 	if got.Name != "receipt" || got.File.Filename != "receipt.txt" {
 		t.Fatalf("decoded=%+v", got)
 	}

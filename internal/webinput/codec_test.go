@@ -120,12 +120,12 @@ func TestDecodeDeclaredCodecsAcrossSources(t *testing.T) {
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("X-ID", uuid)
 	r.AddCookie(&http.Cookie{Name: "id", Value: uuid})
-	value, cleanup, err := plan.Decode(httptest.NewRecorder(), r, 4096)
+	var got input
+	cleanup, err := plan.DecodeInto(httptest.NewRecorder(), r, 4096, &got)
 	defer cleanup()
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := value.Interface().(input)
 	if len(got.Aliases) != 2 || got.ID != got.Header || got.ID != got.Cookie || got.ID != got.Body.ID || got.ID != got.Aliases[0] || got.Price == nil || *got.Price != "12.50" || got.Body.Amount != "9.99" {
 		t.Fatalf("custom values were not decoded: %+v", got)
 	}

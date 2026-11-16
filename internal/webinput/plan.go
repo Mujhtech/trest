@@ -2,6 +2,7 @@
 package webinput
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
@@ -10,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mujhtech/trest/internal/schema"
@@ -36,6 +38,8 @@ type Plan struct {
 	wholeBody       bool
 	bodyIndex       int
 	bodyValidator   *schema.Validator
+	bodyDecoder     *schema.ValueDecoder
+	bodyPool        *sync.Pool
 	bodyType        reflect.Type
 	form            bool
 	multipart       bool
@@ -43,14 +47,23 @@ type Plan struct {
 	formNames       map[string]bool
 }
 
+// HasBindings reports whether a plan binds any request data into its input.
+// A caller starting with a zero input can bypass reflection when this is false,
+// but must still reject queries, bodies, and oversized Content-Length values.
+func (p *Plan) HasBindings() bool {
+	return p == nil || p.wholeBody || p.bodyIndex >= 0 || p.form || len(p.fields) != 0
+}
+
 type field struct {
 	index       int
 	name        string
 	source      string
+	path        string
 	typ         reflect.Type
 	required    bool
 	defaultText *string
 	validator   *schema.Validator
+	decoder     *schema.ValueDecoder
 	wireKind    string
 	itemKind    string
 	file        bool
@@ -62,6 +75,19 @@ type field struct {
 var fileType = reflect.TypeFor[*multipart.FileHeader]()
 var fileSliceType = reflect.TypeFor[[]*multipart.FileHeader]()
 var timeType = reflect.TypeFor[time.Time]()
+
+func (p *Plan) compileBodyDecoder() {
+	p.bodyDecoder = p.bodyValidator.DecoderForType(p.bodyType)
+	if p.bodyDecoder != nil {
+		// Native scalar assignments copy all retained data. Only these models
+		// may reuse request storage; application codecs keep their old path.
+		p.bodyPool = &sync.Pool{New: func() any {
+			buffer := new(bytes.Buffer)
+			buffer.Grow(512)
+			return buffer
+		}}
+	}
+}
 
 // Compile verifies a struct's source tags and matches path fields to route captures.
 // Without source tags, POST/PUT/PATCH use the entire struct as a JSON body.
@@ -97,6 +123,9 @@ func Compile(typ reflect.Type, method, path string) (*Plan, error) {
 				return nil, err
 			}
 			p.bodyValidator, err = schema.Compile(p.BodySchema)
+			if err == nil {
+				p.compileBodyDecoder()
+			}
 			return p, err
 		}
 		for i := 0; i < typ.NumField(); i++ {
@@ -158,6 +187,7 @@ func Compile(typ reflect.Type, method, path string) (*Plan, error) {
 			if err != nil {
 				return nil, err
 			}
+			p.compileBodyDecoder()
 			continue
 		}
 		if source == "header" {
@@ -171,7 +201,7 @@ func Compile(typ reflect.Type, method, path string) (*Plan, error) {
 			return nil, fmt.Errorf("duplicate %s binding %s", source, name)
 		}
 		seen[key] = true
-		binding := field{index: i, name: name, source: source, typ: f.Type, required: f.Type.Kind() != reflect.Pointer, maxItems: -1}
+		binding := field{index: i, name: name, source: source, path: "/" + source + "/" + pointer(name), typ: f.Type, required: f.Type.Kind() != reflect.Pointer, maxItems: -1}
 		if tag, ok := f.Tag.Lookup("required"); ok {
 			if tag != "true" && tag != "false" {
 				return nil, fmt.Errorf("required on %s must be true or false", f.Name)
@@ -264,6 +294,7 @@ func Compile(typ reflect.Type, method, path string) (*Plan, error) {
 				if !supported || schema.HasCustomCodec(f.Type) && binding.wireKind == "array" {
 					return nil, fmt.Errorf("%s field %s requires a scalar wire schema or a collection of scalar values", source, f.Name)
 				}
+				binding.decoder = binding.validator.DecoderForType(f.Type)
 			}
 		}
 		if err != nil {
