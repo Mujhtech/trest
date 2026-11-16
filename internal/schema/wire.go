@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"bytes"
 	"encoding/json"
 	"sort"
 	"unicode/utf8"
@@ -152,6 +153,9 @@ func (p *wirePlan) field(cursor *wireCursor) (wireField, bool) {
 type wireCursor struct {
 	data     []byte
 	position int
+	// The validator's cursor follows json.Valid; the native decoder instead
+	// validates its supported grammar as it parses to avoid a second full scan.
+	strict bool
 }
 
 func (c *wireCursor) skipSpace() {
@@ -180,6 +184,23 @@ func (c *wireCursor) quoted() (start, end int, escaped, ok bool) {
 		return 0, 0, false, false
 	}
 	start = c.position
+	// Most field names and scalar strings have no escapes. Use the standard
+	// library's optimized byte search for those spans. Escaped and invalid-UTF8
+	// tokens retain encoding/json's grammar checks and normalization below.
+	if quote := bytes.IndexByte(c.data[start:], '"'); quote >= 0 {
+		end = start + quote
+		if bytes.IndexByte(c.data[start:end], '\\') < 0 {
+			if c.strict {
+				for _, character := range c.data[start:end] {
+					if character < 0x20 {
+						return 0, 0, false, false
+					}
+				}
+			}
+			c.position = end + 1
+			return start, end, false, true
+		}
+	}
 	for c.position < len(c.data) {
 		switch c.data[c.position] {
 		case '"':
@@ -208,8 +229,18 @@ type wireValue struct {
 func (v wireValue) validate(n *node, path string, violations *[]Violation) {
 	switch v.kind {
 	case 's':
+		if typ, _ := nodeType(n); typ == "string" {
+			if hasStringChecks(n) {
+				validateStringValue(n, string(v.raw), path, violations)
+			}
+			return
+		}
 		validateValue(n, string(v.raw), path, violations)
 	case 'd':
+		if typ, _ := nodeType(n); typ == "string" {
+			validateStringValue(n, v.text, path, violations)
+			return
+		}
 		validateValue(n, v.text, path, violations)
 	case 'n':
 		validateValue(n, json.Number(string(v.raw)), path, violations)
@@ -241,14 +272,11 @@ func (c *wireCursor) scalar() (wireValue, bool) {
 		}
 		return wireValue{text: value, kind: 'd'}, true
 	case 't':
-		c.position += 4
-		return wireValue{kind: 't'}, c.position <= len(c.data)
+		return wireValue{kind: 't'}, c.literal("true")
 	case 'f':
-		c.position += 5
-		return wireValue{kind: 'f'}, c.position <= len(c.data)
+		return wireValue{kind: 'f'}, c.literal("false")
 	case 'n':
-		c.position += 4
-		return wireValue{kind: '0'}, c.position <= len(c.data)
+		return wireValue{kind: '0'}, c.literal("null")
 	case '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		start := c.position
 		for c.position < len(c.data) {
@@ -263,4 +291,13 @@ func (c *wireCursor) scalar() (wireValue, bool) {
 	default:
 		return wireValue{}, false
 	}
+}
+
+func (c *wireCursor) literal(text string) bool {
+	end := c.position + len(text)
+	if end > len(c.data) || c.strict && string(c.data[c.position:end]) != text {
+		return false
+	}
+	c.position = end
+	return true
 }

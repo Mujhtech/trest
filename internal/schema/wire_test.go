@@ -78,6 +78,8 @@ var scalarWireSchemas = []struct {
 	name string
 	spec string
 }{
+	{"unconstrained string", `{"type":"string"}`},
+	{"nullable string", `{"type":["string","null"]}`},
 	{"string constraints", `{"type":"string","minLength":2,"maxLength":8,"pattern":"^[^!]+$","enum":["Ada","é🎉","��"]}`},
 	{"nullable integer", `{"type":["integer","null"],"minimum":-9223372036854775808,"maximum":18446744073709551615}`},
 	{"numeric enum", `{"type":"number","enum":[0.1,1,18446744073709551615]}`},

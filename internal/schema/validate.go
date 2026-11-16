@@ -441,23 +441,7 @@ func validateValue(n *node, value any, path string, violations *[]Violation) {
 			add("type", "value must be a string")
 			return
 		}
-		length := utf8.RuneCountInString(str)
-		if n.MinLength != nil && length < *n.MinLength || n.MaxLength != nil && length > *n.MaxLength {
-			add("length", "string has an invalid length")
-		}
-		if n.compiledPattern != nil && !n.compiledPattern.MatchString(str) {
-			add("pattern", "string does not match the required pattern")
-		}
-		if n.Format == "date-time" {
-			if _, err := time.Parse(time.RFC3339Nano, str); err != nil {
-				add("format", "value must be an RFC3339 timestamp")
-			}
-		}
-		if n.ContentEncoding == "base64" {
-			if _, err := base64.StdEncoding.Strict().DecodeString(str); err != nil {
-				add("format", "value must be base64 encoded")
-			}
-		}
+		validateStringConstraints(n, str, path, violations)
 	case "boolean":
 		if _, ok := value.(bool); !ok {
 			add("type", "value must be a boolean")
@@ -511,6 +495,51 @@ func validateValue(n *node, value any, path string, violations *[]Violation) {
 		}
 	default:
 		add("type", "unsupported schema type")
+	}
+}
+
+func hasStringChecks(n *node) bool {
+	return len(n.Enum) > 0 || n.MinLength != nil || n.MaxLength != nil || n.compiledPattern != nil || n.Format != "" || n.ContentEncoding != ""
+}
+
+// validateStringValue is used only when the compiled node and runtime value are
+// both strings. Comparing cached string enum members directly avoids boxing the
+// value into an interface, including on the common unconstrained wire path.
+func validateStringValue(n *node, str, path string, violations *[]Violation) {
+	if len(n.Enum) > 0 {
+		matched := false
+		for _, member := range n.enumValues {
+			if allowed, ok := member.scalar.(string); ok && allowed == str {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			*violations = append(*violations, Violation{path, "enum", "value must be an allowed choice"})
+		}
+	}
+	validateStringConstraints(n, str, path, violations)
+}
+
+func validateStringConstraints(n *node, str, path string, violations *[]Violation) {
+	if n.MinLength != nil || n.MaxLength != nil {
+		length := utf8.RuneCountInString(str)
+		if n.MinLength != nil && length < *n.MinLength || n.MaxLength != nil && length > *n.MaxLength {
+			*violations = append(*violations, Violation{path, "length", "string has an invalid length"})
+		}
+	}
+	if n.compiledPattern != nil && !n.compiledPattern.MatchString(str) {
+		*violations = append(*violations, Violation{path, "pattern", "string does not match the required pattern"})
+	}
+	if n.Format == "date-time" {
+		if _, err := time.Parse(time.RFC3339Nano, str); err != nil {
+			*violations = append(*violations, Violation{path, "format", "value must be an RFC3339 timestamp"})
+		}
+	}
+	if n.ContentEncoding == "base64" {
+		if _, err := base64.StdEncoding.Strict().DecodeString(str); err != nil {
+			*violations = append(*violations, Violation{path, "format", "value must be base64 encoded"})
+		}
 	}
 }
 

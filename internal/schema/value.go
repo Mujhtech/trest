@@ -23,6 +23,7 @@ type valuePlan struct {
 	node   *node
 	path   string
 	kind   reflect.Kind
+	checks bool
 	fields []valueField
 }
 type valueField struct {
@@ -43,7 +44,13 @@ func (v *Validator) ForType(t reflect.Type) *ValueValidator {
 }
 
 func compileValuePlan(t reflect.Type, n *node, path string, depth int) *valuePlan {
-	if t == nil || depth > 128 || HasCustomCodec(t) || n.reference != nil || len(n.AnyOf) > 0 {
+	if t == nil || t == reflect.TypeFor[json.Number]() || depth > 128 || HasCustomCodec(t) || n.reference != nil || len(n.AnyOf) > 0 {
+		return nil
+	}
+	// Later Go toolchains can recognize additional encoding interfaces. Keep
+	// method-bearing types on encoding/json's path without depending on those
+	// newer interfaces in the Go 1.23 core.
+	if t.NumMethod() != 0 || reflect.PointerTo(t).NumMethod() != 0 {
 		return nil
 	}
 	typ, nullable := nodeType(n)
@@ -56,14 +63,17 @@ func compileValuePlan(t reflect.Type, n *node, path string, depth int) *valuePla
 		if typ != "string" {
 			return nil
 		}
+		p.checks = hasStringChecks(n)
 	case reflect.Bool:
 		if typ != "boolean" {
 			return nil
 		}
+		p.checks = len(n.Enum) > 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		if typ != "integer" {
 			return nil
 		}
+		p.checks = integerTypeNeedsChecks(t, n)
 	case reflect.Struct:
 		if typ != "object" || n.additional != nil || len(n.Enum) != 0 {
 			return nil
@@ -81,9 +91,24 @@ func compileValuePlan(t reflect.Type, n *node, path string, depth int) *valuePla
 			if f.PkgPath != "" || f.Tag.Get("json") == "-" {
 				continue
 			}
-			name, options, _ := strings.Cut(f.Tag.Get("json"), ",")
+			name, options, hasOptions := strings.Cut(f.Tag.Get("json"), ",")
 			if name == "" {
 				name = f.Name
+			}
+			// Generate rejects unsupported tags, but ForType also accepts an
+			// independently compiled schema. Do not infer native encoding for
+			// options such as string/omitzero, or names encoding/json ignores.
+			if !validName(name) {
+				return nil
+			}
+			omitEmpty := false
+			if hasOptions {
+				for _, option := range strings.Split(options, ",") {
+					if option != "omitempty" {
+						return nil
+					}
+					omitEmpty = true
+				}
 			}
 			child, ok := n.Properties[name]
 			if !ok || seen[name] {
@@ -94,7 +119,12 @@ func compileValuePlan(t reflect.Type, n *node, path string, depth int) *valuePla
 			if plan == nil {
 				return nil
 			}
-			p.fields = append(p.fields, valueField{index: i, omitEmpty: strings.Contains(","+options+",", ",omitempty,"), required: required[name], plan: plan})
+			// Native fields always have the declared JSON type. Keep only
+			// checks that can reject a value, including required+omitempty.
+			// A struct is never omitted by encoding/json's omitempty rule.
+			if plan.checks || omitEmpty && required[name] && f.Type.Kind() != reflect.Struct {
+				p.fields = append(p.fields, valueField{index: i, omitEmpty: omitEmpty, required: required[name], plan: plan})
+			}
 		}
 		if len(seen) != len(n.Properties) {
 			return nil
@@ -104,10 +134,39 @@ func compileValuePlan(t reflect.Type, n *node, path string, depth int) *valuePla
 				return nil
 			}
 		}
+		p.checks = len(p.fields) > 0
 	default:
 		return nil
 	}
 	return p
+}
+
+// Generated integer bounds include the native type's own range. Those bounds
+// cannot reject a value already stored in that Go type; narrower constraints
+// and enums still need runtime checks. Unsigned magnitudes cover MinInt64 and
+// MaxUint64 without rounding through floating point or overflowing int64.
+func integerTypeNeedsChecks(t reflect.Type, n *node) bool {
+	if len(n.Enum) > 0 {
+		return true
+	}
+	minimum := numberValue{integer: true}
+	maximum := numberValue{integer: true, magnitude: ^uint64(0) >> (64 - t.Bits())}
+	if t.Kind() >= reflect.Int && t.Kind() <= reflect.Int64 {
+		minimum.negative = true
+		minimum.magnitude = uint64(1) << (t.Bits() - 1)
+		maximum.magnitude = minimum.magnitude - 1
+	}
+	return n.minimumValue != nil && compareNumber(&minimum, n.minimumValue) < 0 ||
+		n.maximumValue != nil && compareNumber(&maximum, n.maximumValue) > 0
+}
+
+// AlwaysValid reports whether the registered Go type alone proves that every
+// value matches this schema. Callers may use it before boxing a value only when
+// they already know its exact type, as the generic operation handle does. Wire
+// validation and application validation/authorization must still run. Custom
+// codecs and encoding-sensitive shapes never receive this proof.
+func (v *ValueValidator) AlwaysValid() bool {
+	return v != nil && v.plan != nil && !v.plan.checks
 }
 
 // Validate checks the exact typed value, including custom codec output when a
@@ -127,8 +186,26 @@ func (v *ValueValidator) Validate(value any) ([]Violation, error) {
 		}
 		return v.wire.Validate(data)
 	}
+	return v.validateNative(rv), nil
+}
+
+// ValidateNative checks an exact typed value without boxing it for the JSON
+// fallback. The boolean reports whether a native plan handled the value; false
+// requires the caller to use Validate, including its type and codec errors.
+// The reflected value is read only and its containing object is not retained.
+func (v *ValueValidator) ValidateNative(value reflect.Value) ([]Violation, bool) {
+	if v == nil || v.plan == nil || !value.IsValid() || value.Type() != v.typ {
+		return nil, false
+	}
+	return v.validateNative(value), true
+}
+
+func (v *ValueValidator) validateNative(value reflect.Value) []Violation {
+	if !v.plan.checks {
+		return nil
+	}
 	var violations []Violation
-	v.plan.validate(rv, &violations)
+	v.plan.validate(value, &violations)
 	if len(violations) > 1 {
 		sort.SliceStable(violations, func(i, j int) bool {
 			if violations[i].Path == violations[j].Path {
@@ -137,7 +214,7 @@ func (v *ValueValidator) Validate(value any) ([]Violation, error) {
 			return violations[i].Path < violations[j].Path
 		})
 	}
-	return violations, nil
+	return violations
 }
 
 func (p *valuePlan) validate(value reflect.Value, violations *[]Violation) {
@@ -160,7 +237,7 @@ func (p *valuePlan) validate(value reflect.Value, violations *[]Violation) {
 			// encoding/json replaces each invalid UTF-8 sequence with U+FFFD.
 			text = string([]rune(text))
 		}
-		validateValue(p.node, text, p.path, violations)
+		validateStringValue(p.node, text, p.path, violations)
 	case reflect.Bool:
 		validateValue(p.node, value.Bool(), p.path, violations)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
