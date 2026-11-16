@@ -1,0 +1,22 @@
+golangci-lint run ./...; root: 0 issues (verified separately)
+
+adapters/mcp
+0 issues.
+
+adapters/postgres
+0 issues.
+
+adapters/websocket
+0 issues.
+
+adapters/jwt
+0 issues.
+
+adapters/otel
+0 issues.
+
+experiments/adoption
+0 issues.
+
+Final root rerun after benchmark fixtures and resolver regressions: 0 issues.
+Final gofmt -l .: no files.

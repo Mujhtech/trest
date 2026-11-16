@@ -1,0 +1,39 @@
+go version go1.23.12 darwin/arm64
+
+Checking .
+?   	trest.local/trest/cmd/existing-handler	[no test files]
+?   	trest.local/trest/cmd/invoices	[no test files]
+?   	trest.local/trest/cmd/trest-demo	[no test files]
+ok  	trest.local/trest	1.788s
+ok  	trest.local/trest/aitool	1.552s
+ok  	trest.local/trest/check	1.549s
+ok  	trest.local/trest/clientgen	2.181s
+ok  	trest.local/trest/cmd/trest	1.812s
+ok  	trest.local/trest/contract	1.529s
+?   	trest.local/trest/internal/example/server	[no test files]
+?   	trest.local/trest/internal/openapischema	[no test files]
+ok  	trest.local/trest/examples/invoices	1.705s
+ok  	trest.local/trest/httpadapter	1.758s
+ok  	trest.local/trest/inspect	1.700s
+ok  	trest.local/trest/internal/docsui	1.650s
+ok  	trest.local/trest/internal/example/existinghandler	1.525s
+ok  	trest.local/trest/internal/example/invoiceapi	1.589s
+ok  	trest.local/trest/internal/example/invoices	(cached)
+ok  	trest.local/trest/internal/schema	1.588s
+ok  	trest.local/trest/internal/webinput	1.682s
+ok  	trest.local/trest/job	1.648s
+ok  	trest.local/trest/operation	1.679s
+ok  	trest.local/trest/plugins/cookie	(cached)
+ok  	trest.local/trest/plugins/cors	1.628s
+ok  	trest.local/trest/plugins/schedule	1.521s
+ok  	trest.local/trest/plugins/static	1.563s
+ok  	trest.local/trest/scenario	(cached)
+ok  	trest.local/trest/telemetry	2.061s
+
+Checking adapters/websocket
+?   	trest.local/trest/adapters/websocket/cmd/echo	[no test files]
+ok  	trest.local/trest/adapters/websocket	1.679s
+
+Checking adapters/jwt
+?   	trest.local/trest/adapters/jwt/cmd/demo	[no test files]
+ok  	trest.local/trest/adapters/jwt	2.015s
