@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/mujhtech/trest/internal/invocationctx"
 	"github.com/mujhtech/trest/operation"
 )
 
@@ -16,7 +17,7 @@ func RequestID(ctx context.Context) string { return operation.CorrelationID(ctx)
 // It fails outside an HTTP request or after the response has started. Request
 // context values should be used on the request goroutine, not after it returns.
 func SetHeader(ctx context.Context, name, value string) error {
-	state, _ := ctx.Value(requestStateKey{}).(*requestState)
+	state, _ := invocationctx.RequestState(ctx).(*requestState)
 	if state == nil || state.writer.ResponseWriter == nil {
 		return errors.New("trest: HTTP response unavailable")
 	}
@@ -40,7 +41,7 @@ func SetCookie(ctx context.Context, cookie *http.Cookie) error {
 	if err := cookie.Valid(); err != nil {
 		return err
 	}
-	state, _ := ctx.Value(requestStateKey{}).(*requestState)
+	state, _ := invocationctx.RequestState(ctx).(*requestState)
 	if state == nil || state.writer.ResponseWriter == nil {
 		return errors.New("trest: HTTP response unavailable")
 	}

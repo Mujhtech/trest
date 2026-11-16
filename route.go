@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mujhtech/trest/internal/invocationctx"
 	"github.com/mujhtech/trest/internal/schema"
 	"github.com/mujhtech/trest/internal/webinput"
 	"github.com/mujhtech/trest/operation"
@@ -427,10 +428,35 @@ func (r *Route[I, O]) mount(b *builder, s scope) (err error) {
 	if err != nil {
 		return err
 	}
-	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		value, cleanup, err := plan.Decode(w, req, s.maxBody)
-		if cleanup != nil {
-			defer cleanup()
+	write := func(w http.ResponseWriter, req *http.Request, ctx context.Context, out O) error {
+		return writeOutput(w, req, ctx, info, out, s.maxOutput)
+	}
+	if !isReply && !isTyped && !isEvents {
+		if compiled := compileJSONOutput[O](info, s.maxOutput); compiled != nil {
+			write = compiled
+		}
+	}
+	// Ordinary outputs use only the method and request fields while writing.
+	// Keeping the invocation context explicit avoids a second request copy after
+	// authentication. Read-only binding preserves requests retained by callbacks.
+	readOnly := !isReply && !isTyped && !isEvents && plan.CanDecodeReadOnly()
+	decode := plan.DecodeInto
+	if readOnly {
+		decode = plan.DecodeIntoReadOnly
+	}
+	emptyInput := !plan.HasBindings()
+	serve := contextRouteFunc(func(w http.ResponseWriter, req *http.Request, ctx context.Context) {
+		var in I
+		var err error
+		// With no bindings, a fresh zero input is already complete. Only skip
+		// decoding a demonstrably empty request; arbitrary readers still need
+		// probing even when their reported Content-Length is zero or unknown.
+		if !emptyInput || req.URL.RawQuery != "" || req.Body != nil && req.Body != http.NoBody || req.ContentLength > s.maxBody {
+			var cleanup func()
+			cleanup, err = decode(w, req, s.maxBody, &in)
+			if cleanup != nil {
+				defer cleanup()
+			}
 		}
 		if err != nil {
 			status := 0
@@ -438,30 +464,32 @@ func (r *Route[I, O]) mount(b *builder, s scope) (err error) {
 			if errors.As(err, &bindingErr) {
 				status = bindingErr.Status
 			}
-			writeError(w, req, s, err, status)
+			writeErrorContext(w, req, ctx, s, err, status)
 			return
 		}
-		in, ok := value.Interface().(I)
-		if !ok {
-			writeError(w, req, s, errors.New("input type mismatch"), 0)
-			return
-		}
-		out, err := handle.Invoke(req.Context(), in)
+		out, err := handle.Invoke(ctx, in)
 		if err != nil {
-			writeError(w, req, s, err, 0)
+			writeErrorContext(w, req, ctx, s, err, 0)
 			return
 		}
-		if err = writeOutput(w, req, info, out, s.maxOutput); err != nil {
-			if state, _ := req.Context().Value(requestStateKey{}).(*requestState); state != nil {
+		if err = write(w, req, ctx, out); err != nil {
+			state, _ := invocationctx.RequestState(ctx).(*requestState)
+			if state != nil {
 				state.err = err
 			}
-			if state, _ := req.Context().Value(requestStateKey{}).(*requestState); state != nil && state.writer.status == 0 {
-				writeError(w, req, s, err, 0)
+			if state != nil && state.writer.status == 0 {
+				writeErrorContext(w, req, ctx, s, err, 0)
 			} else {
 				panic(http.ErrAbortHandler)
 			}
 		}
 	})
+	var handler http.Handler = serve
+	if !readOnly {
+		// Native response callbacks require an actual request carrying the
+		// authenticated transport context; form parsing may mutate that request.
+		handler = http.HandlerFunc(serve.ServeHTTP)
+	}
 	if err = b.add(r.method, info.Path, wrapRoute(s, info, handler)); err != nil {
 		return err
 	}

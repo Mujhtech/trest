@@ -13,7 +13,10 @@ import (
 	"path"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/mujhtech/trest/internal/jsonoutput"
 )
 
 // Reply is a native HTTP response for files, HTML, redirects, or streaming.
@@ -227,7 +230,7 @@ func SSE(send func(context.Context, *EventWriter) error) Reply {
 	})
 }
 
-func writeOutput(w http.ResponseWriter, r *http.Request, info RouteInfo, value any, maxBytes int64) error {
+func writeOutput(w http.ResponseWriter, r *http.Request, ctx context.Context, info RouteInfo, value any, maxBytes int64) error {
 	if events, ok := value.(typedEventStream); ok {
 		value = events.eventReply(info.streamValidator)
 	}
@@ -288,7 +291,7 @@ func writeOutput(w http.ResponseWriter, r *http.Request, info RouteInfo, value a
 		if int64(len(text)) > maxBytes {
 			return errors.New("trest: response exceeds size limit")
 		}
-		w.Header().Set("Content-Type", info.ContentType+"; charset=utf-8")
+		setResponseContentTypeContext(w, ctx, responseContentType(info.ContentType))
 		w.WriteHeader(info.Status)
 		if r.Method == "HEAD" {
 			return nil
@@ -303,10 +306,64 @@ func writeOutput(w http.ResponseWriter, r *http.Request, info RouteInfo, value a
 	if int64(len(data)) > maxBytes {
 		return errors.New("trest: response exceeds size limit")
 	}
-	w.Header().Set("Content-Type", info.ContentType+"; charset=utf-8")
+	setResponseContentTypeContext(w, ctx, responseContentType(info.ContentType))
 	w.WriteHeader(info.Status)
 	if r.Method != "HEAD" {
 		_, err = w.Write(data)
 	}
 	return err
+}
+
+type outputBuffer struct{ bytes []byte }
+
+// compileJSONOutput prepares a serializer only for types whose JSON behavior is
+// completely described by native fields. Its pool is owned by this route. Values
+// are serialized on every call; only immutable field names are pre-encoded.
+func compileJSONOutput[O any](info RouteInfo, maxBytes int64) func(http.ResponseWriter, *http.Request, context.Context, O) error {
+	if info.ContentType != "application/json" || info.Status == 204 || info.Status == 304 {
+		return nil
+	}
+	plan := jsonoutput.New(reflect.TypeFor[O]())
+	if plan == nil {
+		return nil
+	}
+	pool := &sync.Pool{New: func() any { return &outputBuffer{bytes: make([]byte, 0, 256)} }}
+	contentType := responseContentType(info.ContentType)
+	return func(w http.ResponseWriter, r *http.Request, ctx context.Context, out O) error {
+		buffer := pool.Get().(*outputBuffer)
+		defer func() {
+			// Keep small response storage, not unusually large application data.
+			if cap(buffer.bytes) > 32<<10 {
+				buffer.bytes = nil
+			}
+			pool.Put(buffer)
+		}()
+		buffer.bytes = plan.Append(buffer.bytes[:0], reflect.ValueOf(&out).Elem())
+		if int64(len(buffer.bytes)) > maxBytes {
+			return errors.New("trest: response exceeds size limit")
+		}
+		setResponseContentTypeContext(w, ctx, contentType)
+		w.WriteHeader(info.Status)
+		if r.Method == "HEAD" {
+			return nil
+		}
+		// ResponseWriter follows io.Writer's contract: it must not retain p.
+		// The pool is returned only after the complete write (including panic).
+		_, err := w.Write(buffer.bytes)
+		return err
+	}
+}
+
+func responseContentType(contentType string) string {
+	// Ordinary JSON and text routes use immutable header values. Avoid allocating
+	// the same concatenated string on every response while keeping other media
+	// types on the existing formatting path.
+	switch contentType {
+	case "application/json":
+		return "application/json; charset=utf-8"
+	case "text/plain":
+		return "text/plain; charset=utf-8"
+	default:
+		return contentType + "; charset=utf-8"
+	}
 }

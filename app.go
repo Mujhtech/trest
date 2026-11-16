@@ -5,8 +5,6 @@ package trest
 import (
 	"bufio"
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,6 +17,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mujhtech/trest/internal/correlation"
+	"github.com/mujhtech/trest/internal/invocationctx"
+	"github.com/mujhtech/trest/internal/randomid"
+	"github.com/mujhtech/trest/internal/spanreserve"
 	"github.com/mujhtech/trest/operation"
 )
 
@@ -45,6 +47,7 @@ type scope struct {
 	guards             []func(context.Context, Principal) error
 	errorMap           func(context.Context, error) error
 	after              []func(Event)
+	observed           bool
 	maxBody, maxOutput int64
 }
 
@@ -306,6 +309,9 @@ func Observe(observer operation.Observer) Component {
 		}
 		b.registryOptions = append(b.registryOptions, operation.WithObserver(observer))
 		b.app.registry = operation.NewRegistry(nil, b.registryOptions...)
+		// A typed nil observer also needs no reserved request storage; the
+		// registry may disable it, in which case invocations allocate normally.
+		s.observed = observer != nil
 		return nil
 	}}
 }
@@ -509,29 +515,96 @@ func (b *builder) installOptions() error {
 }
 
 type requestState struct {
-	context.Context
-	requestID string
-	err       error
-	writer    responseWriter
+	correlation.Context
+	span              spanreserve.Reservation
+	invocation        any
+	err               error
+	writer            responseWriter
+	requestIDHeader   [1]string
+	contentTypeHeader [1]string
+	contentTypeSet    bool
 }
-type requestStateKey struct{}
+
+// Request callbacks may retain the request as well as its context. Keep their
+// shallow clone in one unpooled allocation; typed routes without callbacks need
+// only the smaller state object.
+type requestEnvelope struct {
+	state   requestState
+	request http.Request
+}
+
+// Only unobserved typed routes reserve an invocation frame. Keep it beside the
+// unpooled request state, choosing compact timer storage for ordinary incoming
+// requests and lazy deadline storage for Background/TODO parents. Other custom
+// noncancelable parents can safely fall back at invocation time.
+type requestWithInvocation[F any] struct {
+	state      requestState
+	invocation F
+}
+
+type envelopeWithInvocation[F any] struct {
+	envelope   requestEnvelope
+	invocation F
+}
+
+func newInvocationRequest[F any](direct bool) (*requestState, *requestEnvelope, any) {
+	if direct {
+		storage := new(requestWithInvocation[F])
+		return &storage.state, nil, &storage.invocation
+	}
+	storage := new(envelopeWithInvocation[F])
+	return &storage.envelope.state, &storage.envelope, &storage.invocation
+}
+
+type contextRouteHandler interface {
+	http.Handler
+	ServeContext(http.ResponseWriter, *http.Request, context.Context)
+}
+
+type contextRouteFunc func(http.ResponseWriter, *http.Request, context.Context)
+
+func (f contextRouteFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(w, r, r.Context())
+}
+
+func (f contextRouteFunc) ServeContext(w http.ResponseWriter, r *http.Request, ctx context.Context) {
+	f(w, r, ctx)
+}
 
 func (s *requestState) Value(key any) any {
-	if _, ok := key.(requestStateKey); ok {
+	if spanreserve.IsKey(key) {
+		return &s.span
+	}
+	if invocationctx.IsSlotKey(key) {
+		return s.invocation
+	}
+	if invocationctx.IsRequestStateKey(key) {
 		return s
 	}
 	return s.Context.Value(key)
 }
 
 func wrapRoute(s scope, info RouteInfo, h http.Handler) http.Handler {
+	ids := randomid.New()
+	typed, hasContext := h.(contextRouteHandler)
+	direct := hasContext && len(s.middleware) == 0 && s.authenticate == nil
+	reserveInvocation := hasContext && !s.observed
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		if s.authenticate != nil {
 			p, err := s.authenticate(r)
 			if err != nil {
 				writeError(w, r, s, err, 0)
 				return
 			}
-			r = r.WithContext(operation.WithPrincipal(r.Context(), p))
+			ctx = operation.WithPrincipal(r.Context(), p)
+			if !hasContext {
+				r = r.WithContext(ctx)
+			}
+		}
+		if hasContext {
+			typed.ServeContext(w, r, ctx)
+			return
 		}
 		h.ServeHTTP(w, r)
 	})
@@ -545,15 +618,43 @@ func wrapRoute(s scope, info RouteInfo, h http.Handler) http.Handler {
 		if len(s.after) > 0 {
 			started = time.Now()
 		}
-		var bytes [16]byte
-		if _, err := rand.Read(bytes[:]); err != nil {
+		id, span, err := ids.Pair()
+		if err != nil {
 			http.Error(w, "internal error", 500)
 			return
 		}
-		id := hex.EncodeToString(bytes[:])
-		state := &requestState{Context: operation.WithCorrelationID(r.Context(), id), requestID: id, writer: responseWriter{ResponseWriter: w}}
-		r = r.WithContext(state)
-		w.Header().Set("X-Request-ID", id)
+		var state *requestState
+		var envelope *requestEnvelope
+		var invocation any
+		if reserveInvocation {
+			// Comparing these concrete standard contexts avoids calling a custom
+			// parent's Done or Deadline before binding and panic recovery begin.
+			switch r.Context() {
+			case context.Background(), context.TODO():
+				state, envelope, invocation = newInvocationRequest[invocationctx.Slot](direct)
+			default:
+				state, envelope, invocation = newInvocationRequest[invocationctx.TimerSlot](direct)
+			}
+		} else if direct {
+			state = new(requestState)
+		} else {
+			envelope = new(requestEnvelope)
+			state = &envelope.state
+		}
+		// Every branch above allocates fresh zeroed storage. Assign only live
+		// fields, avoiding a second whole-state copy and its GC write barriers.
+		state.Context = correlation.New(r.Context(), id)
+		state.span = spanreserve.New(span)
+		state.invocation = invocation
+		state.writer.ResponseWriter = w
+		state.requestIDHeader[0] = id
+		if envelope != nil {
+			envelope.request = *r.WithContext(state)
+			r = &envelope.request
+		}
+		// Keep header storage in this request's unpooled state. Unlike a shared
+		// static slice, it remains safe for middleware to retain or modify.
+		w.Header()["X-Request-Id"] = state.requestIDHeader[:]
 		recorded := &state.writer
 		defer func() {
 			abort := false
@@ -562,7 +663,11 @@ func wrapRoute(s scope, info RouteInfo, h http.Handler) http.Handler {
 					state.err = operation.NewError(operation.Internal, "", errors.New("application panic"))
 				}
 				if recorded.status == 0 {
-					writeError(recorded, r, s, state.err, 0)
+					recoveryContext := r.Context()
+					if direct {
+						recoveryContext = state
+					}
+					writeErrorContext(recorded, r, recoveryContext, s, state.err, 0)
 				} else {
 					abort = true
 				}
@@ -581,8 +686,30 @@ func wrapRoute(s scope, info RouteInfo, h http.Handler) http.Handler {
 				panic(http.ErrAbortHandler)
 			}
 		}()
-		wrapped.ServeHTTP(recorded, r)
+		if direct {
+			typed.ServeContext(recorded, r, state)
+		} else {
+			wrapped.ServeHTTP(recorded, r)
+		}
 	})
+}
+
+// setResponseContentType uses request-owned storage for the first assignment.
+// Later assignments allocate a fresh slice, preserving Header.Set semantics for
+// middleware retaining the previous value slice. No storage crosses requests.
+func setResponseContentType(w http.ResponseWriter, r *http.Request, value string) {
+	setResponseContentTypeContext(w, r.Context(), value)
+}
+
+func setResponseContentTypeContext(w http.ResponseWriter, ctx context.Context, value string) {
+	state, _ := invocationctx.RequestState(ctx).(*requestState)
+	if state == nil || state.contentTypeSet {
+		w.Header().Set("Content-Type", value)
+		return
+	}
+	state.contentTypeHeader[0] = value
+	state.contentTypeSet = true
+	w.Header()["Content-Type"] = state.contentTypeHeader[:]
 }
 
 type responseWriter struct {
@@ -638,9 +765,13 @@ func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 }
 
 func writeError(w http.ResponseWriter, r *http.Request, s scope, err error, status int) {
-	state, _ := r.Context().Value(requestStateKey{}).(*requestState)
+	writeErrorContext(w, r, r.Context(), s, err, status)
+}
+
+func writeErrorContext(w http.ResponseWriter, r *http.Request, ctx context.Context, s scope, err error, status int) {
+	state, _ := invocationctx.RequestState(ctx).(*requestState)
 	if s.errorMap != nil {
-		if mapped := mapRequestError(s.errorMap, r.Context(), err); mapped != nil {
+		if mapped := mapRequestError(s.errorMap, ctx, err); mapped != nil {
 			err = mapped
 		}
 	}
@@ -656,7 +787,7 @@ func writeError(w http.ResponseWriter, r *http.Request, s scope, err error, stat
 	}
 	id := ""
 	if state != nil {
-		id = state.requestID
+		id = correlation.ID(&state.Context)
 	}
 	body := struct {
 		Code      operation.Code         `json:"code"`
