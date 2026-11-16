@@ -8,8 +8,6 @@ package httpadapter
 
 import (
 	"bytes"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,6 +19,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/mujhtech/trest/internal/randomid"
 	"github.com/mujhtech/trest/operation"
 )
 
@@ -69,6 +68,7 @@ type Adapter struct {
 	mux      *http.ServeMux
 	registry *operation.Registry
 	opts     Options
+	ids      *randomid.Generator
 
 	mu         sync.Mutex
 	hasServed  bool
@@ -96,7 +96,7 @@ func New(mux *http.ServeMux, registry *operation.Registry, opts Options) (*Adapt
 	if opts.MaxOutputBytes < 256 {
 		return nil, errors.New("httpadapter: max output bytes must be at least 256")
 	}
-	return &Adapter{mux: mux, registry: registry, opts: opts, operations: make(map[string]bool)}, nil
+	return &Adapter{mux: mux, registry: registry, opts: opts, ids: randomid.New(), operations: make(map[string]bool)}, nil
 }
 
 // Bind installs a typed operation handler. It returns startup errors for invalid
@@ -139,12 +139,12 @@ func Bind[I, O any](a *Adapter, h *operation.Handle[I, O], route Route) error {
 		a.mu.Lock()
 		a.hasServed = true
 		a.mu.Unlock()
-		requestID, err := newRequestID()
+		requestID, err := a.ids.ID()
 		if err != nil {
 			a.writeError(w, r, "", operation.NewError(operation.Internal, "", err), 0)
 			return
 		}
-		w.Header().Set("X-Request-ID", requestID)
+		w.Header().Set("X-Request-Id", requestID)
 		r = r.WithContext(operation.WithCorrelationID(r.Context(), requestID))
 		// Nothing is written until invocation and serialization finish, so a panic
 		// in application code can be converted into one redacted response.
@@ -352,12 +352,4 @@ func writeJSON(w http.ResponseWriter, r *http.Request, status int, data []byte) 
 		// A transport write error cannot be replaced with a second JSON response.
 		_, _ = w.Write(data)
 	}
-}
-
-func newRequestID() (string, error) {
-	var value [16]byte
-	if _, err := rand.Read(value[:]); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(value[:]), nil
 }
