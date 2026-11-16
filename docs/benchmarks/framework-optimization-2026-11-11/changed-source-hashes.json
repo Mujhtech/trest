@@ -1,0 +1,102 @@
+[
+  {
+    "path": "response.go",
+    "before": "ba33ad0de9b89f36a50b196e6a6a4d9303fef2ca45c470508cb787b838eec55e",
+    "after": "d81802ceeacae4e0429a86d89902308aa03038d45452b3e8743229003a0c4340"
+  },
+  {
+    "path": "route.go",
+    "before": "2d3fd6a20fff1b8b9fb96182e1a5b2ffc03e3784ab7f942d1ba9509a28a80d9c",
+    "after": "8f73077e50396defa298f7e45e4ac2144156b980a745caff97b2a15c38a1ca3d"
+  },
+  {
+    "path": "app.go",
+    "before": "2dd59f00d8e1b7685d076c1813b1e7636869d5a7cf2c86951cf40d0965bc2a38",
+    "after": "863997b8a99fb0352d6cc6555099f21f3b2b79a2a96fa6f32419cd5263c96322"
+  },
+  {
+    "path": "operation/registry.go",
+    "before": "c05e27d2733500deadf715a95bdc234d6a7d081bf94680e9d2172cce67fce2d5",
+    "after": "d6f741285e9b2fe9136180e03d6d4cd2d764fdcf883789c48d8b31b09dacc62a"
+  },
+  {
+    "path": "operation/observe.go",
+    "before": "cd2d8d49e7329181e619e7de44482997e1b35dcc3900f3bb1bb03f2e17a4879c",
+    "after": "91bba5e1d92b629ea17daa9ee90bbed6cd63d672caf0d3066609afbf226f8ace"
+  },
+  {
+    "path": "operation/json.go",
+    "before": "9ccdf60f3e2a0de65a1244f8daa706a09312d612bac07004130187a2f9ea84d0",
+    "after": "eb8e83a457de49ee8ea3bfecb764561fa6cdeb718b3324d0d417f2850c325345"
+  },
+  {
+    "path": "httpadapter/httpadapter.go",
+    "before": "d51cb34d5c345f0f3143fa58e2aec5219a4be4cf367e9a36a3a6ff20a7fe091f",
+    "after": "7875704faa099690c28284dd1364897c937d20320db5e355459c7893eeb5db0b"
+  },
+  {
+    "path": "internal/webinput/decode_test.go",
+    "before": "1113072a7cce0a94a284ddd28fbecc8517338b8d7253ebb524712923cbe2135f",
+    "after": "c317624511eadfca44f45980316ab91c7b1c98910dc61b7170bd701792c9dc35"
+  },
+  {
+    "path": "internal/webinput/codec_test.go",
+    "before": "48a83e34e6fc75e6deb3f7c3a3f446f3942bad27dccc4f29aff9ec92c344d1f0",
+    "after": "3bae55432a447e3ce32b1a31c3fee1ab479da241fc02a7ea079e7f98810a41c7"
+  },
+  {
+    "path": "internal/webinput/plan_test.go",
+    "before": "4440aef1d0fefdbab2ee8b14ad929de3212603407814750612ac32918af70bf7",
+    "after": "e7f858ddf175b5a011b922a89707f72e9f8b6cd9b23c66d4cc514bf58d5c4e14"
+  },
+  {
+    "path": "internal/webinput/decode.go",
+    "before": "466b1a5acf517937054c849a9430ba88020676bc72a3f313b40dab5277c21475",
+    "after": "8b727f45cb25ac129a9bb0d42d5a69ed37195af79d91a5b5175d8c7d3d7774fd"
+  },
+  {
+    "path": "internal/schema/wire_test.go",
+    "before": "80847c56117015bb8b2875291e629f3be33ce3976e04984b583f35e2cc89b6ae",
+    "after": "25ba85f685f32738a498fb669066088b8e00b3faf756a13e8f99f284a4ff7d99"
+  },
+  {
+    "path": "internal/schema/value_test.go",
+    "before": "162984664a9f248fa5667010f61aa8b0b49d10fb8996df00f0bae8a5df6d2f22",
+    "after": "70d6325da4c5fee975ccf1e01ad7d0aa74dd7d926751d2e86d50998fde3b636a"
+  },
+  {
+    "path": "internal/schema/wire.go",
+    "before": "3baed399834980393849945f036fbf13b7a47bbf90c5c90d740bcb8b4856f64c",
+    "after": "b9635187f83395c05e982a01225bcf11717a2bc81bfda509563565ef929b1a1e"
+  },
+  {
+    "path": "internal/schema/validate.go",
+    "before": "846102ba838e677b04195d00d2e83ab1743a7452f854d1c90d040ec1752328ab",
+    "after": "681bf6194df2eb32eb1ae106a7abce52948ae9f4b1806b3033c9905a8846a56b"
+  },
+  {
+    "path": "internal/schema/value.go",
+    "before": "5a9c12bc414317e308c892c5a5ace5aa237258461d88e731a383a38b507f6443",
+    "after": "73899d1be1ad84f00d0685ed463ffe1bc01c96592bb256e88de08f735eec52f0"
+  },
+  {
+    "path": "internal/randomid/randomid.go",
+    "before": null,
+    "after": "f85e11ac6bd498b66d1f5e27e30613ab4200597d0411f7df79e4f50eec048c3e"
+  },
+  {
+    "path": "internal/randomid/randomid_bench_test.go",
+    "before": null,
+    "after": "f9fc33f2652fdfa36e308127a399b66b139971e6e6a741a14e132cead4292994"
+  },
+  {
+    "path": "internal/randomid/randomid_test.go",
+    "before": null,
+    "after": "cec323116ee572ed900cd68382023b1e812029d42a3d263251714fb50469326f"
+  },
+  {
+    "path": "operation/registry_validation_test.go",
+    "before": null,
+    "after": "429586fb7fb1415c1945c092294148a7c77bd7cd2d70c705105fdc9a5b3585e1"
+  }
+]

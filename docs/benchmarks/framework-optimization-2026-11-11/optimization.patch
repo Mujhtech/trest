@@ -1,0 +1,1379 @@
+--- a/response.go
++++ b/response.go
+@@ -288,7 +288,7 @@
+ 		if int64(len(text)) > maxBytes {
+ 			return errors.New("trest: response exceeds size limit")
+ 		}
+-		w.Header().Set("Content-Type", info.ContentType+"; charset=utf-8")
++		w.Header().Set("Content-Type", responseContentType(info.ContentType))
+ 		w.WriteHeader(info.Status)
+ 		if r.Method == "HEAD" {
+ 			return nil
+@@ -303,10 +303,24 @@
+ 	if int64(len(data)) > maxBytes {
+ 		return errors.New("trest: response exceeds size limit")
+ 	}
+-	w.Header().Set("Content-Type", info.ContentType+"; charset=utf-8")
++	w.Header().Set("Content-Type", responseContentType(info.ContentType))
+ 	w.WriteHeader(info.Status)
+ 	if r.Method != "HEAD" {
+ 		_, err = w.Write(data)
+ 	}
+ 	return err
+ }
++
++func responseContentType(contentType string) string {
++	// Ordinary JSON and text routes use immutable header values. Avoid allocating
++	// the same concatenated string on every response while keeping other media
++	// types on the existing formatting path.
++	switch contentType {
++	case "application/json":
++		return "application/json; charset=utf-8"
++	case "text/plain":
++		return "text/plain; charset=utf-8"
++	default:
++		return contentType + "; charset=utf-8"
++	}
++}
+--- a/route.go
++++ b/route.go
+@@ -428,7 +428,8 @@
+ 		return err
+ 	}
+ 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+-		value, cleanup, err := plan.Decode(w, req, s.maxBody)
++		var in I
++		cleanup, err := plan.DecodeInto(w, req, s.maxBody, &in)
+ 		if cleanup != nil {
+ 			defer cleanup()
+ 		}
+@@ -439,11 +440,6 @@
+ 				status = bindingErr.Status
+ 			}
+ 			writeError(w, req, s, err, status)
+-			return
+-		}
+-		in, ok := value.Interface().(I)
+-		if !ok {
+-			writeError(w, req, s, errors.New("input type mismatch"), 0)
+ 			return
+ 		}
+ 		out, err := handle.Invoke(req.Context(), in)
+--- a/app.go
++++ b/app.go
+@@ -5,8 +5,6 @@
+ import (
+ 	"bufio"
+ 	"context"
+-	"crypto/rand"
+-	"encoding/hex"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
+@@ -19,6 +17,7 @@
+ 	"sync"
+ 	"time"
+ 
++	"github.com/mujhtech/trest/internal/randomid"
+ 	"github.com/mujhtech/trest/operation"
+ )
+ 
+@@ -524,6 +523,7 @@
+ }
+ 
+ func wrapRoute(s scope, info RouteInfo, h http.Handler) http.Handler {
++	ids := randomid.New()
+ 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		if s.authenticate != nil {
+ 			p, err := s.authenticate(r)
+@@ -545,15 +545,16 @@
+ 		if len(s.after) > 0 {
+ 			started = time.Now()
+ 		}
+-		var bytes [16]byte
+-		if _, err := rand.Read(bytes[:]); err != nil {
++		id, err := ids.ID()
++		if err != nil {
+ 			http.Error(w, "internal error", 500)
+ 			return
+ 		}
+-		id := hex.EncodeToString(bytes[:])
+ 		state := &requestState{Context: operation.WithCorrelationID(r.Context(), id), requestID: id, writer: responseWriter{ResponseWriter: w}}
+ 		r = r.WithContext(state)
+-		w.Header().Set("X-Request-ID", id)
++		// Header.Set canonicalizes ID to Id. Use the canonical spelling to
++		// avoid allocating that same header name on every request.
++		w.Header().Set("X-Request-Id", id)
+ 		recorded := &state.writer
+ 		defer func() {
+ 			abort := false
+--- a/operation/registry.go
++++ b/operation/registry.go
+@@ -15,6 +15,7 @@
+ 	"sync"
+ 	"time"
+ 
++	"github.com/mujhtech/trest/internal/randomid"
+ 	"github.com/mujhtech/trest/internal/schema"
+ )
+ 
+@@ -75,6 +76,7 @@
+ 	operations     map[string]Metadata
+ 	bindings       map[string]binding
+ 	observer       Observer
++	ids            *randomid.Generator
+ 	maxInputBytes  int
+ 	maxOutputBytes int
+ 	authorizer     Authorizer
+@@ -120,6 +122,7 @@
+ 	}
+ 	return &Registry{
+ 		operations: make(map[string]Metadata), bindings: make(map[string]binding), authorizer: authorizer,
++		ids:      randomid.New(),
+ 		observer: c.observer, maxInputBytes: c.maxInputBytes, maxOutputBytes: c.maxOutputBytes,
+ 		defaultTimeout: c.defaultTimeout, maxConcurrent: c.maxConcurrent,
+ 		configError: c.configError,
+@@ -356,7 +359,7 @@
+ 		return zero, NewError(Internal, "nil invocation context", nil)
+ 	}
+ 	var traceErr error
+-	ctx, traceErr = newInvocationTrace(ctx)
++	ctx, traceErr = r.newInvocationTrace(ctx)
+ 	if traceErr != nil {
+ 		return zero, NewError(Internal, "could not start invocation", traceErr)
+ 	}
+@@ -462,15 +465,20 @@
+ }
+ 
+ func (h *Handle[I, O]) validate(ctx context.Context, in I) error {
+-	violations, err := h.inputValueValidator.Validate(in)
+-	if err != nil {
+-		return NewError(InvalidInput, "input cannot be encoded as JSON", err)
+-	}
+-	if err = inputViolations(violations); err != nil {
+-		return err
++	// Registration can prove an unconstrained native type always matches its
++	// schema. Check that proof before boxing the value; wire and user-defined
++	// validation remain independent and are never skipped by it.
++	if !h.inputValueValidator.AlwaysValid() {
++		violations, err := h.inputValueValidator.Validate(in)
++		if err != nil {
++			return NewError(InvalidInput, "input cannot be encoded as JSON", err)
++		}
++		if err = inputViolations(violations); err != nil {
++			return err
++		}
+ 	}
+ 	if h.definition.Validate != nil {
+-		if err = h.definition.Validate(ctx, in); err != nil {
++		if err := h.definition.Validate(ctx, in); err != nil {
+ 			if ctx.Err() != nil {
+ 				return invocationError(ctx.Err())
+ 			}
+@@ -527,12 +535,14 @@
+ 		}
+ 		return zero, err
+ 	}
+-	issues, err := h.outputValidator.Validate(out)
+-	if err != nil {
+-		return zero, NewError(Internal, "output cannot be encoded as JSON", err)
+-	}
+-	if len(issues) > 0 {
+-		return zero, NewError(Internal, "output does not match the operation contract", err)
++	if !h.outputValidator.AlwaysValid() {
++		issues, err := h.outputValidator.Validate(out)
++		if err != nil {
++			return zero, NewError(Internal, "output cannot be encoded as JSON", err)
++		}
++		if len(issues) > 0 {
++			return zero, NewError(Internal, "output does not match the operation contract", err)
++		}
+ 	}
+ 	if h.definition.ValidateOutput != nil {
+ 		if err = h.definition.ValidateOutput(ctx, out); err != nil {
+--- a/operation/observe.go
++++ b/operation/observe.go
+@@ -2,8 +2,6 @@
+ 
+ import (
+ 	"context"
+-	"crypto/rand"
+-	"encoding/hex"
+ 	"time"
+ )
+ 
+@@ -125,13 +123,12 @@
+ 	}
+ }
+ 
+-func newInvocationTrace(ctx context.Context) (context.Context, error) {
++func (r *Registry) newInvocationTrace(ctx context.Context) (context.Context, error) {
+ 	parent := TraceFromContext(ctx)
+-	var bytes [16]byte
+-	if _, err := rand.Read(bytes[:]); err != nil {
++	id, err := r.ids.ID()
++	if err != nil {
+ 		return ctx, err
+ 	}
+-	id := hex.EncodeToString(bytes[:])
+ 	traceID := parent.TraceID
+ 	if traceID == "" {
+ 		traceID = id
+--- a/operation/json.go
++++ b/operation/json.go
+@@ -126,7 +126,7 @@
+ 	if ctx == nil {
+ 		return nil, NewError(Internal, "nil invocation context", nil)
+ 	}
+-	ctx, err = newInvocationTrace(ctx)
++	ctx, err = r.newInvocationTrace(ctx)
+ 	if err != nil {
+ 		return nil, NewError(Internal, "could not start invocation", err)
+ 	}
+--- a/httpadapter/httpadapter.go
++++ b/httpadapter/httpadapter.go
+@@ -8,8 +8,6 @@
+ 
+ import (
+ 	"bytes"
+-	"crypto/rand"
+-	"encoding/hex"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
+@@ -21,6 +19,7 @@
+ 	"strings"
+ 	"sync"
+ 
++	"github.com/mujhtech/trest/internal/randomid"
+ 	"github.com/mujhtech/trest/operation"
+ )
+ 
+@@ -69,6 +68,7 @@
+ 	mux      *http.ServeMux
+ 	registry *operation.Registry
+ 	opts     Options
++	ids      *randomid.Generator
+ 
+ 	mu         sync.Mutex
+ 	hasServed  bool
+@@ -96,7 +96,7 @@
+ 	if opts.MaxOutputBytes < 256 {
+ 		return nil, errors.New("httpadapter: max output bytes must be at least 256")
+ 	}
+-	return &Adapter{mux: mux, registry: registry, opts: opts, operations: make(map[string]bool)}, nil
++	return &Adapter{mux: mux, registry: registry, opts: opts, ids: randomid.New(), operations: make(map[string]bool)}, nil
+ }
+ 
+ // Bind installs a typed operation handler. It returns startup errors for invalid
+@@ -139,12 +139,12 @@
+ 		a.mu.Lock()
+ 		a.hasServed = true
+ 		a.mu.Unlock()
+-		requestID, err := newRequestID()
++		requestID, err := a.ids.ID()
+ 		if err != nil {
+ 			a.writeError(w, r, "", operation.NewError(operation.Internal, "", err), 0)
+ 			return
+ 		}
+-		w.Header().Set("X-Request-ID", requestID)
++		w.Header().Set("X-Request-Id", requestID)
+ 		r = r.WithContext(operation.WithCorrelationID(r.Context(), requestID))
+ 		// Nothing is written until invocation and serialization finish, so a panic
+ 		// in application code can be converted into one redacted response.
+@@ -353,11 +353,3 @@
+ 		_, _ = w.Write(data)
+ 	}
+ }
+-
+-func newRequestID() (string, error) {
+-	var value [16]byte
+-	if _, err := rand.Read(value[:]); err != nil {
+-		return "", err
+-	}
+-	return hex.EncodeToString(value[:]), nil
+-}
+--- a/internal/webinput/decode_test.go
++++ b/internal/webinput/decode_test.go
+@@ -10,6 +10,7 @@
+ 	"testing"
+ 
+ 	"github.com/mujhtech/trest/internal/webinput"
++	"github.com/mujhtech/trest/operation"
+ )
+ 
+ func TestBodylessRequestChecksTrustReaderNotContentLength(t *testing.T) {
+@@ -60,3 +61,108 @@
+ 		})
+ 	}
+ }
++
++func TestDecodeIntoMatchesFreshDecode(t *testing.T) {
++	t.Parallel()
++	type input struct {
++		ID      int           `path:"id" min:"1"`
++		Limit   int           `query:"limit" default:"10" min:"1" max:"20"`
++		Price   *codecDecimal `query:"price"`
++		Token   *string       `header:"X-Token"`
++		Ignored string        `json:"-"`
++		Body    struct {
++			Name string `json:"name" minLength:"2"`
++		} `body:"json"`
++	}
++	plan, err := webinput.Compile(reflect.TypeFor[input](), "POST", "/items/{id}")
++	if err != nil {
++		t.Fatal(err)
++	}
++	for _, tc := range []struct {
++		name, query, body, media string
++		max                      int64
++		status                   int
++	}{
++		{name: "exact media type", body: `{"name":"Ada"}`, media: "application/json", max: 128},
++		{name: "MIME case and whitespace", body: `{"name":"Ada"}`, media: "Application/JSON ; Charset=\"UTF-8\"", max: 128},
++		{name: "explicit fields and codec", query: "limit=5&price=12.50", body: `{"name":"Ada"}`, media: "application/json", max: 128},
++		{name: "wrong charset", body: `{"name":"Ada"}`, media: "application/json;charset=utf-16", max: 128, status: 415},
++		{name: "malformed MIME parameter", body: `{"name":"Ada"}`, media: "application/json;charset", max: 128, status: 415},
++		{name: "duplicate MIME parameter", body: `{"name":"Ada"}`, media: "application/json;charset=utf-8;charset=utf-16", max: 128, status: 415},
++		{name: "malformed query", query: "limit=%zz", body: `{"name":"Ada"}`, media: "application/json", max: 128, status: 400},
++		{name: "unknown query", query: "tenant=other", body: `{"name":"Ada"}`, media: "application/json", max: 128, status: 400},
++		{name: "duplicate query", query: "limit=5&limit=6", body: `{"name":"Ada"}`, media: "application/json", max: 128, status: 400},
++		{name: "codec error", query: "price=13.37", body: `{"name":"Ada"}`, media: "application/json", max: 128, status: 400},
++		{name: "codec panic", query: "price=66.66", body: `{"name":"Ada"}`, media: "application/json", max: 128, status: 400},
++		{name: "wire constraint", body: `{"name":"A"}`, media: "application/json", max: 128, status: 400},
++		{name: "duplicate body field", body: `{"name":"Ada","name":"Eve"}`, media: "application/json", max: 128, status: 400},
++		{name: "unknown body field", body: `{"name":"Ada","admin":true}`, media: "application/json", max: 128, status: 400},
++		{name: "trailing value", body: `{"name":"Ada"} {}`, media: "application/json", max: 128, status: 400},
++		{name: "bounded reader", body: `{"name":"Ada"}`, media: "application/json", max: 8, status: 413},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			request := func() *http.Request {
++				r := httptest.NewRequest("POST", "/items/1?"+tc.query, strings.NewReader(tc.body))
++				r.SetPathValue("id", "1")
++				r.Header.Set("Content-Type", tc.media)
++				// A false declared length must not bypass bounded body reads.
++				r.ContentLength = 0
++				return r
++			}
++			want, cleanup, wantErr := plan.Decode(httptest.NewRecorder(), request(), tc.max)
++			defer cleanup()
++			stale := "must not survive reuse"
++			got := input{ID: 99, Limit: 99, Token: &stale, Ignored: stale}
++			cleanup, gotErr := plan.DecodeInto(httptest.NewRecorder(), request(), tc.max, &got)
++			defer cleanup()
++			if tc.status == 0 {
++				if wantErr != nil || gotErr != nil {
++					t.Fatalf("Decode=%v, DecodeInto=%v", wantErr, gotErr)
++				}
++				if !reflect.DeepEqual(got, want.Interface()) {
++					t.Fatalf("DecodeInto=%+v, Decode=%+v", got, want.Interface())
++				}
++				return
++			}
++			var wantBinding, gotBinding *webinput.Error
++			if !errors.As(wantErr, &wantBinding) || !errors.As(gotErr, &gotBinding) || wantBinding.Status != tc.status || gotBinding.Status != tc.status {
++				t.Fatalf("Decode=%v, DecodeInto=%v; want status %d", wantErr, gotErr, tc.status)
++			}
++			wantPublic, gotPublic := operation.PublicError(wantErr), operation.PublicError(gotErr)
++			if wantPublic.Code != gotPublic.Code || wantPublic.Message != gotPublic.Message || !reflect.DeepEqual(wantPublic.Fields, gotPublic.Fields) {
++				t.Fatalf("public errors differ: Decode=%+v, DecodeInto=%+v", wantPublic, gotPublic)
++			}
++		})
++	}
++}
++
++func TestDecodeIntoRejectsWrongDestination(t *testing.T) {
++	t.Parallel()
++	type input struct{ Name string }
++	plan, err := webinput.Compile(reflect.TypeFor[input](), "POST", "/")
++	if err != nil {
++		t.Fatal(err)
++	}
++	var absent *input
++	for _, tc := range []struct {
++		name   string
++		target any
++	}{
++		{name: "nil"},
++		{name: "typed nil", target: absent},
++		{name: "not a pointer", target: input{}},
++		{name: "wrong type", target: new(string)},
++		{name: "pointer to pointer", target: &absent},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			r := httptest.NewRequest("POST", "/", strings.NewReader(`{"Name":"Ada"}`))
++			r.Header.Set("Content-Type", "application/json")
++			cleanup, err := plan.DecodeInto(httptest.NewRecorder(), r, 128, tc.target)
++			defer cleanup()
++			var bindingErr *webinput.Error
++			if !errors.As(err, &bindingErr) || bindingErr.Status != 500 || operation.CodeOf(err) != operation.Internal {
++				t.Fatalf("unexpected configuration error: %v", err)
++			}
++		})
++	}
++}
+--- a/internal/webinput/codec_test.go
++++ b/internal/webinput/codec_test.go
+@@ -120,12 +120,12 @@
+ 	r.Header.Set("Content-Type", "application/json")
+ 	r.Header.Set("X-ID", uuid)
+ 	r.AddCookie(&http.Cookie{Name: "id", Value: uuid})
+-	value, cleanup, err := plan.Decode(httptest.NewRecorder(), r, 4096)
++	var got input
++	cleanup, err := plan.DecodeInto(httptest.NewRecorder(), r, 4096, &got)
+ 	defer cleanup()
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	got := value.Interface().(input)
+ 	if len(got.Aliases) != 2 || got.ID != got.Header || got.ID != got.Cookie || got.ID != got.Body.ID || got.ID != got.Aliases[0] || got.Price == nil || *got.Price != "12.50" || got.Body.Amount != "9.99" {
+ 		t.Fatalf("custom values were not decoded: %+v", got)
+ 	}
+--- a/internal/webinput/plan_test.go
++++ b/internal/webinput/plan_test.go
+@@ -232,12 +232,12 @@
+ 	}
+ 	r := httptest.NewRequest("POST", "/upload", bytes.NewReader(body.Bytes()))
+ 	r.Header.Set("Content-Type", writer.FormDataContentType())
+-	v, cleanup, err := plan.Decode(httptest.NewRecorder(), r, 1<<20)
+-	defer cleanup()
+-	if err != nil {
+-		t.Fatal(err)
+-	}
+-	got := v.Interface().(input)
++	var got input
++	cleanup, err := plan.DecodeInto(httptest.NewRecorder(), r, 1<<20, &got)
++	defer cleanup()
++	if err != nil {
++		t.Fatal(err)
++	}
+ 	if got.Name != "receipt" || got.File.Filename != "receipt.txt" {
+ 		t.Fatalf("decoded=%+v", got)
+ 	}
+--- a/internal/webinput/decode.go
++++ b/internal/webinput/decode.go
+@@ -34,11 +34,38 @@
+ // cleanup must run after the handler, including when Decode fails. Uploaded files
+ // remain usable until cleanup. The returned value has the exact compiled type.
+ func (p *Plan) Decode(w http.ResponseWriter, r *http.Request, maxBytes int64) (reflect.Value, func(), error) {
++	if p == nil || r == nil || maxBytes <= 0 {
++		return reflect.Value{}, func() {}, bindingConfigurationError()
++	}
++	return p.decode(w, r, maxBytes, reflect.New(p.typ).Elem())
++}
++
++// DecodeInto binds into a pointer to the compiled input type. It clears the
++// target before binding, preserving Decode's fresh-value semantics when callers
++// reuse a destination. The value must not be used when an error is returned.
++// This lets typed routes avoid copying a reflect.Value into a second interface
++// allocation before invocation. Parsing, validation, and cleanup are shared with
++// Decode, including original-wire checks before custom decoders execute.
++func (p *Plan) DecodeInto(w http.ResponseWriter, r *http.Request, maxBytes int64, target any) (func(), error) {
++	if p == nil || r == nil || maxBytes <= 0 {
++		return func() {}, bindingConfigurationError()
++	}
++	value := reflect.ValueOf(target)
++	if value.Kind() != reflect.Pointer || value.IsNil() || value.Elem().Type() != p.typ {
++		return func() {}, bindingConfigurationError()
++	}
++	out := value.Elem()
++	out.SetZero()
++	_, cleanup, err := p.decode(w, r, maxBytes, out)
++	return cleanup, err
++}
++
++func bindingConfigurationError() error {
++	return &Error{Status: 500, Err: operation.NewError(operation.Internal, "invalid request binding configuration", nil)}
++}
++
++func (p *Plan) decode(w http.ResponseWriter, r *http.Request, maxBytes int64, out reflect.Value) (reflect.Value, func(), error) {
+ 	cleanup := func() {}
+-	if p == nil || r == nil || maxBytes <= 0 {
+-		return reflect.Value{}, cleanup, &Error{Status: 500, Err: operation.NewError(operation.Internal, "invalid request binding configuration", nil)}
+-	}
+-	out := reflect.New(p.typ).Elem()
+ 	fail := func(err error) (reflect.Value, func(), error) { return reflect.Value{}, cleanup, err }
+ 	var query url.Values
+ 	if r.URL.RawQuery != "" {
+@@ -214,7 +241,13 @@
+ }
+ 
+ func requireContentType(r *http.Request, want string) error {
+-	kind, parameters, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
++	contentType := r.Header.Get("Content-Type")
++	// The exact common value has no parameters to inspect. All other spellings,
++	// charsets, and malformed values retain the standard MIME parser's behavior.
++	if contentType == want {
++		return nil
++	}
++	kind, parameters, err := mime.ParseMediaType(contentType)
+ 	if err != nil || kind != want {
+ 		return inputError(415, "/body", "content_type", "request Content-Type is not supported", err)
+ 	}
+--- a/internal/schema/wire_test.go
++++ b/internal/schema/wire_test.go
+@@ -78,6 +78,8 @@
+ 	name string
+ 	spec string
+ }{
++	{"unconstrained string", `{"type":"string"}`},
++	{"nullable string", `{"type":["string","null"]}`},
+ 	{"string constraints", `{"type":"string","minLength":2,"maxLength":8,"pattern":"^[^!]+$","enum":["Ada","é🎉","��"]}`},
+ 	{"nullable integer", `{"type":["integer","null"],"minimum":-9223372036854775808,"maximum":18446744073709551615}`},
+ 	{"numeric enum", `{"type":"number","enum":[0.1,1,18446744073709551615]}`},
+--- a/internal/schema/value_test.go
++++ b/internal/schema/value_test.go
+@@ -2,6 +2,7 @@
+ 
+ import (
+ 	"encoding/json"
++	"errors"
+ 	"math"
+ 	"reflect"
+ 	"testing"
+@@ -33,6 +34,203 @@
+ }
+ func (valueJSONCodec) TrestSchema() json.RawMessage {
+ 	return json.RawMessage(`{"type":"string","minLength":2}`)
++}
++
++type unconstrainedValueCodec string
++
++func (v unconstrainedValueCodec) MarshalJSON() ([]byte, error) {
++	if v == "fail" {
++		return nil, errors.New("codec rejected value")
++	}
++	return json.Marshal(string(v))
++}
++func (v *unconstrainedValueCodec) UnmarshalJSON(data []byte) error {
++	var text string
++	if err := json.Unmarshal(data, &text); err != nil {
++		return err
++	}
++	*v = unconstrainedValueCodec(text)
++	return nil
++}
++func (unconstrainedValueCodec) TrestSchema() json.RawMessage {
++	return json.RawMessage(`{"type":"string"}`)
++}
++
++type nativeValueModel struct {
++	Text     string `json:"text"`
++	Signed   int64  `json:"signed"`
++	Unsigned uint64 `json:"unsigned"`
++	Flag     bool   `json:"flag"`
++	Optional string `json:"optional,omitempty"`
++	Nested   struct {
++		Text string `json:"text"`
++	} `json:"nested,omitempty" required:"true"`
++}
++
++func TestValueValidatorStaticTypeProof(t *testing.T) {
++	cases := []struct {
++		name  string
++		value any
++		proof bool
++	}{
++		{"empty struct", struct{}{}, true},
++		{"invalid UTF8 string", "\xff\xfe東京", true},
++		{"named string", fastNamedString("named"), true},
++		{"bool", false, true},
++		{"minimum signed integer", int64(math.MinInt64), true},
++		{"maximum unsigned integer", uint64(math.MaxUint64), true},
++		{"native int8 bounds", struct {
++			Value int8 `json:"value" min:"-128" max:"127"`
++		}{math.MinInt8}, true},
++		{"native uint8 bounds", struct {
++			Value uint8 `json:"value" min:"0" max:"255"`
++		}{math.MaxUint8}, true},
++		{"native model", nativeValueModel{}, true},
++		{"ignored codec", struct {
++			Value unconstrainedValueCodec `json:"-"`
++		}{"fail"}, true},
++		{"required omitted string", struct {
++			Value string `json:"value,omitempty" required:"true"`
++		}{}, false},
++		{"required omitted bool", struct {
++			Value bool `json:"value,omitempty" required:"true"`
++		}{}, false},
++		{"required omitted integer", struct {
++			Value int `json:"value,omitempty" required:"true"`
++		}{}, false},
++		{"required present string", struct {
++			Value string `json:"value,omitempty" required:"true"`
++		}{"present"}, false},
++		{"optional minimum length", struct {
++			Value string `json:"value,omitempty" minLength:"2"`
++		}{"x"}, false},
++		{"maximum length zero", struct {
++			Value string `json:"value" maxLength:"0"`
++		}{"x"}, false},
++		{"string enum", struct {
++			Value string `json:"value" enum:"yes,no"`
++		}{"other"}, false},
++		{"boolean enum", struct {
++			Value bool `json:"value" enum:"true"`
++		}{}, false},
++		{"pattern", struct {
++			Value string `json:"value" pattern:"^yes$"`
++		}{"no"}, false},
++		{"minimum integer", struct {
++			Value int64 `json:"value" min:"-1"`
++		}{math.MinInt64}, false},
++		{"maximum integer", struct {
++			Value uint64 `json:"value" max:"1"`
++		}{math.MaxUint64}, false},
++		{"float", 1.0, false},
++		{"nonfinite float", math.NaN(), false},
++		{"pointer", new(int), false},
++		{"slice", []int{}, false},
++		{"map", map[string]int{}, false},
++		{"custom codec", unconstrainedValueCodec("valid"), false},
++		{"failing custom codec", unconstrainedValueCodec("fail"), false},
++		{"nested custom codec", struct {
++			Value unconstrainedValueCodec `json:"value"`
++		}{"fail"}, false},
++	}
++	for _, test := range cases {
++		t.Run(test.name, func(t *testing.T) {
++			spec, err := Generate(reflect.TypeOf(test.value))
++			if err != nil {
++				t.Fatal(err)
++			}
++			wire, err := Compile(spec)
++			if err != nil {
++				t.Fatal(err)
++			}
++			typed := wire.ForType(reflect.TypeOf(test.value))
++			if typed.AlwaysValid() != test.proof {
++				t.Fatalf("static type proof: got %t, want %t", typed.AlwaysValid(), test.proof)
++			}
++			compareTypedValidation(t, test.value, typed.plan != nil)
++			if _, err := typed.Validate(nil); err == nil {
++				t.Fatal("static type proof accepted a value of another type")
++			}
++		})
++	}
++}
++
++func TestValueValidatorArbitrarySchemaKeepsJSONTagSemantics(t *testing.T) {
++	const integerField = `{"type":"object","properties":{"x":{"type":"integer"}},"required":["x"],"additionalProperties":false}`
++	cases := []struct {
++		name  string
++		spec  string
++		value any
++	}{
++		{"string option", integerField, struct {
++			Value int `json:"x,string"`
++		}{1}},
++		{"omitzero option", integerField, struct {
++			Value int `json:"x,omitzero"`
++		}{}},
++		{"unknown option", integerField, struct {
++			Value int `json:"x,future"` //nolint:staticcheck // Deliberately verify fallback for an unknown JSON option.
++		}{1}},
++		{"invalid field name", `{"type":"object","properties":{"x\\y":{"type":"integer"}},"required":["x\\y"],"additionalProperties":false}`, struct {
++			Value int `json:"x\\y"` //nolint:staticcheck // Deliberately verify encoding/json's invalid-name fallback.
++		}{1}},
++		{"invalid symbol name", `{"type":"object","properties":{"🎉":{"type":"integer"}},"required":["🎉"],"additionalProperties":false}`, struct {
++			Value int `json:"🎉"`
++		}{1}},
++	}
++	for _, test := range cases {
++		t.Run(test.name, func(t *testing.T) {
++			wire, err := Compile(json.RawMessage(test.spec))
++			if err != nil {
++				t.Fatal(err)
++			}
++			typed := wire.ForType(reflect.TypeOf(test.value))
++			if typed.plan != nil || typed.AlwaysValid() {
++				t.Fatal("encoding-sensitive JSON tag received a static plan")
++			}
++			data, err := json.Marshal(test.value)
++			if err != nil {
++				t.Fatal(err)
++			}
++			want, wantErr := wire.Validate(data)
++			got, gotErr := typed.Validate(test.value)
++			if (wantErr != nil) != (gotErr != nil) || !reflect.DeepEqual(want, got) {
++				t.Fatalf("data=%s wire=%+v/%v typed=%+v/%v", data, want, wantErr, got, gotErr)
++			}
++		})
++	}
++}
++
++func FuzzValueValidatorStaticTypeProof(f *testing.F) {
++	f.Add("hello", int64(1), uint64(2), true, "optional", "nested")
++	f.Add("\xff\xfe東京", int64(math.MinInt64), uint64(math.MaxUint64), false, "", "\xed\xa0\x80")
++	spec, err := Generate(reflect.TypeFor[nativeValueModel]())
++	if err != nil {
++		f.Fatal(err)
++	}
++	wire, err := Compile(spec)
++	if err != nil {
++		f.Fatal(err)
++	}
++	typed := wire.ForType(reflect.TypeFor[nativeValueModel]())
++	if !typed.AlwaysValid() {
++		f.Fatal("native model lacks static type proof")
++	}
++	f.Fuzz(func(t *testing.T, text string, signed int64, unsigned uint64, flag bool, optional, nested string) {
++		value := nativeValueModel{Text: text, Signed: signed, Unsigned: unsigned, Flag: flag, Optional: optional}
++		value.Nested.Text = nested
++		data, err := json.Marshal(value)
++		if err != nil {
++			t.Fatal(err)
++		}
++		issues, err := wire.Validate(data)
++		if err != nil || len(issues) != 0 {
++			t.Fatalf("static type proof disagrees with encoded contract: %s issues=%+v err=%v", data, issues, err)
++		}
++		if issues, err := typed.Validate(value); err != nil || len(issues) != 0 {
++			t.Fatalf("typed validation: issues=%+v err=%v", issues, err)
++		}
++	})
+ }
+ 
+ type typedCheckModel struct {
+--- a/internal/schema/wire.go
++++ b/internal/schema/wire.go
+@@ -208,8 +208,18 @@
+ func (v wireValue) validate(n *node, path string, violations *[]Violation) {
+ 	switch v.kind {
+ 	case 's':
++		if typ, _ := nodeType(n); typ == "string" {
++			if hasStringChecks(n) {
++				validateStringValue(n, string(v.raw), path, violations)
++			}
++			return
++		}
+ 		validateValue(n, string(v.raw), path, violations)
+ 	case 'd':
++		if typ, _ := nodeType(n); typ == "string" {
++			validateStringValue(n, v.text, path, violations)
++			return
++		}
+ 		validateValue(n, v.text, path, violations)
+ 	case 'n':
+ 		validateValue(n, json.Number(string(v.raw)), path, violations)
+--- a/internal/schema/validate.go
++++ b/internal/schema/validate.go
+@@ -441,23 +441,7 @@
+ 			add("type", "value must be a string")
+ 			return
+ 		}
+-		length := utf8.RuneCountInString(str)
+-		if n.MinLength != nil && length < *n.MinLength || n.MaxLength != nil && length > *n.MaxLength {
+-			add("length", "string has an invalid length")
+-		}
+-		if n.compiledPattern != nil && !n.compiledPattern.MatchString(str) {
+-			add("pattern", "string does not match the required pattern")
+-		}
+-		if n.Format == "date-time" {
+-			if _, err := time.Parse(time.RFC3339Nano, str); err != nil {
+-				add("format", "value must be an RFC3339 timestamp")
+-			}
+-		}
+-		if n.ContentEncoding == "base64" {
+-			if _, err := base64.StdEncoding.Strict().DecodeString(str); err != nil {
+-				add("format", "value must be base64 encoded")
+-			}
+-		}
++		validateStringConstraints(n, str, path, violations)
+ 	case "boolean":
+ 		if _, ok := value.(bool); !ok {
+ 			add("type", "value must be a boolean")
+@@ -511,6 +495,51 @@
+ 		}
+ 	default:
+ 		add("type", "unsupported schema type")
++	}
++}
++
++func hasStringChecks(n *node) bool {
++	return len(n.Enum) > 0 || n.MinLength != nil || n.MaxLength != nil || n.compiledPattern != nil || n.Format != "" || n.ContentEncoding != ""
++}
++
++// validateStringValue is used only when the compiled node and runtime value are
++// both strings. Comparing cached string enum members directly avoids boxing the
++// value into an interface, including on the common unconstrained wire path.
++func validateStringValue(n *node, str, path string, violations *[]Violation) {
++	if len(n.Enum) > 0 {
++		matched := false
++		for _, member := range n.enumValues {
++			if allowed, ok := member.scalar.(string); ok && allowed == str {
++				matched = true
++				break
++			}
++		}
++		if !matched {
++			*violations = append(*violations, Violation{path, "enum", "value must be an allowed choice"})
++		}
++	}
++	validateStringConstraints(n, str, path, violations)
++}
++
++func validateStringConstraints(n *node, str, path string, violations *[]Violation) {
++	if n.MinLength != nil || n.MaxLength != nil {
++		length := utf8.RuneCountInString(str)
++		if n.MinLength != nil && length < *n.MinLength || n.MaxLength != nil && length > *n.MaxLength {
++			*violations = append(*violations, Violation{path, "length", "string has an invalid length"})
++		}
++	}
++	if n.compiledPattern != nil && !n.compiledPattern.MatchString(str) {
++		*violations = append(*violations, Violation{path, "pattern", "string does not match the required pattern"})
++	}
++	if n.Format == "date-time" {
++		if _, err := time.Parse(time.RFC3339Nano, str); err != nil {
++			*violations = append(*violations, Violation{path, "format", "value must be an RFC3339 timestamp"})
++		}
++	}
++	if n.ContentEncoding == "base64" {
++		if _, err := base64.StdEncoding.Strict().DecodeString(str); err != nil {
++			*violations = append(*violations, Violation{path, "format", "value must be base64 encoded"})
++		}
+ 	}
+ }
+ 
+--- a/internal/schema/value.go
++++ b/internal/schema/value.go
+@@ -23,6 +23,7 @@
+ 	node   *node
+ 	path   string
+ 	kind   reflect.Kind
++	checks bool
+ 	fields []valueField
+ }
+ type valueField struct {
+@@ -56,14 +57,17 @@
+ 		if typ != "string" {
+ 			return nil
+ 		}
++		p.checks = hasStringChecks(n)
+ 	case reflect.Bool:
+ 		if typ != "boolean" {
+ 			return nil
+ 		}
++		p.checks = len(n.Enum) > 0
+ 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+ 		if typ != "integer" {
+ 			return nil
+ 		}
++		p.checks = integerTypeNeedsChecks(t, n)
+ 	case reflect.Struct:
+ 		if typ != "object" || n.additional != nil || len(n.Enum) != 0 {
+ 			return nil
+@@ -81,9 +85,24 @@
+ 			if f.PkgPath != "" || f.Tag.Get("json") == "-" {
+ 				continue
+ 			}
+-			name, options, _ := strings.Cut(f.Tag.Get("json"), ",")
++			name, options, hasOptions := strings.Cut(f.Tag.Get("json"), ",")
+ 			if name == "" {
+ 				name = f.Name
++			}
++			// Generate rejects unsupported tags, but ForType also accepts an
++			// independently compiled schema. Do not infer native encoding for
++			// options such as string/omitzero, or names encoding/json ignores.
++			if !validName(name) {
++				return nil
++			}
++			omitEmpty := false
++			if hasOptions {
++				for _, option := range strings.Split(options, ",") {
++					if option != "omitempty" {
++						return nil
++					}
++					omitEmpty = true
++				}
+ 			}
+ 			child, ok := n.Properties[name]
+ 			if !ok || seen[name] {
+@@ -94,7 +113,12 @@
+ 			if plan == nil {
+ 				return nil
+ 			}
+-			p.fields = append(p.fields, valueField{index: i, omitEmpty: strings.Contains(","+options+",", ",omitempty,"), required: required[name], plan: plan})
++			// Native fields always have the declared JSON type. Keep only
++			// checks that can reject a value, including required+omitempty.
++			// A struct is never omitted by encoding/json's omitempty rule.
++			if plan.checks || omitEmpty && required[name] && f.Type.Kind() != reflect.Struct {
++				p.fields = append(p.fields, valueField{index: i, omitEmpty: omitEmpty, required: required[name], plan: plan})
++			}
+ 		}
+ 		if len(seen) != len(n.Properties) {
+ 			return nil
+@@ -104,10 +128,39 @@
+ 				return nil
+ 			}
+ 		}
++		p.checks = len(p.fields) > 0
+ 	default:
+ 		return nil
+ 	}
+ 	return p
++}
++
++// Generated integer bounds include the native type's own range. Those bounds
++// cannot reject a value already stored in that Go type; narrower constraints
++// and enums still need runtime checks. Unsigned magnitudes cover MinInt64 and
++// MaxUint64 without rounding through floating point or overflowing int64.
++func integerTypeNeedsChecks(t reflect.Type, n *node) bool {
++	if len(n.Enum) > 0 {
++		return true
++	}
++	minimum := numberValue{integer: true}
++	maximum := numberValue{integer: true, magnitude: ^uint64(0) >> (64 - t.Bits())}
++	if t.Kind() >= reflect.Int && t.Kind() <= reflect.Int64 {
++		minimum.negative = true
++		minimum.magnitude = uint64(1) << (t.Bits() - 1)
++		maximum.magnitude = minimum.magnitude - 1
++	}
++	return n.minimumValue != nil && compareNumber(&minimum, n.minimumValue) < 0 ||
++		n.maximumValue != nil && compareNumber(&maximum, n.maximumValue) > 0
++}
++
++// AlwaysValid reports whether the registered Go type alone proves that every
++// value matches this schema. Callers may use it before boxing a value only when
++// they already know its exact type, as the generic operation handle does. Wire
++// validation and application validation/authorization must still run. Custom
++// codecs and encoding-sensitive shapes never receive this proof.
++func (v *ValueValidator) AlwaysValid() bool {
++	return v != nil && v.plan != nil && !v.plan.checks
+ }
+ 
+ // Validate checks the exact typed value, including custom codec output when a
+@@ -126,6 +179,9 @@
+ 			return nil, err
+ 		}
+ 		return v.wire.Validate(data)
++	}
++	if !v.plan.checks {
++		return nil, nil
+ 	}
+ 	var violations []Violation
+ 	v.plan.validate(rv, &violations)
+@@ -160,7 +216,7 @@
+ 			// encoding/json replaces each invalid UTF-8 sequence with U+FFFD.
+ 			text = string([]rune(text))
+ 		}
+-		validateValue(p.node, text, p.path, violations)
++		validateStringValue(p.node, text, p.path, violations)
+ 	case reflect.Bool:
+ 		validateValue(p.node, value.Bool(), p.path, violations)
+ 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+--- /dev/null
++++ b/internal/randomid/randomid.go
+@@ -0,0 +1,62 @@
++// Package randomid generates independent 128-bit request and invocation IDs.
++// Each generator owns its entropy buffer; there is no shared application state.
++package randomid
++
++import (
++	"crypto/rand"
++	"encoding/hex"
++	"io"
++	"sync"
++)
++
++// Generator amortizes calls to crypto/rand without replacing its entropy source.
++// Its zero value is ready to use. A Generator must not be copied after use.
++type Generator struct {
++	mu        sync.Mutex
++	buffer    [256]byte
++	available int
++	// Tests can supply an instance-local source. Production always uses
++	// crypto/rand.Read, including its platform-specific failure semantics.
++	read func([]byte) (int, error)
++}
++
++// New constructs an independent generator without reading entropy or starting
++// a goroutine. Entropy is requested lazily on the first ID and each refill.
++func New() *Generator { return new(Generator) }
++
++// ID returns 32 hexadecimal characters representing fresh 128-bit entropy.
++// The string owns its bytes and remains unchanged after subsequent refills.
++func (g *Generator) ID() (string, error) {
++	var raw [16]byte
++	if err := g.take(&raw); err != nil {
++		return "", err
++	}
++	var encoded [32]byte
++	hex.Encode(encoded[:], raw[:])
++	return string(encoded[:]), nil
++}
++
++func (g *Generator) take(raw *[16]byte) error {
++	g.mu.Lock()
++	defer g.mu.Unlock()
++	if g.available == 0 {
++		read := g.read
++		if read == nil {
++			read = rand.Read
++		}
++		// available remains zero until the entire refill succeeds. A short
++		// read, error, or panic can never expose a partially filled buffer.
++		n, err := read(g.buffer[:])
++		if err != nil {
++			return err
++		}
++		if n != len(g.buffer) {
++			return io.ErrUnexpectedEOF
++		}
++		g.available = len(g.buffer)
++	}
++	start := len(g.buffer) - g.available
++	copy(raw[:], g.buffer[start:start+len(raw)])
++	g.available -= len(raw)
++	return nil
++}
+--- /dev/null
++++ b/internal/randomid/randomid_bench_test.go
+@@ -0,0 +1,70 @@
++package randomid
++
++import (
++	"crypto/rand"
++	"encoding/hex"
++	"runtime"
++	"testing"
++)
++
++func directID() (string, error) {
++	var raw [16]byte
++	if _, err := rand.Read(raw[:]); err != nil {
++		return "", err
++	}
++	return hex.EncodeToString(raw[:]), nil
++}
++
++func BenchmarkID(b *testing.B) {
++	for _, variant := range []struct {
++		name string
++		new  func() func() (string, error)
++	}{
++		{name: "direct", new: func() func() (string, error) { return directID }},
++		{name: "batched", new: func() func() (string, error) { return New().ID }},
++	} {
++		b.Run(variant.name, func(b *testing.B) {
++			generate := variant.new()
++			b.ReportAllocs()
++			b.ResetTimer()
++			var last string
++			for i := 0; i < b.N; i++ {
++				id, err := generate()
++				if err != nil {
++					b.Fatal(err)
++				}
++				last = id
++			}
++			b.StopTimer()
++			runtime.KeepAlive(last)
++		})
++	}
++}
++
++func BenchmarkIDParallel(b *testing.B) {
++	for _, variant := range []struct {
++		name string
++		new  func() func() (string, error)
++	}{
++		{name: "direct", new: func() func() (string, error) { return directID }},
++		{name: "batched", new: func() func() (string, error) { return New().ID }},
++	} {
++		b.Run(variant.name, func(b *testing.B) {
++			generate := variant.new()
++			b.ReportAllocs()
++			b.ResetTimer()
++			b.RunParallel(func(pb *testing.PB) {
++				var last string
++				for pb.Next() {
++					id, err := generate()
++					if err != nil {
++						b.Error(err)
++						return
++					}
++					last = id
++				}
++				runtime.KeepAlive(last)
++			})
++		})
++	}
++}
+--- /dev/null
++++ b/internal/randomid/randomid_test.go
+@@ -0,0 +1,188 @@
++package randomid
++
++import (
++	"encoding/binary"
++	"encoding/hex"
++	"errors"
++	"io"
++	"sync"
++	"testing"
++	"time"
++)
++
++func countingSource() func([]byte) (int, error) {
++	var sequence uint64
++	return func(dst []byte) (int, error) {
++		for offset := 0; offset < len(dst); offset += 16 {
++			sequence++
++			binary.BigEndian.PutUint64(dst[offset:offset+8], sequence)
++			binary.BigEndian.PutUint64(dst[offset+8:offset+16], ^sequence)
++		}
++		return len(dst), nil
++	}
++}
++
++func idSequence(t *testing.T, id string) uint64 {
++	t.Helper()
++	data, err := hex.DecodeString(id)
++	if err != nil || len(data) != 16 {
++		t.Fatalf("invalid 128-bit hexadecimal ID %q: %v", id, err)
++	}
++	sequence := binary.BigEndian.Uint64(data[:8])
++	if binary.BigEndian.Uint64(data[8:]) != ^sequence {
++		t.Fatalf("ID combined bytes from different entropy segments: %q", id)
++	}
++	return sequence
++}
++
++func TestIDRetainsStringsAcrossRefills(t *testing.T) {
++	t.Parallel()
++	g := &Generator{read: countingSource()}
++	var retained []string
++	for range 100 {
++		id, err := g.ID()
++		if err != nil {
++			t.Fatal(err)
++		}
++		retained = append(retained, id)
++	}
++	for index, id := range retained {
++		if got := idSequence(t, id); got != uint64(index+1) {
++			t.Fatalf("retained ID %d changed or reused entropy: got %d", index, got)
++		}
++	}
++}
++
++func TestIDConcurrentCallsConsumeSeparateEntropy(t *testing.T) {
++	t.Parallel()
++	const workers, perWorker = 16, 100
++	g := &Generator{read: countingSource()}
++	results := make(chan string, workers*perWorker)
++	var wg sync.WaitGroup
++	for range workers {
++		wg.Add(1)
++		go func() {
++			defer wg.Done()
++			for range perWorker {
++				id, err := g.ID()
++				if err != nil {
++					t.Error(err)
++					return
++				}
++				results <- id
++			}
++		}()
++	}
++	wg.Wait()
++	close(results)
++	seen := make(map[uint64]bool, workers*perWorker)
++	for id := range results {
++		sequence := idSequence(t, id)
++		if sequence == 0 || sequence > workers*perWorker || seen[sequence] {
++			t.Fatalf("reused or unexpected entropy segment %d", sequence)
++		}
++		seen[sequence] = true
++	}
++	if len(seen) != workers*perWorker {
++		t.Fatalf("got %d IDs, want %d", len(seen), workers*perWorker)
++	}
++}
++
++func TestIDFailedRefillReturnsNoPartialIDAndRetries(t *testing.T) {
++	t.Parallel()
++	failure := errors.New("entropy unavailable")
++	for _, test := range []struct {
++		name string
++		n    int
++		err  error
++		want error
++	}{
++		{name: "error", n: 0, err: failure, want: failure},
++		{name: "partial error", n: 12, err: failure, want: failure},
++		{name: "full buffer with error", n: 256, err: failure, want: failure},
++		{name: "short success", n: 12, want: io.ErrUnexpectedEOF},
++	} {
++		t.Run(test.name, func(t *testing.T) {
++			calls := 0
++			success := countingSource()
++			g := &Generator{read: func(dst []byte) (int, error) {
++				calls++
++				if calls == 1 {
++					for index := range dst {
++						dst[index] = 0xff
++					}
++					return test.n, test.err
++				}
++				return success(dst)
++			}}
++			if id, err := g.ID(); id != "" || !errors.Is(err, test.want) {
++				t.Fatalf("failure returned ID=%q, err=%v", id, err)
++			}
++			id, err := g.ID()
++			if err != nil || idSequence(t, id) != 1 {
++				t.Fatalf("recovery returned ID=%q, err=%v", id, err)
++			}
++		})
++	}
++}
++
++func TestIDPanicDuringRefillUnlocksAndDiscardsPartialBytes(t *testing.T) {
++	t.Parallel()
++	calls := 0
++	success := countingSource()
++	g := &Generator{read: func(dst []byte) (int, error) {
++		calls++
++		if calls == 1 {
++			dst[0] = 0xff
++			panic("test entropy panic")
++		}
++		return success(dst)
++	}}
++	func() {
++		defer func() {
++			if recover() == nil {
++				t.Error("entropy source panic was swallowed")
++			}
++		}()
++		_, _ = g.ID()
++	}()
++	type result struct {
++		id  string
++		err error
++	}
++	finished := make(chan result, 1)
++	go func() {
++		id, err := g.ID()
++		finished <- result{id, err}
++	}()
++	select {
++	case got := <-finished:
++		if got.err != nil || idSequence(t, got.id) != 1 {
++			t.Fatalf("panic recovery returned ID=%q, err=%v", got.id, got.err)
++		}
++	case <-time.After(5 * time.Second):
++		t.Fatal("entropy source panic left generator locked")
++	}
++}
++
++func TestNewAndZeroValueUseIndependentRandomEntropy(t *testing.T) {
++	t.Parallel()
++	var zero Generator
++	seen := make(map[string]bool)
++	for _, generator := range []*Generator{New(), New(), &zero} {
++		for range 32 {
++			id, err := generator.ID()
++			if err != nil {
++				t.Fatal(err)
++			}
++			data, err := hex.DecodeString(id)
++			if err != nil || len(data) != 16 {
++				t.Fatalf("invalid random ID %q: %v", id, err)
++			}
++			if seen[id] || id == "00000000000000000000000000000000" {
++				t.Fatalf("random entropy was reused or uninitialized: %q", id)
++			}
++			seen[id] = true
++		}
++	}
++}
+--- /dev/null
++++ b/operation/registry_validation_test.go
+@@ -0,0 +1,83 @@
++package operation_test
++
++import (
++	"context"
++	"errors"
++	"reflect"
++	"testing"
++
++	"github.com/mujhtech/trest/operation"
++)
++
++// These native types need no runtime structural checks, but application hooks
++// still own their business rules and must run in the normal enforcement order.
++func TestStaticTypeProofPreservesApplicationHooks(t *testing.T) {
++	type input struct {
++		Value string `json:"value"`
++	}
++	type output struct {
++		Value string `json:"value"`
++	}
++	cases := []struct {
++		name   string
++		value  string
++		tenant string
++		code   operation.Code
++		phases []string
++	}{
++		{"input rejection", "invalid", "owner", operation.InvalidInput, []string{"validate"}},
++		{"authorization rejection", "valid", "other", operation.Forbidden, []string{"validate", "authorize"}},
++		{"output rejection", "invalid-output", "owner", operation.Internal, []string{"validate", "authorize", "handler", "validate output"}},
++		{"success", "valid", "owner", "", []string{"validate", "authorize", "handler", "validate output"}},
++	}
++	for _, test := range cases {
++		t.Run(test.name, func(t *testing.T) {
++			var phases []string
++			registry := operation.NewRegistry(nil)
++			handle, err := operation.Register(registry, operation.Definition[input, output]{
++				ID: "native.hooks.v1", Summary: "Native hooks", Access: operation.Permission("write"),
++				Validate: func(_ context.Context, in input) error {
++					phases = append(phases, "validate")
++					if in.Value == "invalid" {
++						return errors.New("business input rejected")
++					}
++					return nil
++				},
++				Authorize: func(_ context.Context, principal operation.Principal, _ input) error {
++					phases = append(phases, "authorize")
++					if principal.TenantID != "owner" {
++						return operation.NewError(operation.Forbidden, "not owner", nil)
++					}
++					return nil
++				},
++				ValidateOutput: func(_ context.Context, out output) error {
++					phases = append(phases, "validate output")
++					if out.Value == "invalid-output" {
++						return errors.New("business output rejected")
++					}
++					return nil
++				},
++			}, func(_ context.Context, in input) (output, error) {
++				phases = append(phases, "handler")
++				return output(in), nil
++			})
++			if err != nil {
++				t.Fatal(err)
++			}
++			if err := registry.Freeze(); err != nil {
++				t.Fatal(err)
++			}
++			ctx := operation.WithPrincipal(context.Background(), operation.Principal{ID: "verified", TenantID: test.tenant})
++			out, err := handle.Invoke(ctx, input{Value: test.value})
++			if operation.CodeOf(err) != test.code || !reflect.DeepEqual(phases, test.phases) {
++				t.Fatalf("code=%s phases=%v, want code=%s phases=%v", operation.CodeOf(err), phases, test.code, test.phases)
++			}
++			if test.code != "" && out != (output{}) {
++				t.Fatalf("rejected invocation exposed output: %+v", out)
++			}
++			if test.code == "" && out.Value != test.value {
++				t.Fatalf("successful output changed: %+v", out)
++			}
++		})
++	}
++}

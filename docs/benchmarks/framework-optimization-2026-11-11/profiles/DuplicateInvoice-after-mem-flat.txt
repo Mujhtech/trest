@@ -1,0 +1,47 @@
+File: after.test
+Type: alloc_objects
+Time: 2026-11-11 15:24:15 WAT
+Showing nodes accounting for 39490552, 100% of 39507149 total
+Dropped 45 nodes (cum <= 197535)
+Showing top 40 nodes out of 67
+      flat  flat%   sum%        cum   cum%
+   5084108 12.87% 12.87%    5084108 12.87%  net/textproto.MIMEHeader.Set (inline)
+   2598158  6.58% 19.45%    3375310  8.54%  context.WithDeadlineCause
+   2482932  6.28% 25.73%    2482932  6.28%  net/http.(*Request).WithContext (inline)
+   2454992  6.21% 31.94%    2454992  6.21%  net/http/httptest.NewRecorder (inline)
+   2413760  6.11% 38.05%    2413760  6.11%  net/http.Header.Clone (inline)
+   1832372  4.64% 42.69%    3517136  8.90%  github.com/mujhtech/trest/experiments/adoption.(*Store).execute
+   1826926  4.62% 47.32%    1826926  4.62%  reflect.unsafe_New
+   1703987  4.31% 51.63%    1703987  4.31%  strings.NewReader (inline)
+   1655686  4.19% 55.82%    1655686  4.19%  bufio.NewReaderSize (inline)
+   1634803  4.14% 59.96%    1634803  4.14%  bytes.Clone (inline)
+   1556575  3.94% 63.90%   18240827 46.17%  github.com/mujhtech/trest.(*Route[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).mount.func6
+   1540141  3.90% 67.80%    1540141  3.90%  github.com/mujhtech/trest/internal/randomid.(*Generator).ID
+    937235  2.37% 70.17%     937235  2.37%  bytes.growSlice
+    897911  2.27% 72.44%   24787055 62.74%  github.com/mujhtech/trest.wrapRoute.func2
+    884789  2.24% 74.68%     884789  2.24%  net/http.MaxBytesReader (inline)
+    877574  2.22% 76.90%     877574  2.22%  net/url.parse
+    851981  2.16% 79.06%   39498744   100%  github.com/mujhtech/trest/experiments/adoption_test.request
+    838041  2.12% 81.18%     838041  2.12%  io.ReadAll
+    835839  2.12% 83.30%    3166176  8.01%  net/http.readRequestLimit
+    835609  2.12% 85.41%     835609  2.12%  github.com/mujhtech/trest/operation.WithCorrelationID (inline)
+    819212  2.07% 87.48%     819212  2.07%  io.NopCloser (inline)
+    777152  1.97% 89.45%     777152  1.97%  time.newTimer
+    770094  1.95% 91.40%     770094  1.95%  github.com/mujhtech/trest/operation.WithTrace (inline)
+    753697  1.91% 93.31%     753697  1.91%  net/textproto.readMIMEHeader
+    737302  1.87% 95.17%    8216955 20.80%  net/http/httptest.NewRequestWithContext
+    731851  1.85% 97.03%     731851  1.85%  github.com/mujhtech/trest/operation.WithPrincipal (inline)
+    699066  1.77% 98.80%     699066  1.77%  net/textproto.(*Reader).ReadLine (inline)
+    458759  1.16%   100%     458759  1.16%  github.com/mujhtech/trest/internal/schema.wireValue.validate
+         0     0%   100%    1655686  4.19%  bufio.NewReader (inline)
+         0     0%   100%     937235  2.37%  bytes.(*Buffer).Write
+         0     0%   100%     937235  2.37%  bytes.(*Buffer).grow
+         0     0%   100%    3375310  8.54%  context.WithDeadline (inline)
+         0     0%   100%    3375310  8.54%  context.WithTimeout
+         0     0%   100%    3465825  8.77%  encoding/json.Marshal (inline)
+         0     0%   100%    3465825  8.77%  encoding/json/v2.Marshal
+         0     0%   100%    1826926  4.62%  encoding/json/v2.marshalEncode
+         0     0%   100%   24787055 62.74%  github.com/mujhtech/trest.(*App).ServeHTTP
+         0     0%   100%     937235  2.37%  github.com/mujhtech/trest.(*responseWriter).Write
+         0     0%   100%    2413760  6.11%  github.com/mujhtech/trest.(*responseWriter).WriteHeader
+         0     0%   100%   19774100 50.05%  github.com/mujhtech/trest.wrapRoute.func1

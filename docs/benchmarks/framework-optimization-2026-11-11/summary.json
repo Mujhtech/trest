@@ -1,0 +1,182 @@
+{
+  "before": {
+    "HelloJSON": {
+      "net_http": {
+        "samples": 14,
+        "ns_per_op": 2134.5,
+        "bytes_per_op": 6152.0,
+        "allocs_per_op": 20.0
+      },
+      "trest_app": {
+        "samples": 14,
+        "ns_per_op": 4273.0,
+        "bytes_per_op": 7096.0,
+        "allocs_per_op": 35.0
+      },
+      "trest": {
+        "samples": 14,
+        "ns_per_op": 4305.0,
+        "bytes_per_op": 7592.0,
+        "allocs_per_op": 36.0
+      },
+      "huma": {
+        "samples": 14,
+        "ns_per_op": 2455.5,
+        "bytes_per_op": 6329.0,
+        "allocs_per_op": 24.0
+      },
+      "chi": {
+        "samples": 14,
+        "ns_per_op": 2304.0,
+        "bytes_per_op": 6521.0,
+        "allocs_per_op": 22.0
+      },
+      "gin": {
+        "samples": 14,
+        "ns_per_op": 2163.0,
+        "bytes_per_op": 6152.0,
+        "allocs_per_op": 20.0
+      },
+      "echo": {
+        "samples": 14,
+        "ns_per_op": 2206.5,
+        "bytes_per_op": 6128.0,
+        "allocs_per_op": 19.0
+      }
+    },
+    "DuplicateInvoice": {
+      "net_http": {
+        "samples": 14,
+        "ns_per_op": 4865.5,
+        "bytes_per_op": 7905.0,
+        "allocs_per_op": 40.0
+      },
+      "trest_app": {
+        "samples": 14,
+        "ns_per_op": 8078.5,
+        "bytes_per_op": 9281.0,
+        "allocs_per_op": 57.0
+      },
+      "trest": {
+        "samples": 14,
+        "ns_per_op": 7776.0,
+        "bytes_per_op": 9201.0,
+        "allocs_per_op": 56.0
+      },
+      "huma": {
+        "samples": 14,
+        "ns_per_op": 7260.0,
+        "bytes_per_op": 8314.0,
+        "allocs_per_op": 55.0
+      },
+      "chi": {
+        "samples": 14,
+        "ns_per_op": 4934.5,
+        "bytes_per_op": 8273.0,
+        "allocs_per_op": 42.0
+      },
+      "gin": {
+        "samples": 14,
+        "ns_per_op": 4766.5,
+        "bytes_per_op": 7905.0,
+        "allocs_per_op": 40.0
+      },
+      "echo": {
+        "samples": 14,
+        "ns_per_op": 4824.0,
+        "bytes_per_op": 7825.0,
+        "allocs_per_op": 39.0
+      }
+    }
+  },
+  "after": {
+    "HelloJSON": {
+      "net_http": {
+        "samples": 14,
+        "ns_per_op": 2140.5,
+        "bytes_per_op": 6152.0,
+        "allocs_per_op": 20.0
+      },
+      "trest_app": {
+        "samples": 14,
+        "ns_per_op": 3547.5,
+        "bytes_per_op": 7032.0,
+        "allocs_per_op": 32.0
+      },
+      "trest": {
+        "samples": 14,
+        "ns_per_op": 3629.0,
+        "bytes_per_op": 7560.0,
+        "allocs_per_op": 34.0
+      },
+      "huma": {
+        "samples": 14,
+        "ns_per_op": 2460.0,
+        "bytes_per_op": 6329.0,
+        "allocs_per_op": 24.0
+      },
+      "chi": {
+        "samples": 14,
+        "ns_per_op": 2332.5,
+        "bytes_per_op": 6521.0,
+        "allocs_per_op": 22.0
+      },
+      "gin": {
+        "samples": 14,
+        "ns_per_op": 2173.5,
+        "bytes_per_op": 6152.0,
+        "allocs_per_op": 20.0
+      },
+      "echo": {
+        "samples": 14,
+        "ns_per_op": 2215.5,
+        "bytes_per_op": 6128.0,
+        "allocs_per_op": 19.0
+      }
+    },
+    "DuplicateInvoice": {
+      "net_http": {
+        "samples": 14,
+        "ns_per_op": 4733.0,
+        "bytes_per_op": 7905.0,
+        "allocs_per_op": 40.0
+      },
+      "trest_app": {
+        "samples": 14,
+        "ns_per_op": 6640.0,
+        "bytes_per_op": 8958.0,
+        "allocs_per_op": 48.0
+      },
+      "trest": {
+        "samples": 14,
+        "ns_per_op": 6650.5,
+        "bytes_per_op": 9022.0,
+        "allocs_per_op": 50.0
+      },
+      "huma": {
+        "samples": 14,
+        "ns_per_op": 7234.0,
+        "bytes_per_op": 8314.0,
+        "allocs_per_op": 55.0
+      },
+      "chi": {
+        "samples": 14,
+        "ns_per_op": 4988.0,
+        "bytes_per_op": 8273.0,
+        "allocs_per_op": 42.0
+      },
+      "gin": {
+        "samples": 14,
+        "ns_per_op": 4769.5,
+        "bytes_per_op": 7905.0,
+        "allocs_per_op": 40.0
+      },
+      "echo": {
+        "samples": 14,
+        "ns_per_op": 4756.5,
+        "bytes_per_op": 7825.0,
+        "allocs_per_op": 39.0
+      }
+    }
+  }
+}

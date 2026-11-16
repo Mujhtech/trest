@@ -1,0 +1,48 @@
+File: before.test
+Type: cpu
+Time: 2026-11-11 14:54:18 WAT
+Duration: 5.69s, Total samples = 5.26s (92.41%)
+Showing nodes accounting for 4.08s, 77.57% of 5.26s total
+Dropped 209 nodes (cum <= 0.03s)
+Showing top 40 nodes out of 189
+      flat  flat%   sum%        cum   cum%
+     2.68s 50.95% 50.95%      2.68s 50.95%  runtime.kevent
+     0.18s  3.42% 54.37%      0.18s  3.42%  syscall.rawsyscalln
+     0.11s  2.09% 56.46%      0.11s  2.09%  runtime.tryDeferToSpanScan
+     0.07s  1.33% 57.79%      0.18s  3.42%  encoding/json/v2.makeStructArshaler.func2
+     0.07s  1.33% 59.13%      0.17s  3.23%  runtime.mallocgcSmallNoscan
+     0.07s  1.33% 60.46%      0.15s  2.85%  runtime.scanObject
+     0.07s  1.33% 61.79%      0.12s  2.28%  runtime.scanObjectsSmall
+     0.06s  1.14% 62.93%      0.06s  1.14%  internal/bytealg.IndexByteString
+     0.06s  1.14% 64.07%      0.06s  1.14%  net/textproto.validHeaderFieldByte (inline)
+     0.06s  1.14% 65.21%      0.12s  2.28%  runtime.mallocgcSmallScanNoHeader
+     0.06s  1.14% 66.35%      0.06s  1.14%  runtime.typePointers.next
+     0.05s  0.95% 67.30%      0.05s  0.95%  encoding/json/internal/jsonwire.ConsumeSimpleString (inline)
+     0.05s  0.95% 68.25%      0.05s  0.95%  internal/runtime/atomic.(*UnsafePointer).Load (inline)
+     0.05s  0.95% 69.20%      0.05s  0.95%  runtime.madvise
+     0.04s  0.76% 69.96%      0.04s  0.76%  runtime.findObject
+     0.03s  0.57% 70.53%      0.03s  0.57%  github.com/mujhtech/trest/operation.(*principalContext).Value
+     0.03s  0.57% 71.10%      0.09s  1.71%  runtime.(*wbBuf).get2 (inline)
+     0.03s  0.57% 71.67%      0.15s  2.85%  runtime.mallocgcSmallScanSlowPath
+     0.02s  0.38% 72.05%      0.09s  1.71%  encoding/json/jsontext.(*decoderState).consumeObject
+     0.02s  0.38% 72.43%      0.07s  1.33%  gcWriteBarrier
+     0.02s  0.38% 72.81%      0.12s  2.28%  github.com/mujhtech/trest/internal/schema.(*wirePlan).validate
+     0.02s  0.38% 73.19%      0.55s 10.46%  github.com/mujhtech/trest/internal/webinput.(*Plan).Decode
+     0.02s  0.38% 73.57%      0.30s  5.70%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).call
+     0.02s  0.38% 73.95%      0.03s  0.57%  runtime.gcmarknewobject
+     0.02s  0.38% 74.33%      0.06s  1.14%  runtime.mallocgcSmallScanNoHeaderSC2
+     0.02s  0.38% 74.71%      0.05s  0.95%  runtime.mallocgcSmallScanNoHeaderSC4
+     0.02s  0.38% 75.10%      0.04s  0.76%  runtime.mallocgcTinySC2
+     0.01s  0.19% 75.29%      0.13s  2.47%  context.WithDeadlineCause
+     0.01s  0.19% 75.48%      0.03s  0.57%  encoding/hex.EncodeToString (inline)
+     0.01s  0.19% 75.67%      0.06s  1.14%  encoding/json/jsontext.(*decoderState).ReadValue
+     0.01s  0.19% 75.86%      0.10s  1.90%  encoding/json/jsontext.(*decoderState).consumeValue
+     0.01s  0.19% 76.05%      0.03s  0.57%  encoding/json/jsontext.(*decoderState).reset
+     0.01s  0.19% 76.24%      0.03s  0.57%  encoding/json/jsontext.(*encoderState).reset
+     0.01s  0.19% 76.43%      0.04s  0.76%  encoding/json/jsontext.getBufferedDecoder
+     0.01s  0.19% 76.62%      0.03s  0.57%  encoding/json/v2.makeString
+     0.01s  0.19% 76.81%      0.05s  0.95%  encoding/json/v2.makeStringArshaler.func1
+     0.01s  0.19% 77.00%      0.25s  4.75%  encoding/json/v2.marshalEncode
+     0.01s  0.19% 77.19%      1.61s 30.61%  github.com/mujhtech/trest.wrapRoute.func1
+     0.01s  0.19% 77.38%      0.25s  4.75%  github.com/mujhtech/trest/experiments/adoption.(*Store).execute
+     0.01s  0.19% 77.57%      2.49s 47.34%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkDuplicateInvoice.func1

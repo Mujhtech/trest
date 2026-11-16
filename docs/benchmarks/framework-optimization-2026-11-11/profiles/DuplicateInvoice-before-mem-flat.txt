@@ -1,0 +1,47 @@
+File: before.test
+Type: alloc_objects
+Time: 2026-11-11 14:54:24 WAT
+Showing nodes accounting for 33927839, 100% of 33932365 total
+Dropped 30 nodes (cum <= 169661)
+Showing top 40 nodes out of 75
+      flat  flat%   sum%        cum   cum%
+   3744935 11.04% 11.04%    4170925 12.29%  net/textproto.MIMEHeader.Set (inline)
+   2400401  7.07% 18.11%    2400401  7.07%  reflect.unsafe_New
+   1965040  5.79% 23.90%    1965040  5.79%  net/http.(*Request).WithContext (inline)
+   1860848  5.48% 29.39%    2450735  7.22%  context.WithDeadlineCause
+   1779641  5.24% 34.63%    1779641  5.24%  net/http.Header.Clone (inline)
+   1693096  4.99% 39.62%    1693096  4.99%  net/http/httptest.NewRecorder (inline)
+   1507349  4.44% 44.06%    1507349  4.44%  github.com/mujhtech/trest/internal/schema.wireValue.validate
+   1358592  4.00% 48.07%    1358592  4.00%  bytes.Clone (inline)
+   1294375  3.81% 51.88%    1294375  3.81%  encoding/hex.EncodeToString (inline)
+   1263225  3.72% 55.60%    1263225  3.72%  bufio.NewReaderSize (inline)
+   1261606  3.72% 59.32%    1261606  3.72%  strings.NewReader (inline)
+   1193364  3.52% 62.84%    2483130  7.32%  github.com/mujhtech/trest/experiments/adoption.(*Store).execute
+    753686  2.22% 65.06%     753686  2.22%  github.com/mujhtech/trest/operation.WithCorrelationID (inline)
+    745517  2.20% 67.26%     745517  2.20%  github.com/mujhtech/trest/operation.WithTrace (inline)
+    681782  2.01% 69.27%    2379008  7.01%  net/http.readRequestLimit
+    671785  1.98% 71.25%    3154915  9.30%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).call
+    655389  1.93% 73.18%     655389  1.93%  mime.ParseMediaType
+    655379  1.93% 75.11%    6167259 18.18%  net/http/httptest.NewRequestWithContext
+    644466  1.90% 77.01%     644466  1.90%  github.com/mujhtech/trest/operation.WithPrincipal (inline)
+    635747  1.87% 78.88%   23178817 68.31%  github.com/mujhtech/trest.wrapRoute.func2
+    633543  1.87% 80.75%     633543  1.87%  net/textproto.readMIMEHeader
+    606226  1.79% 82.53%    4876374 14.37%  github.com/mujhtech/trest.writeOutput
+    598052  1.76% 84.30%   17297311 50.98%  github.com/mujhtech/trest.(*Route[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).mount.func6
+    589887  1.74% 86.04%     589887  1.74%  time.newTimer
+    589087  1.74% 87.77%     589087  1.74%  io.ReadAll
+    578980  1.71% 89.48%     578980  1.71%  net/url.parse
+    570206  1.68% 91.16%     570206  1.68%  bytes.growSlice
+    557064  1.64% 92.80%   33931935   100%  github.com/mujhtech/trest/experiments/adoption_test.request
+    540705  1.59% 94.39%     540705  1.59%  net/http.MaxBytesReader (inline)
+    499742  1.47% 95.87%     499742  1.47%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).validate
+    491527  1.45% 97.31%     491527  1.45%  io.NopCloser (inline)
+    480607  1.42% 98.73%     480607  1.42%  net/textproto.(*Reader).ReadLine (inline)
+    425990  1.26%   100%     425990  1.26%  net/textproto.canonicalMIMEHeaderKey
+         0     0%   100%    1263225  3.72%  bufio.NewReader (inline)
+         0     0%   100%     570206  1.68%  bytes.(*Buffer).Write
+         0     0%   100%     570206  1.68%  bytes.(*Buffer).grow
+         0     0%   100%    2450735  7.22%  context.WithDeadline (inline)
+         0     0%   100%    2450735  7.22%  context.WithTimeout
+         0     0%   100%    2554697  7.53%  encoding/json.Marshal (inline)
+         0     0%   100%    2554697  7.53%  encoding/json/v2.Marshal

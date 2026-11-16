@@ -1,0 +1,54 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mujhtech/trest/internal/randomid
+cpu: Apple M2 Pro
+BenchmarkID/direct        	  707220	       320.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct        	  757057	       327.3 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct        	  762176	       328.2 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct        	  743724	       330.0 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct        	  741264	       331.7 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct        	  762297	       331.6 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct-12     	  729205	       319.0 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct-12     	  757216	       321.3 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct-12     	  766344	       322.1 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct-12     	  754676	       320.0 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct-12     	  751888	       320.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/direct-12     	  752055	       320.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched       	 4400546	        54.87 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched       	 4340029	        54.98 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched       	 4371362	        55.34 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched       	 4375562	        54.92 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched       	 4367632	        55.28 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched       	 4372048	        55.02 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched-12    	 4466812	        53.09 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched-12    	 4523994	        52.60 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched-12    	 4399246	        53.62 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched-12    	 4497844	        53.08 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched-12    	 4536740	        52.70 ns/op	      32 B/op	       1 allocs/op
+BenchmarkID/batched-12    	 4565934	        53.88 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct            	  722148	       317.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct            	  762963	       318.8 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct            	  764148	       320.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct            	  759182	       320.1 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct            	  761370	       319.0 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct            	  759682	       319.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct-12         	  323233	       729.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct-12         	  333052	       745.5 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct-12         	  339579	       721.2 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct-12         	  326998	       715.7 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct-12         	  307225	       758.5 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/direct-12         	  322466	       722.2 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched           	 4347664	        55.73 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched           	 3839139	        56.98 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched           	 4318364	        55.34 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched           	 4093527	        56.50 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched           	 4330797	        57.28 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched           	 4311144	        56.99 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched-12        	 1273366	       186.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched-12        	 1275942	       188.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched-12        	 1267766	       189.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched-12        	 1277085	       187.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched-12        	 1258294	       186.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkIDParallel/batched-12        	 1259964	       190.4 ns/op	      32 B/op	       1 allocs/op
+PASS
+ok  	github.com/mujhtech/trest/internal/randomid	14.758s

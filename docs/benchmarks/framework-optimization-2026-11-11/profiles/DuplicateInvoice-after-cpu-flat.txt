@@ -1,0 +1,48 @@
+File: after.test
+Type: cpu
+Time: 2026-11-11 15:24:09 WAT
+Duration: 6.19s, Total samples = 5.68s (91.70%)
+Showing nodes accounting for 5.28s, 92.96% of 5.68s total
+Dropped 118 nodes (cum <= 0.03s)
+Showing top 40 nodes out of 98
+      flat  flat%   sum%        cum   cum%
+     4.97s 87.50% 87.50%      4.97s 87.50%  runtime.kevent
+     0.07s  1.23% 88.73%      0.07s  1.23%  runtime.madvise
+     0.06s  1.06% 89.79%      0.06s  1.06%  internal/runtime/atomic.(*UnsafePointer).Load (inline)
+     0.03s  0.53% 90.32%      0.03s  0.53%  encoding/json/internal/jsonwire.ConsumeSimpleString (inline)
+     0.03s  0.53% 90.85%      0.03s  0.53%  runtime.mapaccess2_fast64
+     0.03s  0.53% 91.37%      0.04s   0.7%  runtime.typePointers.next
+     0.02s  0.35% 91.73%      0.03s  0.53%  encoding/json/jsontext.(*decoderState).ReadValue
+     0.01s  0.18% 91.90%      0.04s   0.7%  context.WithDeadlineCause
+     0.01s  0.18% 92.08%      0.06s  1.06%  encoding/json/v2.makeStructArshaler.func2
+     0.01s  0.18% 92.25%      0.06s  1.06%  encoding/json/v2.unmarshalDecode
+     0.01s  0.18% 92.43%      0.58s 10.21%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkDuplicateInvoice.func1
+     0.01s  0.18% 92.61%      0.43s  7.57%  net/http.HandlerFunc.ServeHTTP
+     0.01s  0.18% 92.78%      0.04s   0.7%  runtime.mallocgcSmallNoscan
+     0.01s  0.18% 92.96%      0.04s   0.7%  runtime.wbBufFlush1
+         0     0% 92.96%      0.08s  1.41%  bufio.NewReader (inline)
+         0     0% 92.96%      0.08s  1.41%  bufio.NewReaderSize (inline)
+         0     0% 92.96%      0.04s   0.7%  context.WithDeadline (inline)
+         0     0% 92.96%      0.04s   0.7%  context.WithTimeout
+         0     0% 92.96%      0.12s  2.11%  encoding/json.Marshal (inline)
+         0     0% 92.96%      0.08s  1.41%  encoding/json.Unmarshal (inline)
+         0     0% 92.96%      0.03s  0.53%  encoding/json/jsontext.(*decoderState).consumeValue
+         0     0% 92.96%      0.12s  2.11%  encoding/json/v2.Marshal
+         0     0% 92.96%      0.08s  1.41%  encoding/json/v2.Unmarshal
+         0     0% 92.96%      0.03s  0.53%  encoding/json/v2.makeStructArshaler.func3
+         0     0% 92.96%      0.11s  1.94%  encoding/json/v2.marshalEncode
+         0     0% 92.96%      0.43s  7.57%  github.com/mujhtech/trest.(*App).ServeHTTP
+         0     0% 92.96%      0.34s  5.99%  github.com/mujhtech/trest.(*Route[go.shape.struct { CustomerID string "json:\"customer_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\""; IdempotencyKey string "json:\"idempotency_key\"" },go.shape.struct { ID string "json:\"id\""; TenantID string "json:\"tenant_id\""; AmountMinor int64 "json:\"amount_minor\""; Currency string "json:\"currency\"" }]).mount.func6
+         0     0% 92.96%      0.03s  0.53%  github.com/mujhtech/trest.(*responseWriter).WriteHeader
+         0     0% 92.96%      0.38s  6.69%  github.com/mujhtech/trest.wrapRoute.func1
+         0     0% 92.96%      0.42s  7.39%  github.com/mujhtech/trest.wrapRoute.func2
+         0     0% 92.96%      0.09s  1.58%  github.com/mujhtech/trest.writeOutput
+         0     0% 92.96%      0.07s  1.23%  github.com/mujhtech/trest/experiments/adoption.(*Store).execute
+         0     0% 92.96%      0.07s  1.23%  github.com/mujhtech/trest/experiments/adoption.NewTrestApp.func2
+         0     0% 92.96%      0.57s 10.04%  github.com/mujhtech/trest/experiments/adoption_test.request
+         0     0% 92.96%      0.03s  0.53%  github.com/mujhtech/trest/internal/randomid.(*Generator).ID
+         0     0% 92.96%      0.05s  0.88%  github.com/mujhtech/trest/internal/schema.(*Validator).Validate
+         0     0% 92.96%      0.03s  0.53%  github.com/mujhtech/trest/internal/schema.(*wirePlan).field
+         0     0% 92.96%      0.04s   0.7%  github.com/mujhtech/trest/internal/schema.(*wirePlan).validate
+         0     0% 92.96%      0.13s  2.29%  github.com/mujhtech/trest/internal/webinput.(*Plan).DecodeInto
+         0     0% 92.96%      0.13s  2.29%  github.com/mujhtech/trest/internal/webinput.(*Plan).decode

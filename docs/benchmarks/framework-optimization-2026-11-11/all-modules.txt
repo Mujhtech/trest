@@ -1,0 +1,56 @@
+
+Checking .
+ok  	github.com/mujhtech/trest	1.879s
+ok  	github.com/mujhtech/trest/aitool	(cached)
+ok  	github.com/mujhtech/trest/check	(cached)
+ok  	github.com/mujhtech/trest/clientgen	23.750s
+?   	github.com/mujhtech/trest/cmd/existing-handler	[no test files]
+?   	github.com/mujhtech/trest/cmd/invoices	[no test files]
+ok  	github.com/mujhtech/trest/cmd/trest	23.120s
+?   	github.com/mujhtech/trest/cmd/trest-demo	[no test files]
+ok  	github.com/mujhtech/trest/contract	(cached)
+ok  	github.com/mujhtech/trest/examples/invoices	4.993s
+ok  	github.com/mujhtech/trest/httpadapter	(cached)
+ok  	github.com/mujhtech/trest/inspect	(cached)
+ok  	github.com/mujhtech/trest/internal/docsui	(cached)
+ok  	github.com/mujhtech/trest/internal/example/existinghandler	(cached)
+ok  	github.com/mujhtech/trest/internal/example/invoiceapi	(cached)
+ok  	github.com/mujhtech/trest/internal/example/invoices	(cached)
+?   	github.com/mujhtech/trest/internal/example/server	[no test files]
+?   	github.com/mujhtech/trest/internal/openapischema	[no test files]
+ok  	github.com/mujhtech/trest/internal/randomid	(cached)
+ok  	github.com/mujhtech/trest/internal/schema	(cached)
+ok  	github.com/mujhtech/trest/internal/webinput	(cached)
+ok  	github.com/mujhtech/trest/job	(cached)
+ok  	github.com/mujhtech/trest/operation	1.836s
+ok  	github.com/mujhtech/trest/plugins/cookie	(cached)
+ok  	github.com/mujhtech/trest/plugins/cors	(cached)
+ok  	github.com/mujhtech/trest/plugins/schedule	(cached)
+ok  	github.com/mujhtech/trest/plugins/static	(cached)
+ok  	github.com/mujhtech/trest/scenario	(cached)
+ok  	github.com/mujhtech/trest/telemetry	(cached)
+
+Checking adapters/mcp
+ok  	github.com/mujhtech/trest/adapters/mcp	1.606s
+ok  	github.com/mujhtech/trest/adapters/mcp/dev	1.602s
+
+Checking adapters/postgres
+?   	github.com/mujhtech/trest/adapters/postgres	[no test files]
+?   	github.com/mujhtech/trest/adapters/postgres/cmd/job-example	[no test files]
+
+Checking adapters/websocket
+ok  	github.com/mujhtech/trest/adapters/websocket	1.617s
+?   	github.com/mujhtech/trest/adapters/websocket/cmd/echo	[no test files]
+
+Checking adapters/jwt
+ok  	github.com/mujhtech/trest/adapters/jwt	1.912s
+?   	github.com/mujhtech/trest/adapters/jwt/cmd/demo	[no test files]
+
+Checking adapters/otel
+ok  	github.com/mujhtech/trest/adapters/otel	1.615s
+
+Checking experiments/adoption
+ok  	github.com/mujhtech/trest/experiments/adoption	1.823s
+?   	github.com/mujhtech/trest/experiments/adoption/cmd/measure	[no test files]
+ok  	github.com/mujhtech/trest/adapters/websocket	1.755s
+?   	github.com/mujhtech/trest/adapters/websocket/cmd/echo	[no test files]

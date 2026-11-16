@@ -1,0 +1,48 @@
+File: before.test
+Type: cpu
+Time: 2026-11-11 14:54:12 WAT
+Duration: 6.18s, Total samples = 5.78s (93.60%)
+Showing nodes accounting for 3.93s, 67.99% of 5.78s total
+Dropped 167 nodes (cum <= 0.03s)
+Showing top 40 nodes out of 142
+      flat  flat%   sum%        cum   cum%
+     0.01s  0.17%  0.17%      4.01s 69.38%  runtime.systemstack
+     3.19s 55.19% 55.36%      3.19s 55.19%  runtime.kevent
+         0     0% 55.36%      3.19s 55.19%  runtime.netpoll
+         0     0% 55.36%      3.19s 55.19%  runtime.startTheWorldWithSema
+     0.02s  0.35% 55.71%      2.52s 43.60%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkHelloJSON.func1
+         0     0% 55.71%      2.52s 43.60%  testing.(*B).run1.func1
+         0     0% 55.71%      2.52s 43.60%  testing.(*B).runN
+         0     0% 55.71%      2.50s 43.25%  github.com/mujhtech/trest/experiments/adoption_test.helloRequest
+         0     0% 55.71%      1.77s 30.62%  runtime.gcMarkTermination.func3
+     0.02s  0.35% 56.06%      1.55s 26.82%  github.com/mujhtech/trest.(*App).ServeHTTP
+         0     0% 56.06%      1.53s 26.47%  net/http.(*ServeMux).ServeHTTP
+     0.01s  0.17% 56.23%      1.49s 25.78%  github.com/mujhtech/trest.wrapRoute.func2
+     0.01s  0.17% 56.40%      1.49s 25.78%  net/http.HandlerFunc.ServeHTTP
+         0     0% 56.40%      1.42s 24.57%  runtime.gcStart.func4
+     0.08s  1.38% 57.79%      1.06s 18.34%  runtime.mallocgc
+         0     0% 57.79%      1.05s 18.17%  github.com/mujhtech/trest.wrapRoute.func1
+     0.01s  0.17% 57.96%      1.04s 17.99%  github.com/mujhtech/trest.(*Route[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).mount.func6
+         0     0% 57.96%      0.92s 15.92%  net/http/httptest.NewRequest (inline)
+         0     0% 57.96%      0.92s 15.92%  net/http/httptest.NewRequestWithContext
+         0     0% 57.96%      0.57s  9.86%  runtime.gcAssistAlloc
+         0     0% 57.96%      0.56s  9.69%  bufio.NewReader (inline)
+         0     0% 57.96%      0.56s  9.69%  bufio.NewReaderSize (inline)
+         0     0% 57.96%      0.55s  9.52%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).Invoke (inline)
+         0     0% 57.96%      0.55s  9.52%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).execute
+         0     0% 57.96%      0.55s  9.52%  runtime.gcAssistAlloc.func2
+         0     0% 57.96%      0.55s  9.52%  runtime.gcAssistAlloc1
+     0.01s  0.17% 58.13%      0.55s  9.52%  runtime.gcDrainN
+         0     0% 58.13%      0.54s  9.34%  runtime.makeslice
+         0     0% 58.13%      0.50s  8.65%  runtime.deductAssistCredit
+         0     0% 58.13%      0.47s  8.13%  github.com/mujhtech/trest.writeOutput
+         0     0% 58.13%      0.40s  6.92%  crypto/internal/fips140/drbg.Read
+         0     0% 58.13%      0.40s  6.92%  crypto/internal/sysrand.Read
+         0     0% 58.13%      0.40s  6.92%  crypto/rand.Read
+         0     0% 58.13%      0.39s  6.75%  crypto/internal/sysrand.read (inline)
+         0     0% 58.13%      0.39s  6.75%  internal/syscall/unix.ARC4Random
+         0     0% 58.13%      0.39s  6.75%  syscall.syscall
+         0     0% 58.13%      0.39s  6.75%  syscall.syscalln
+     0.36s  6.23% 64.36%      0.37s  6.40%  syscall.rawsyscalln
+     0.01s  0.17% 64.53%      0.29s  5.02%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).run
+     0.20s  3.46% 67.99%      0.29s  5.02%  runtime.tryDeferToSpanScan

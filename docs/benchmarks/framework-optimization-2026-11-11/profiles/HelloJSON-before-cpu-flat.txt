@@ -1,0 +1,48 @@
+File: before.test
+Type: cpu
+Time: 2026-11-11 14:54:12 WAT
+Duration: 6.18s, Total samples = 5.78s (93.60%)
+Showing nodes accounting for 4.97s, 85.99% of 5.78s total
+Dropped 167 nodes (cum <= 0.03s)
+Showing top 40 nodes out of 142
+      flat  flat%   sum%        cum   cum%
+     3.19s 55.19% 55.19%      3.19s 55.19%  runtime.kevent
+     0.36s  6.23% 61.42%      0.37s  6.40%  syscall.rawsyscalln
+     0.20s  3.46% 64.88%      0.29s  5.02%  runtime.tryDeferToSpanScan
+     0.12s  2.08% 66.96%      0.28s  4.84%  runtime.scanObject
+     0.08s  1.38% 68.34%      1.06s 18.34%  runtime.mallocgc
+     0.07s  1.21% 69.55%      0.09s  1.56%  runtime.scanblock
+     0.06s  1.04% 70.59%      0.07s  1.21%  runtime.heapArenaOf (inline)
+     0.06s  1.04% 71.63%      0.19s  3.29%  runtime.mallocgcSmallNoscan
+     0.05s  0.87% 72.49%      0.05s  0.87%  net/textproto.validHeaderFieldByte (inline)
+     0.05s  0.87% 73.36%      0.08s  1.38%  runtime.mallocgcSmallScanNoHeaderSC2
+     0.05s  0.87% 74.22%      0.05s  0.87%  runtime.memclrNoHeapPointers
+     0.05s  0.87% 75.09%      0.10s  1.73%  runtime.scanObjectsSmall
+     0.05s  0.87% 75.95%      0.05s  0.87%  runtime.typePointers.next
+     0.04s  0.69% 76.64%      0.04s  0.69%  encoding/hex.Encode (inline)
+     0.04s  0.69% 77.34%      0.04s  0.69%  internal/bytealg.IndexByteString
+     0.04s  0.69% 78.03%      0.05s  0.87%  internal/runtime/maps.(*Iter).Next
+     0.04s  0.69% 78.72%      0.04s  0.69%  runtime.madvise
+     0.04s  0.69% 79.41%      0.15s  2.60%  runtime.mallocgcSmallScanNoHeader
+     0.04s  0.69% 80.10%      0.08s  1.38%  runtime.mallocgcSmallScanSlowPath
+     0.03s  0.52% 80.62%      0.15s  2.60%  context.WithDeadlineCause
+     0.03s  0.52% 81.14%      0.03s  0.52%  internal/runtime/atomic.(*Uint32).Add (inline)
+     0.03s  0.52% 81.66%      0.03s  0.52%  runtime.mallocgcSmallNoScanSC4
+     0.02s  0.35% 82.01%      0.05s  0.87%  encoding/json/v2.makeStructArshaler.func2
+     0.02s  0.35% 82.35%      1.55s 26.82%  github.com/mujhtech/trest.(*App).ServeHTTP
+     0.02s  0.35% 82.70%      2.52s 43.60%  github.com/mujhtech/trest/experiments/adoption_test.BenchmarkHelloJSON.func1
+     0.02s  0.35% 83.04%      0.27s  4.67%  net/http.readRequestLimit
+     0.02s  0.35% 83.39%      0.04s  0.69%  net/http.readTransfer
+     0.02s  0.35% 83.74%      0.16s  2.77%  runtime.scanSpan
+     0.02s  0.35% 84.08%      0.14s  2.42%  runtime.wbBufFlush1
+     0.01s  0.17% 84.26%      0.09s  1.56%  encoding/hex.EncodeToString (inline)
+     0.01s  0.17% 84.43%      0.03s  0.52%  encoding/json/jsontext.(*encoderState).reset
+     0.01s  0.17% 84.60%      0.17s  2.94%  encoding/json/v2.Marshal
+     0.01s  0.17% 84.78%      0.08s  1.38%  gcWriteBarrier
+     0.01s  0.17% 84.95%      1.04s 17.99%  github.com/mujhtech/trest.(*Route[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).mount.func6
+     0.01s  0.17% 85.12%      1.49s 25.78%  github.com/mujhtech/trest.wrapRoute.func2
+     0.01s  0.17% 85.29%      0.29s  5.02%  github.com/mujhtech/trest/operation.(*Handle[go.shape.struct {},go.shape.struct { Message string "json:\"message\"" }]).run
+     0.01s  0.17% 85.47%      0.03s  0.52%  net/http.(*routingNode).matchPath
+     0.01s  0.17% 85.64%      1.49s 25.78%  net/http.HandlerFunc.ServeHTTP
+     0.01s  0.17% 85.81%      0.18s  3.11%  net/http/httptest.(*ResponseRecorder).WriteHeader
+     0.01s  0.17% 85.99%      0.06s  1.04%  runtime.(*mcentral).grow
