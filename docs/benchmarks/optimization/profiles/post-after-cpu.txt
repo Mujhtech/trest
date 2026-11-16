@@ -1,0 +1,38 @@
+File: trest-after.test
+Type: cpu
+Time: Nov 10, 2026 at 2:17pm (WAT)
+Duration: 3.93s, Total samples = 4.58s (116.65%)
+Showing nodes accounting for 3.66s, 79.91% of 4.58s total
+Dropped 204 nodes (cum <= 0.02s)
+Showing top 30 nodes out of 175
+      flat  flat%   sum%        cum   cum%
+     1.14s 24.89% 24.89%      1.14s 24.89%  runtime.kevent
+     0.54s 11.79% 36.68%      0.54s 11.79%  runtime.pthread_cond_wait
+     0.39s  8.52% 45.20%      0.39s  8.52%  runtime.pthread_cond_signal
+     0.38s  8.30% 53.49%      0.38s  8.30%  runtime.madvise
+     0.27s  5.90% 59.39%      0.27s  5.90%  runtime.usleep
+     0.19s  4.15% 63.54%      0.19s  4.15%  runtime.pthread_kill
+     0.11s  2.40% 65.94%      0.11s  2.40%  syscall.rawsyscalln
+     0.08s  1.75% 67.69%      0.15s  3.28%  runtime.mallocgcSmallNoscan
+     0.07s  1.53% 69.21%      0.07s  1.53%  runtime.pthread_cond_timedwait_relative_np
+     0.04s  0.87% 70.09%      0.12s  2.62%  runtime.mallocgcSmallScanNoHeader
+     0.04s  0.87% 70.96%      0.05s  1.09%  runtime.mallocgcSmallScanNoHeaderSC4
+     0.04s  0.87% 71.83%      0.04s  0.87%  runtime.memclrNoHeapPointers
+     0.04s  0.87% 72.71%      0.09s  1.97%  runtime.scanObject
+     0.03s  0.66% 73.36%      0.03s  0.66%  reflect.Value.Field
+     0.03s  0.66% 74.02%      0.05s  1.09%  runtime.mallocgcSmallScanNoHeaderSC5
+     0.03s  0.66% 74.67%      0.04s  0.87%  runtime.mallocgcSmallScanNoHeaderSC6
+     0.03s  0.66% 75.33%      0.03s  0.66%  runtime.mapaccess2_fast64
+     0.03s  0.66% 75.98%      0.04s  0.87%  runtime.pcvalue
+     0.03s  0.66% 76.64%      0.03s  0.66%  runtime.typePointers.next
+     0.02s  0.44% 77.07%      0.06s  1.31%  encoding/json/jsontext.(*decoderState).consumeValue
+     0.02s  0.44% 77.51%      0.13s  2.84%  net/http.readRequestLimit
+     0.02s  0.44% 77.95%      0.03s  0.66%  net/textproto.canonicalMIMEHeaderKey
+     0.02s  0.44% 78.38%      0.14s  3.06%  trest.local/trest/operation.(*Handle[go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\" maxLength:\"32\""; SKU string "json:\"sku\" minLength:\"1\" maxLength:\"32\""; Quantity int "json:\"quantity\" min:\"1\" max:\"100\"" },go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\""; SKU string "json:\"sku\" minLength:\"1\""; Total int "json:\"total\" min:\"1\"" }]).run
+     0.01s  0.22% 78.60%      0.05s  1.09%  encoding/json/jsontext.(*decoderState).CheckNextValue
+     0.01s  0.22% 78.82%      0.05s  1.09%  encoding/json/jsontext.(*decoderState).consumeObject
+     0.01s  0.22% 79.04%      0.03s  0.66%  internal/runtime/maps.(*Map).getWithoutKeySmallFastStr
+     0.01s  0.22% 79.26%      0.07s  1.53%  io.ReadAll
+     0.01s  0.22% 79.48%      0.04s  0.87%  net/http.(*Request).WithContext (inline)
+     0.01s  0.22% 79.69%      0.03s  0.66%  net/http.(*maxBytesReader).Read
+     0.01s  0.22% 79.91%      0.97s 21.18%  net/http.HandlerFunc.ServeHTTP

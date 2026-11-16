@@ -1,0 +1,108 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  123427	      4882 ns/op	   9.42 MB/s	    8830 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  134072	      4296 ns/op	  10.71 MB/s	    8026 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  223065	      2917 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  375999	      1684 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  113995	      4911 ns/op	   9.37 MB/s	    8831 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  130989	      4557 ns/op	  10.10 MB/s	    8030 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  210357	      2716 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  422529	      1523 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  132915	      4730 ns/op	   9.73 MB/s	    8829 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  142562	      4469 ns/op	  10.29 MB/s	    8027 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  222345	      2973 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  333111	      2112 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  111818	      4988 ns/op	   9.22 MB/s	    8830 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  133093	      4419 ns/op	  10.41 MB/s	    8027 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  183918	      2973 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  398877	      1564 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  113019	      5007 ns/op	   9.19 MB/s	    8829 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  137584	      4814 ns/op	   9.56 MB/s	    8027 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  204555	      3117 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  380281	      1761 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  104326	      5084 ns/op	   9.05 MB/s	    8831 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  133437	      4566 ns/op	  10.07 MB/s	    8028 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  190629	      2980 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  355358	      1614 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  122395	      4634 ns/op	   9.93 MB/s	    8828 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  126738	      5348 ns/op	   8.60 MB/s	    8027 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  184534	      2926 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  396699	      1469 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  122534	      4992 ns/op	   9.21 MB/s	    8829 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  128772	      4492 ns/op	  10.24 MB/s	    8027 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  211346	      3139 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  390637	      1763 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  132476	      5260 ns/op	   8.75 MB/s	    8830 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  122976	      4726 ns/op	   9.73 MB/s	    8028 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  217531	      2953 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  420496	      1527 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  116148	      5767 ns/op	   7.98 MB/s	    8829 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  132807	      4340 ns/op	  10.60 MB/s	    8026 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  220993	      2988 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  368287	      1488 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  124216	      4858 ns/op	   9.47 MB/s	    8829 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  139701	      4615 ns/op	   9.97 MB/s	    8029 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  184904	      2871 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  412657	      1507 ns/op	    6115 B/op	      19 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	  120129	      5198 ns/op	   8.85 MB/s	    8830 B/op	      50 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	  131979	      4606 ns/op	   9.99 MB/s	    8028 B/op	      45 allocs/op
+BenchmarkHello/trest-12                               	  201214	      3131 ns/op	    7052 B/op	      33 allocs/op
+BenchmarkHello/net_http-12                            	  390535	      1707 ns/op	    6115 B/op	      19 allocs/op
+PASS

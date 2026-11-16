@@ -1,0 +1,37 @@
+File: trest.test
+Type: alloc_objects
+Time: Nov 10, 2026 at 1:08pm (WAT)
+Showing nodes accounting for 49330017, 92.26% of 53468759 total
+Dropped 60 nodes (cum <= 267343)
+Showing top 30 nodes out of 100
+      flat  flat%   sum%        cum   cum%
+  11818613 22.10% 22.10%   11818613 22.10%  math/big.nat.make (inline)
+   6029401 11.28% 33.38%    9748663 18.23%  encoding/json.(*Decoder).Token
+   4128889  7.72% 41.10%    4128889  7.72%  strings.NewReader (inline)
+   3702837  6.93% 48.03%    3702837  6.93%  trest.local/trest/internal/schema.joinPath
+   2125700  3.98% 52.00%    2453385  4.59%  net/textproto.MIMEHeader.Set (inline)
+   2022828  3.78% 55.79%   13704831 25.63%  trest.local/trest/internal/schema.readValue
+   1758627  3.29% 59.08%    1758627  3.29%  reflect.unsafe_New
+   1638423  3.06% 62.14%    1638423  3.06%  encoding/json/jsontext.Token.String (inline)
+   1420008  2.66% 64.80%    1420008  2.66%  context.WithValue
+   1091507  2.04% 66.84%    1091507  2.04%  net/http.(*Request).WithContext (inline)
+   1059545  1.98% 68.82%    1059545  1.98%  bytes.Clone (inline)
+   1013127  1.89% 70.71%    1013127  1.89%  net/http/httptest.NewRecorder
+    964417  1.80% 72.52%     964417  1.80%  encoding/json/v2.JoinOptions (inline)
+    933943  1.75% 74.26%     933943  1.75%  encoding/json/jsontext.(*decoderState).fetch
+    925579  1.73% 75.99%     925579  1.73%  net/http.Header.Clone (inline)
+    917783  1.72% 77.71%     917783  1.72%  encoding/json/jsontext.NewDecoder (inline)
+    917544  1.72% 79.43%    1835327  3.43%  encoding/json.NewDecoder
+    908182  1.70% 81.13%    1259305  2.36%  context.WithDeadlineCause
+    852006  1.59% 82.72%     852006  1.59%  bytes.NewReader (inline)
+    688138  1.29% 84.01%     688138  1.29%  encoding/json/jsontext.(*objectNameStack).push (inline)
+    596462  1.12% 85.12%     596462  1.12%  bufio.NewReaderSize
+    589843  1.10% 86.22%   47464969 88.77%  trest.local/trest.wrapRoute.func2
+    589841  1.10% 87.33%     589841  1.10%  encoding/hex.EncodeToString (inline)
+    458758  0.86% 88.19%     458758  0.86%  encoding/json/jsontext.(*stateMachine).pushObject (inline)
+    404156  0.76% 88.94%     742773  1.39%  trest.local/trest/operation.WithTrace (inline)
+    393224  0.74% 89.68%     393224  0.74%  net/textproto.(*Reader).ReadLine
+    352277  0.66% 90.34%     352277  0.66%  net/http.MaxBytesReader (inline)
+    351123  0.66% 90.99%     351123  0.66%  time.newTimer
+    338618  0.63% 91.63%     338618  0.63%  mime.ParseMediaType
+    338618  0.63% 92.26%     338618  0.63%  net/textproto.readMIMEHeader

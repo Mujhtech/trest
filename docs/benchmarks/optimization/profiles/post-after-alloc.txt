@@ -1,0 +1,37 @@
+File: trest-after.test
+Type: alloc_objects
+Time: Nov 10, 2026 at 2:17pm (WAT)
+Showing nodes accounting for 28004690, 98.42% of 28453393 total
+Dropped 60 nodes (cum <= 142266)
+Showing top 30 nodes out of 71
+      flat  flat%   sum%        cum   cum%
+   2968909 10.43% 10.43%    3296593 11.59%  net/textproto.MIMEHeader.Set (inline)
+   2165126  7.61% 18.04%    2773739  9.75%  context.WithDeadlineCause
+   1740511  6.12% 24.16%    1740511  6.12%  net/http.(*Request).WithContext (inline)
+   1715582  6.03% 30.19%    1715582  6.03%  net/http.Header.Clone (inline)
+   1673981  5.88% 36.07%    1673981  5.88%  net/http/httptest.NewRecorder
+   1660319  5.84% 41.91%    1660319  5.84%  reflect.unsafe_New
+   1376297  4.84% 46.75%    1376297  4.84%  strings.NewReader (inline)
+   1245222  4.38% 51.12%    1245222  4.38%  encoding/hex.EncodeToString (inline)
+   1169865  4.11% 55.23%    1169865  4.11%  bufio.NewReaderSize (inline)
+    737302  2.59% 57.82%    4800717 16.87%  trest.local/trest.writeOutput
+    699082  2.46% 60.28%   13867086 48.74%  trest.local/trest.(*Route[go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\" maxLength:\"32\""; SKU string "json:\"sku\" minLength:\"1\" maxLength:\"32\""; Quantity int "json:\"quantity\" min:\"1\" max:\"100\"" },go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\""; SKU string "json:\"sku\" minLength:\"1\""; Total int "json:\"total\" min:\"1\"" }]).mount.func6
+    663592  2.33% 62.61%     663592  2.33%  bytes.(*Buffer).grow
+    655389  2.30% 64.92%     655389  2.30%  net/textproto.readMIMEHeader
+    638995  2.25% 67.16%    5953129 20.92%  net/http/httptest.NewRequestWithContext
+    633543  2.23% 69.39%     633543  2.23%  trest.local/trest/operation.WithPrincipal (inline)
+    633528  2.23% 71.62%     633528  2.23%  net/textproto.(*Reader).ReadLine (inline)
+    614437  2.16% 73.78%     614437  2.16%  trest.local/trest/operation.WithTrace (inline)
+    608613  2.14% 75.91%     608613  2.14%  time.newTimer
+    597283  2.10% 78.01%     597283  2.10%  io.ReadAll
+    578927  2.03% 80.05%     578927  2.03%  bytes.Clone (inline)
+    578927  2.03% 82.08%     578927  2.03%  trest.local/trest/operation.(*Handle[go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\" maxLength:\"32\""; SKU string "json:\"sku\" minLength:\"1\" maxLength:\"32\""; Quantity int "json:\"quantity\" min:\"1\" max:\"100\"" },go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\""; SKU string "json:\"sku\" minLength:\"1\""; Total int "json:\"total\" min:\"1\"" }]).call
+    575339  2.02% 84.11%     575339  2.02%  net/url.parse
+    568003  2.00% 86.10%     568003  2.00%  mime.ParseMediaType
+    557073  1.96% 88.06%     557073  1.96%  trest.local/trest/operation.WithCorrelationID (inline)
+    549031  1.93% 89.99%    2425382  8.52%  net/http.readRequestLimit
+    537435  1.89% 91.88%   18570595 65.27%  trest.local/trest.wrapRoute.func2
+    507935  1.79% 93.66%     507935  1.79%  net/http.MaxBytesReader (inline)
+    469696  1.65% 95.31%     469696  1.65%  trest.local/trest/operation.(*Handle[go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\" maxLength:\"32\""; SKU string "json:\"sku\" minLength:\"1\" maxLength:\"32\""; Quantity int "json:\"quantity\" min:\"1\" max:\"100\"" },go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\""; SKU string "json:\"sku\" minLength:\"1\""; Total int "json:\"total\" min:\"1\"" }]).validate
+    458758  1.61% 96.93%     458758  1.61%  io.NopCloser (inline)
+    425990  1.50% 98.42%     425990  1.50%  trest.local/trest/internal/schema.wireValue.validate

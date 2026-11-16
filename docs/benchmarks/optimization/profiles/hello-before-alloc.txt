@@ -1,0 +1,37 @@
+File: trest.test
+Type: alloc_objects
+Time: Nov 10, 2026 at 1:08pm (WAT)
+Showing nodes accounting for 38995272, 92.23% of 42280085 total
+Dropped 50 nodes (cum <= 211400)
+Showing top 30 nodes out of 73
+      flat  flat%   sum%        cum   cum%
+   2530281  5.98%  5.98%    3316797  7.84%  context.WithDeadlineCause
+   2493670  5.90% 11.88%    2493670  5.90%  net/http.Header.Clone (inline)
+   2348479  5.55% 17.44%    2348479  5.55%  context.WithValue
+   2028907  4.80% 22.24%    2717045  6.43%  net/textproto.MIMEHeader.Set (inline)
+   1979831  4.68% 26.92%    1979831  4.68%  net/http/httptest.NewRecorder
+   1714916  4.06% 30.97%   33511630 79.26%  trest.local/trest.wrapRoute.func2
+   1643256  3.89% 34.86%    1643256  3.89%  encoding/json/v2.JoinOptions (inline)
+   1638899  3.88% 38.74%    1638899  3.88%  net/http.(*Request).WithContext (inline)
+   1605680  3.80% 42.54%    1605680  3.80%  encoding/hex.EncodeToString (inline)
+   1590534  3.76% 46.30%    1590534  3.76%  bufio.NewReaderSize
+   1562010  3.69% 49.99%    1562010  3.69%  bytes.NewReader (inline)
+   1523804  3.60% 53.60%    1523804  3.60%  encoding/json/jsontext.(*decoderState).fetch
+   1502870  3.55% 57.15%    1502870  3.55%  encoding/json/jsontext.NewDecoder (inline)
+   1452780  3.44% 60.59%    2955650  6.99%  encoding/json.NewDecoder
+   1081360  2.56% 63.14%    1081360  2.56%  reflect.unsafe_New
+   1004930  2.38% 65.52%    1758628  4.16%  trest.local/trest/operation.WithTrace (inline)
+    917517  2.17% 67.69%     917517  2.17%  bytes.Clone (inline)
+    884789  2.09% 69.78%     884789  2.09%  net/http.MaxBytesReader (inline)
+    873933  2.07% 71.85%     873933  2.07%  net/url.parse
+    841083  1.99% 73.84%     841083  1.99%  net/textproto.readMIMEHeader
+    830160  1.96% 75.80%    4614989 10.92%  trest.local/trest/internal/schema.readValue
+    819225  1.94% 77.74%    4451630 10.53%  trest.local/trest.writeOutput
+    819212  1.94% 79.68%    3784829  8.95%  encoding/json.(*Decoder).Token
+    819212  1.94% 81.62%   25570959 60.48%  trest.local/trest.(*Route[go.shape.struct {},go.shape.string]).mount.func6
+    786516  1.86% 83.48%     786516  1.86%  time.newTimer
+    753675  1.78% 85.26%     753675  1.78%  encoding/json/jsontext.(*objectNameStack).push (inline)
+    753675  1.78% 87.04%    1507373  3.57%  trest.local/trest/operation.WithCorrelationID (inline)
+    752255  1.78% 88.82%    2995962  7.09%  net/http.readRequestLimit
+    720907  1.71% 90.53%    7142711 16.89%  trest.local/trest/operation.(*Handle[go.shape.struct {},go.shape.string]).call
+    720906  1.71% 92.23%     720906  1.71%  encoding/json/jsontext.Token.String (inline)

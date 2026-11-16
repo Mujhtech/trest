@@ -1,0 +1,80 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   90705	      3849 ns/op	    7930 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   25051	     12993 ns/op	   14706 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   60001	      6077 ns/op	    8489 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   91803	      4309 ns/op	    7930 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   27193	     12729 ns/op	   14702 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   63274	      5792 ns/op	    8486 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	  100519	      3928 ns/op	    7932 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   26898	     13413 ns/op	   14704 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   56788	      6225 ns/op	    8495 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   94341	      3799 ns/op	    7932 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   26996	     12826 ns/op	   14704 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   59409	      5974 ns/op	    8491 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   98148	      3801 ns/op	    7933 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   27999	     12487 ns/op	   14704 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   61260	      5811 ns/op	    8486 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   96310	      3646 ns/op	    7930 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   29695	     12596 ns/op	   14702 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   59191	      5909 ns/op	    8488 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	  101433	      3453 ns/op	    7929 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   27469	     12771 ns/op	   14704 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   61770	      5976 ns/op	    8492 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   99706	      3551 ns/op	    7933 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   29496	     12130 ns/op	   14706 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   62409	      5720 ns/op	    8490 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   95715	      3478 ns/op	    7932 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   29455	     13757 ns/op	   14706 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   48378	      6206 ns/op	    8492 B/op	      57 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest/experiments/adoption
+cpu: Apple M2 Pro
+BenchmarkDuplicateInvoice/net_http-12         	   89385	      3632 ns/op	    7931 B/op	      40 allocs/op
+BenchmarkDuplicateInvoice/trest-12            	   24310	     13282 ns/op	   14703 B/op	     227 allocs/op
+BenchmarkDuplicateInvoice/huma-12             	   59684	      6327 ns/op	    8489 B/op	      57 allocs/op
+PASS

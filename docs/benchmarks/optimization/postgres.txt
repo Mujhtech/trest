@@ -1,0 +1,4 @@
+ok  	trest.local/trest/adapters/postgres	2.173s
+?   	trest.local/trest/adapters/postgres/cmd/job-example	[no test files]
+Fresh PostgreSQL 18 integration suite passed.
+Disposable container removed.

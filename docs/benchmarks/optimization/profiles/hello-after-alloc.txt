@@ -1,0 +1,37 @@
+File: trest-after.test
+Type: alloc_objects
+Time: Nov 10, 2026 at 2:17pm (WAT)
+Showing nodes accounting for 32014796, 99.78% of 32084874 total
+Dropped 61 nodes (cum <= 160424)
+Showing top 30 nodes out of 49
+      flat  flat%   sum%        cum   cum%
+   3012036  9.39%  9.39%    3896785 12.15%  net/textproto.MIMEHeader.Set (inline)
+   2946536  9.18% 18.57%    2946536  9.18%  net/http/httptest.NewRecorder
+   2866606  8.93% 27.51%    2866606  8.93%  net/http.Header.Clone (inline)
+   2764366  8.62% 36.12%    3555563 11.08%  context.WithDeadlineCause
+   2017485  6.29% 42.41%    2017485  6.29%  net/http.(*Request).WithContext (inline)
+   1923620  6.00% 48.40%    1923620  6.00%  bufio.NewReaderSize (inline)
+   1900601  5.92% 54.33%    1900601  5.92%  encoding/hex.EncodeToString (inline)
+   1114162  3.47% 57.80%    1114162  3.47%  net/textproto.readMIMEHeader
+   1114145  3.47% 61.27%    6241826 19.45%  trest.local/trest.writeOutput
+   1114128  3.47% 64.75%    1114128  3.47%  net/textproto.(*Reader).ReadLine (inline)
+   1081410  3.37% 68.12%    1081410  3.37%  bytes.(*Buffer).grow
+   1068318  3.33% 71.45%   19910786 62.06%  trest.local/trest.wrapRoute.func2
+   1015839  3.17% 74.61%    1015839  3.17%  strings.NewReader (inline)
+   1004907  3.13% 77.74%    9181371 28.62%  net/http/httptest.NewRequestWithContext
+    999454  3.12% 80.86%     999454  3.12%  trest.local/trest/operation.WithCorrelationID (inline)
+    972250  3.03% 83.89%     972250  3.03%  net/url.parse
+    957117  2.98% 86.87%    4181554 13.03%  net/http.readRequestLimit
+    917518  2.86% 89.73%     917518  2.86%  trest.local/trest/operation.(*Handle[go.shape.struct {},go.shape.string]).call
+    892982  2.78% 92.52%     892982  2.78%  trest.local/trest/operation.WithTrace (inline)
+    884749  2.76% 95.27%     884749  2.76%  net/textproto.canonicalMIMEHeaderKey
+    791197  2.47% 97.74%     791197  2.47%  time.newTimer
+    655370  2.04% 99.78%   13115253 40.88%  trest.local/trest.(*Route[go.shape.struct {},go.shape.string]).mount.func6
+         0     0% 99.78%    1923620  6.00%  bufio.NewReader (inline)
+         0     0% 99.78%    1081410  3.37%  bytes.(*Buffer).WriteString
+         0     0% 99.78%    3555563 11.08%  context.WithDeadline (inline)
+         0     0% 99.78%    3555563 11.08%  context.WithTimeout
+         0     0% 99.78%    1081410  3.37%  io.WriteString
+         0     0% 99.78%   19910786 62.06%  net/http.(*ServeMux).ServeHTTP
+         0     0% 99.78%   19910786 62.06%  net/http.HandlerFunc.ServeHTTP
+         0     0% 99.78%    3896785 12.15%  net/http.Header.Set (inline)

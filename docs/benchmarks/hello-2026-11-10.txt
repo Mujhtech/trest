@@ -1,0 +1,26 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkHello/trest-12         	   64458	      3799 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   62799	      3804 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   64088	      3758 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   68121	      3611 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   61651	      3685 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   67924	      3578 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   61431	      3920 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   61669	      4032 ns/op	    8539 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   63237	      3742 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12         	   64456	      4152 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/net_http-12      	  175324	      1396 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  155940	      1383 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  193393	      1411 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  157527	      1332 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  177697	      1333 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  175435	      1305 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  199437	      1253 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  193725	      1276 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  192577	      1244 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12      	  192087	      1362 ns/op	    6115 B/op	      19 allocs/op
+PASS
+ok  	trest.local/trest	5.688s

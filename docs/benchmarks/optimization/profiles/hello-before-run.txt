@@ -1,0 +1,6 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkHello/trest-12         	  778462	      4318 ns/op	    8545 B/op	      58 allocs/op
+PASS

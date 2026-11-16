@@ -1,0 +1,2 @@
+ok  	trest.local/trest/operation	2.106s
+ok  	trest.local/trest/operation	1.555s

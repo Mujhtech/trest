@@ -1,0 +1,38 @@
+File: trest.test
+Type: cpu
+Time: Nov 10, 2026 at 1:08pm (WAT)
+Duration: 3.62s, Total samples = 4.29s (118.48%)
+Showing nodes accounting for 3.28s, 76.46% of 4.29s total
+Dropped 175 nodes (cum <= 0.02s)
+Showing top 30 nodes out of 181
+      flat  flat%   sum%        cum   cum%
+     0.90s 20.98% 20.98%      0.90s 20.98%  runtime.kevent
+     0.45s 10.49% 31.47%      0.45s 10.49%  runtime.pthread_cond_wait
+     0.40s  9.32% 40.79%      0.40s  9.32%  runtime.madvise
+     0.36s  8.39% 49.18%      0.36s  8.39%  runtime.pthread_cond_signal
+     0.23s  5.36% 54.55%      0.23s  5.36%  runtime.usleep
+     0.13s  3.03% 57.58%      0.13s  3.03%  runtime.pthread_kill
+     0.09s  2.10% 59.67%      0.09s  2.10%  syscall.rawsyscalln
+     0.06s  1.40% 61.07%      0.16s  3.73%  runtime.mallocgcSmallScanNoHeader
+     0.06s  1.40% 62.47%      0.08s  1.86%  runtime.mallocgcTinySC2
+     0.06s  1.40% 63.87%      0.06s  1.40%  runtime.pthread_cond_timedwait_relative_np
+     0.04s  0.93% 64.80%      0.04s  0.93%  internal/bytealg.IndexByteString
+     0.04s  0.93% 65.73%      0.04s  0.93%  runtime.acquirem (inline)
+     0.04s  0.93% 66.67%      0.05s  1.17%  runtime.mallocgcSmallScanNoHeaderSC2
+     0.03s   0.7% 67.37%      0.03s   0.7%  internal/runtime/atomic.(*UnsafePointer).Load (inline)
+     0.03s   0.7% 68.07%      0.04s  0.93%  internal/runtime/maps.(*Map).getWithoutKeySmallFastStr
+     0.03s   0.7% 68.76%      0.07s  1.63%  math/big.nat.scan
+     0.03s   0.7% 69.46%      0.09s  2.10%  runtime.mallocgcSmallNoScanSC5
+     0.03s   0.7% 70.16%      0.04s  0.93%  runtime.mallocgcSmallNoscan
+     0.03s   0.7% 70.86%      0.03s   0.7%  runtime.memclrNoHeapPointers
+     0.03s   0.7% 71.56%      0.03s   0.7%  runtime.memmove
+     0.03s   0.7% 72.26%      0.04s  0.93%  runtime.tryDeferToSpanScan
+     0.03s   0.7% 72.96%      0.19s  4.43%  trest.local/trest/internal/schema.readValue
+     0.03s   0.7% 73.66%      0.36s  8.39%  trest.local/trest/internal/schema.validateValue
+     0.02s  0.47% 74.13%      0.03s   0.7%  runtime.(*mspan).init
+     0.02s  0.47% 74.59%      0.08s  1.86%  runtime.mapaccess2_faststr
+     0.02s  0.47% 75.06%      0.09s  2.10%  runtime.scanObject
+     0.02s  0.47% 75.52%      0.10s  2.33%  trest.local/trest.writeOutput
+     0.02s  0.47% 75.99%      0.67s 15.62%  trest.local/trest/operation.(*Handle[go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\" maxLength:\"32\""; SKU string "json:\"sku\" minLength:\"1\" maxLength:\"32\""; Quantity int "json:\"quantity\" min:\"1\" max:\"100\"" },go.shape.struct { TenantID string "json:\"tenant_id\" minLength:\"1\""; SKU string "json:\"sku\" minLength:\"1\""; Total int "json:\"total\" min:\"1\"" }]).run
+     0.01s  0.23% 76.22%      0.03s   0.7%  encoding/json/jsontext.(*decoderState).ReadToken
+     0.01s  0.23% 76.46%      0.05s  1.17%  encoding/json/jsontext.(*decoderState).consumeValue

@@ -1,0 +1,28 @@
+?   	trest.local/trest/cmd/existing-handler	[no test files]
+?   	trest.local/trest/cmd/invoices	[no test files]
+?   	trest.local/trest/cmd/trest-demo	[no test files]
+ok  	trest.local/trest	1.806s
+ok  	trest.local/trest/aitool	1.578s
+ok  	trest.local/trest/check	1.564s
+ok  	trest.local/trest/clientgen	(cached)
+?   	trest.local/trest/internal/example/server	[no test files]
+?   	trest.local/trest/internal/openapischema	[no test files]
+ok  	trest.local/trest/cmd/trest	1.852s
+ok  	trest.local/trest/contract	1.565s
+ok  	trest.local/trest/examples/invoices	1.676s
+ok  	trest.local/trest/httpadapter	2.091s
+ok  	trest.local/trest/inspect	1.576s
+ok  	trest.local/trest/internal/docsui	(cached)
+ok  	trest.local/trest/internal/example/existinghandler	2.050s
+ok  	trest.local/trest/internal/example/invoiceapi	2.082s
+ok  	trest.local/trest/internal/example/invoices	(cached)
+ok  	trest.local/trest/internal/schema	2.105s
+ok  	trest.local/trest/internal/webinput	1.550s
+ok  	trest.local/trest/job	1.523s
+ok  	trest.local/trest/operation	1.566s
+ok  	trest.local/trest/plugins/cookie	(cached)
+ok  	trest.local/trest/plugins/cors	1.553s
+ok  	trest.local/trest/plugins/schedule	2.121s
+ok  	trest.local/trest/plugins/static	1.543s
+ok  	trest.local/trest/scenario	(cached)
+ok  	trest.local/trest/telemetry	1.527s

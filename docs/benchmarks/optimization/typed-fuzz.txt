@@ -1,0 +1,8 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/84 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 84/84 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 9667 (3221/sec), new interesting: 1 (total: 85)
+fuzz: elapsed: 6s, execs: 9667 (0/sec), new interesting: 1 (total: 85)
+fuzz: elapsed: 9s, execs: 9667 (0/sec), new interesting: 1 (total: 85)
+fuzz: elapsed: 11s, execs: 9667 (0/sec), new interesting: 1 (total: 85)
+PASS
+ok  	trest.local/trest/internal/schema	11.824s

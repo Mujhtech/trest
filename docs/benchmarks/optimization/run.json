@@ -1,0 +1,233 @@
+{
+  "started_utc": "2026-11-10T13:14:19Z",
+  "gomaxprocs": 12,
+  "groups": [
+    {
+      "name": "core",
+      "samples": 12,
+      "benchtime": "500ms",
+      "pattern": "^(BenchmarkHello|BenchmarkTypedPOST)$",
+      "binaries": {
+        "before": {
+          "path": "/tmp/trest-perf-before/trest.test",
+          "sha256": "ee6f2cc4d17ed9467fce2527a9ae8ef49f7f86ca838ff8cc591921d54db47a98"
+        },
+        "after": {
+          "path": "/tmp/trest-perf-before/trest-after.test",
+          "sha256": "0b4268808f526836619d7ec18398e89e90c634fa09501afcd43a6df35bf8d46b"
+        }
+      },
+      "order": [
+        {
+          "sample": 1,
+          "variant": "before"
+        },
+        {
+          "sample": 1,
+          "variant": "after"
+        },
+        {
+          "sample": 2,
+          "variant": "after"
+        },
+        {
+          "sample": 2,
+          "variant": "before"
+        },
+        {
+          "sample": 3,
+          "variant": "before"
+        },
+        {
+          "sample": 3,
+          "variant": "after"
+        },
+        {
+          "sample": 4,
+          "variant": "after"
+        },
+        {
+          "sample": 4,
+          "variant": "before"
+        },
+        {
+          "sample": 5,
+          "variant": "before"
+        },
+        {
+          "sample": 5,
+          "variant": "after"
+        },
+        {
+          "sample": 6,
+          "variant": "after"
+        },
+        {
+          "sample": 6,
+          "variant": "before"
+        },
+        {
+          "sample": 7,
+          "variant": "before"
+        },
+        {
+          "sample": 7,
+          "variant": "after"
+        },
+        {
+          "sample": 8,
+          "variant": "after"
+        },
+        {
+          "sample": 8,
+          "variant": "before"
+        },
+        {
+          "sample": 9,
+          "variant": "before"
+        },
+        {
+          "sample": 9,
+          "variant": "after"
+        },
+        {
+          "sample": 10,
+          "variant": "after"
+        },
+        {
+          "sample": 10,
+          "variant": "before"
+        },
+        {
+          "sample": 11,
+          "variant": "before"
+        },
+        {
+          "sample": 11,
+          "variant": "after"
+        },
+        {
+          "sample": 12,
+          "variant": "after"
+        },
+        {
+          "sample": 12,
+          "variant": "before"
+        }
+      ]
+    },
+    {
+      "name": "adoption",
+      "samples": 10,
+      "benchtime": "300ms",
+      "pattern": "^BenchmarkDuplicateInvoice$",
+      "binaries": {
+        "before": {
+          "path": "/tmp/trest-perf-before/adoption-before.test",
+          "sha256": "6f0a1c3c23335e7ce9290d9bfdf999a5550bb72d1bb359fc2768f373b3847e52"
+        },
+        "after": {
+          "path": "/tmp/trest-perf-before/adoption-after.test",
+          "sha256": "cbc2201401fa644ec027f2ef76b60f2923d161492158d4ffc6c3e83cf37290d9"
+        }
+      },
+      "order": [
+        {
+          "sample": 1,
+          "variant": "before"
+        },
+        {
+          "sample": 1,
+          "variant": "after"
+        },
+        {
+          "sample": 2,
+          "variant": "after"
+        },
+        {
+          "sample": 2,
+          "variant": "before"
+        },
+        {
+          "sample": 3,
+          "variant": "before"
+        },
+        {
+          "sample": 3,
+          "variant": "after"
+        },
+        {
+          "sample": 4,
+          "variant": "after"
+        },
+        {
+          "sample": 4,
+          "variant": "before"
+        },
+        {
+          "sample": 5,
+          "variant": "before"
+        },
+        {
+          "sample": 5,
+          "variant": "after"
+        },
+        {
+          "sample": 6,
+          "variant": "after"
+        },
+        {
+          "sample": 6,
+          "variant": "before"
+        },
+        {
+          "sample": 7,
+          "variant": "before"
+        },
+        {
+          "sample": 7,
+          "variant": "after"
+        },
+        {
+          "sample": 8,
+          "variant": "after"
+        },
+        {
+          "sample": 8,
+          "variant": "before"
+        },
+        {
+          "sample": 9,
+          "variant": "before"
+        },
+        {
+          "sample": 9,
+          "variant": "after"
+        },
+        {
+          "sample": 10,
+          "variant": "after"
+        },
+        {
+          "sample": 10,
+          "variant": "before"
+        }
+      ]
+    }
+  ],
+  "finished_utc": "2026-11-10T13:15:52Z",
+  "fixtures": {
+    "app_bench_test.go": {
+      "before": "e29d63cfad648fc82b874aded91f5762f549cd526f93a2520b5ae12640b161b6",
+      "after": "e29d63cfad648fc82b874aded91f5762f549cd526f93a2520b5ae12640b161b6"
+    },
+    "app_test.go": {
+      "before": "3bcf8cbc7e50f1a922f14741d4c56d6db9cc314f62b6c73c5c853ff349dca113",
+      "after": "3bcf8cbc7e50f1a922f14741d4c56d6db9cc314f62b6c73c5c853ff349dca113"
+    },
+    "experiments/adoption/adoption_test.go": {
+      "before": "67d4ca785505942d73fd0cfaa2ea4768f7b4618c0d663327dcc7e0f537d0621a",
+      "after": "67d4ca785505942d73fd0cfaa2ea4768f7b4618c0d663327dcc7e0f537d0621a"
+    }
+  }
+}

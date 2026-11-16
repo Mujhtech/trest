@@ -1,0 +1,35 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+                                     │ docs/benchmarks/optimization/core-before.txt │ docs/benchmarks/optimization/core-after.txt │
+                                     │                    sec/op                    │       sec/op         vs base                │
+TypedPOST/Trest-12                                                    10.699µ ±  7%          4.990µ ±  4%  -53.36% (p=0.000 n=12)
+TypedPOST/DirectHTTPSharedInvoker-12                                  10.431µ ±  3%          4.562µ ±  4%  -56.27% (p=0.000 n=12)
+Hello/trest-12                                                         4.322µ ±  5%          2.973µ ±  5%  -31.21% (p=0.000 n=12)
+Hello/net_http-12                                                      1.536µ ± 10%          1.589µ ± 11%        ~ (p=0.156 n=12)
+geomean                                                                5.217µ                3.220µ        -38.27%
+
+                                     │ docs/benchmarks/optimization/core-before.txt │ docs/benchmarks/optimization/core-after.txt │
+                                     │                     B/s                      │        B/s          vs base                 │
+TypedPOST/Trest-12                                                     4.101Mi ± 7%         8.788Mi ± 4%  +114.30% (p=0.000 n=12)
+TypedPOST/DirectHTTPSharedInvoker-12                                   4.206Mi ± 3%         9.618Mi ± 4%  +128.68% (p=0.000 n=12)
+geomean                                                                4.153Mi              9.194Mi       +121.38%
+
+                                     │ docs/benchmarks/optimization/core-before.txt │ docs/benchmarks/optimization/core-after.txt │
+                                     │                     B/op                     │       B/op         vs base                  │
+TypedPOST/Trest-12                                                    13.504Ki ± 0%        8.623Ki ± 0%  -36.15% (p=0.000 n=12)
+TypedPOST/DirectHTTPSharedInvoker-12                                  12.682Ki ± 0%        7.839Ki ± 0%  -38.19% (p=0.000 n=12)
+Hello/trest-12                                                         8.338Ki ± 0%        6.887Ki ± 0%  -17.40% (p=0.000 n=12)
+Hello/net_http-12                                                      5.972Ki ± 0%        5.972Ki ± 0%        ~ (p=1.000 n=12) ¹
+geomean                                                                9.609Ki             7.261Ki       -24.44%
+¹ all samples are equal
+
+                                     │ docs/benchmarks/optimization/core-before.txt │ docs/benchmarks/optimization/core-after.txt │
+                                     │                  allocs/op                   │     allocs/op      vs base                  │
+TypedPOST/Trest-12                                                      202.00 ± 0%          50.00 ± 0%  -75.25% (p=0.000 n=12)
+TypedPOST/DirectHTTPSharedInvoker-12                                    195.00 ± 0%          45.00 ± 0%  -76.92% (p=0.000 n=12)
+Hello/trest-12                                                           58.00 ± 0%          33.00 ± 0%  -43.10% (p=0.000 n=12)
+Hello/net_http-12                                                        19.00 ± 0%          19.00 ± 0%        ~ (p=1.000 n=12) ¹
+geomean                                                                  81.17               34.46       -57.54%
+¹ all samples are equal

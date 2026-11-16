@@ -1,0 +1,55 @@
+
+Checking .
+ok  	trest.local/trest	2.341s
+ok  	trest.local/trest/aitool	1.635s
+ok  	trest.local/trest/check	2.118s
+ok  	trest.local/trest/clientgen	20.086s
+?   	trest.local/trest/cmd/existing-handler	[no test files]
+?   	trest.local/trest/cmd/invoices	[no test files]
+ok  	trest.local/trest/cmd/trest	21.862s
+?   	trest.local/trest/cmd/trest-demo	[no test files]
+ok  	trest.local/trest/contract	2.126s
+ok  	trest.local/trest/examples/invoices	4.818s
+ok  	trest.local/trest/httpadapter	1.619s
+ok  	trest.local/trest/inspect	2.118s
+ok  	trest.local/trest/internal/docsui	(cached)
+ok  	trest.local/trest/internal/example/existinghandler	1.616s
+ok  	trest.local/trest/internal/example/invoiceapi	1.618s
+ok  	trest.local/trest/internal/example/invoices	(cached)
+?   	trest.local/trest/internal/example/server	[no test files]
+?   	trest.local/trest/internal/openapischema	[no test files]
+ok  	trest.local/trest/internal/schema	2.161s
+ok  	trest.local/trest/internal/webinput	1.602s
+ok  	trest.local/trest/job	1.559s
+ok  	trest.local/trest/operation	1.597s
+ok  	trest.local/trest/plugins/cookie	(cached)
+ok  	trest.local/trest/plugins/cors	1.569s
+ok  	trest.local/trest/plugins/schedule	1.582s
+ok  	trest.local/trest/plugins/static	1.607s
+ok  	trest.local/trest/scenario	(cached)
+ok  	trest.local/trest/telemetry	1.574s
+
+Checking adapters/mcp
+ok  	trest.local/trest/adapters/mcp	1.643s
+ok  	trest.local/trest/adapters/mcp/dev	1.643s
+
+Checking adapters/postgres
+?   	trest.local/trest/adapters/postgres	[no test files]
+?   	trest.local/trest/adapters/postgres/cmd/job-example	[no test files]
+
+Checking adapters/websocket
+ok  	trest.local/trest/adapters/websocket	1.626s
+?   	trest.local/trest/adapters/websocket/cmd/echo	[no test files]
+
+Checking adapters/jwt
+ok  	trest.local/trest/adapters/jwt	1.779s
+?   	trest.local/trest/adapters/jwt/cmd/demo	[no test files]
+
+Checking adapters/otel
+ok  	trest.local/trest/adapters/otel	1.630s
+
+Checking experiments/adoption
+ok  	trest.local/trest/experiments/adoption	1.630s
+?   	trest.local/trest/experiments/adoption/cmd/measure	[no test files]
+ok  	trest.local/trest/adapters/websocket	1.749s
+?   	trest.local/trest/adapters/websocket/cmd/echo	[no test files]

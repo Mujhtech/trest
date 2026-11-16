@@ -1,0 +1,30 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	   51879	      6174 ns/op	   7.45 MB/s	   10118 B/op	      80 allocs/op
+BenchmarkTypedPOST/Trest-12         	   59835	      5766 ns/op	   7.98 MB/s	   10115 B/op	      80 allocs/op
+BenchmarkTypedPOST/Trest-12         	   64042	      5674 ns/op	   8.11 MB/s	   10116 B/op	      80 allocs/op
+BenchmarkTypedPOST/Trest-12         	   43861	      7050 ns/op	   6.52 MB/s	   10118 B/op	      80 allocs/op
+BenchmarkTypedPOST/Trest-12         	   58683	      6346 ns/op	   7.25 MB/s	   10119 B/op	      80 allocs/op
+BenchmarkTypedPOST/Trest-12         	   56967	      6401 ns/op	   7.19 MB/s	   10119 B/op	      80 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   61873	      6225 ns/op	   7.39 MB/s	    9278 B/op	      73 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   58810	      5954 ns/op	   7.73 MB/s	    9278 B/op	      73 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   60420	      5929 ns/op	   7.76 MB/s	    9278 B/op	      73 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   61410	      5781 ns/op	   7.96 MB/s	    9274 B/op	      73 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   63825	      5762 ns/op	   7.98 MB/s	    9276 B/op	      73 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   61532	      6019 ns/op	   7.64 MB/s	    9277 B/op	      73 allocs/op
+BenchmarkHello/trest-12                               	  108548	      3460 ns/op	    7236 B/op	      40 allocs/op
+BenchmarkHello/trest-12                               	  102642	      3108 ns/op	    7236 B/op	      40 allocs/op
+BenchmarkHello/trest-12                               	  122322	      3082 ns/op	    7236 B/op	      40 allocs/op
+BenchmarkHello/trest-12                               	  121683	      3308 ns/op	    7236 B/op	      40 allocs/op
+BenchmarkHello/trest-12                               	  108597	      3331 ns/op	    7236 B/op	      40 allocs/op
+BenchmarkHello/trest-12                               	  108630	      3385 ns/op	    7236 B/op	      40 allocs/op
+BenchmarkHello/net_http-12                            	  220836	      1613 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  246493	      1367 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  272323	      1581 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  221676	      1633 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  223963	      1663 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  195321	      1557 ns/op	    6115 B/op	      19 allocs/op
+PASS
+ok  	trest.local/trest	10.318s

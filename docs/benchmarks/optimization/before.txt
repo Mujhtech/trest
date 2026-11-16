@@ -1,0 +1,45 @@
+goos: darwin
+goarch: arm64
+pkg: trest.local/trest
+cpu: Apple M2 Pro
+BenchmarkTypedPOST/Trest-12         	   31206	      9719 ns/op	   4.73 MB/s	   13822 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   36403	      9639 ns/op	   4.77 MB/s	   13825 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   37580	      9743 ns/op	   4.72 MB/s	   13825 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   37308	      9859 ns/op	   4.67 MB/s	   13824 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   34894	     10088 ns/op	   4.56 MB/s	   13828 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   37842	      9851 ns/op	   4.67 MB/s	   13827 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   35352	      9789 ns/op	   4.70 MB/s	   13828 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   37815	      9825 ns/op	   4.68 MB/s	   13826 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   35617	     10033 ns/op	   4.58 MB/s	   13828 B/op	     202 allocs/op
+BenchmarkTypedPOST/Trest-12         	   37668	      9508 ns/op	   4.84 MB/s	   13828 B/op	     202 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   39578	      9142 ns/op	   5.03 MB/s	   12982 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   38826	      9114 ns/op	   5.05 MB/s	   12983 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   38977	      9122 ns/op	   5.04 MB/s	   12981 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   38594	      9570 ns/op	   4.81 MB/s	   12985 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   37902	      9424 ns/op	   4.88 MB/s	   12985 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   38689	      9082 ns/op	   5.06 MB/s	   12984 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   40016	      9217 ns/op	   4.99 MB/s	   12985 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   38354	      9097 ns/op	   5.06 MB/s	   12983 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   39634	      9199 ns/op	   5.00 MB/s	   12983 B/op	     195 allocs/op
+BenchmarkTypedPOST/DirectHTTPSharedInvoker-12         	   39368	      9147 ns/op	   5.03 MB/s	   12982 B/op	     195 allocs/op
+BenchmarkHello/trest-12                               	   93080	      3845 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   94848	      3865 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   92950	      3866 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   93376	      3942 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   91750	      3933 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   92198	      3988 ns/op	    8539 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   89462	      3979 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   89374	      3875 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   95176	      3858 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/trest-12                               	   91678	      4042 ns/op	    8538 B/op	      58 allocs/op
+BenchmarkHello/net_http-12                            	  270758	      1405 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  268720	      1357 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  279876	      1376 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  255176	      1573 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  234783	      1472 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  253990	      1414 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  268093	      1407 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  250648	      1417 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  248744	      1433 ns/op	    6115 B/op	      19 allocs/op
+BenchmarkHello/net_http-12                            	  244657	      1488 ns/op	    6115 B/op	      19 allocs/op
+PASS

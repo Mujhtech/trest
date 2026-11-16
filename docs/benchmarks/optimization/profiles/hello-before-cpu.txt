@@ -1,0 +1,38 @@
+File: trest.test
+Type: cpu
+Time: Nov 10, 2026 at 1:08pm (WAT)
+Duration: 3.51s, Total samples = 4.56s (129.93%)
+Showing nodes accounting for 3.67s, 80.48% of 4.56s total
+Dropped 206 nodes (cum <= 0.02s)
+Showing top 30 nodes out of 155
+      flat  flat%   sum%        cum   cum%
+     1.03s 22.59% 22.59%      1.03s 22.59%  runtime.kevent
+     0.55s 12.06% 34.65%      0.55s 12.06%  runtime.pthread_cond_wait
+     0.42s  9.21% 43.86%      0.42s  9.21%  runtime.pthread_cond_signal
+     0.40s  8.77% 52.63%      0.40s  8.77%  runtime.madvise
+     0.30s  6.58% 59.21%      0.30s  6.58%  runtime.usleep
+     0.21s  4.61% 63.82%      0.21s  4.61%  runtime.pthread_kill
+     0.11s  2.41% 66.23%      0.11s  2.41%  syscall.rawsyscalln
+     0.08s  1.75% 67.98%      0.08s  1.75%  runtime.pthread_cond_timedwait_relative_np
+     0.07s  1.54% 69.52%      0.17s  3.73%  runtime.mallocgcSmallScanNoHeader
+     0.07s  1.54% 71.05%      0.07s  1.54%  runtime.nanotime1
+     0.06s  1.32% 72.37%      0.07s  1.54%  runtime.mallocgcSmallScanNoHeaderSC5
+     0.05s  1.10% 73.46%      0.07s  1.54%  runtime.walltime
+     0.03s  0.66% 74.12%      0.03s  0.66%  internal/runtime/atomic.(*Uint64).Add (inline)
+     0.03s  0.66% 74.78%      0.03s  0.66%  runtime.memclrNoHeapPointers
+     0.03s  0.66% 75.44%      0.09s  1.97%  runtime.scanObject
+     0.03s  0.66% 76.10%      0.04s  0.88%  runtime.typePointers.next
+     0.02s  0.44% 76.54%      0.04s  0.88%  encoding/json/jsontext.(*decoderState).fetch
+     0.02s  0.44% 76.97%      0.04s  0.88%  runtime.(*mheap).initSpan
+     0.02s  0.44% 77.41%      0.03s  0.66%  runtime.findObject
+     0.02s  0.44% 77.85%      0.27s  5.92%  runtime.lock2
+     0.02s  0.44% 78.29%      0.03s  0.66%  runtime.pcvalue
+     0.02s  0.44% 78.73%      0.04s  0.88%  runtime.scanblock
+     0.01s  0.22% 78.95%      0.08s  1.75%  encoding/json.(*Decoder).Token
+     0.01s  0.22% 79.17%      0.05s  1.10%  encoding/json/v2.marshalEncode
+     0.01s  0.22% 79.39%      0.04s  0.88%  net/http.(*Request).WithContext
+     0.01s  0.22% 79.61%      0.13s  2.85%  net/http.Header.Clone (inline)
+     0.01s  0.22% 79.82%      0.14s  3.07%  net/http/httptest.(*ResponseRecorder).WriteHeader
+     0.01s  0.22% 80.04%      0.03s  0.66%  net/textproto.readMIMEHeader
+     0.01s  0.22% 80.26%      0.09s  1.97%  runtime.(*mcache).refill
+     0.01s  0.22% 80.48%      0.16s  3.51%  runtime.forEachPInternal
