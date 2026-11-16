@@ -13,9 +13,14 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
+	"github.com/mujhtech/trest/internal/correlation"
+	"github.com/mujhtech/trest/internal/invocationctx"
+	"github.com/mujhtech/trest/internal/randomid"
 	"github.com/mujhtech/trest/internal/schema"
+	"github.com/mujhtech/trest/internal/spanreserve"
 )
 
 // Definition is the immutable contract captured by Register.
@@ -75,14 +80,19 @@ type Registry struct {
 	operations     map[string]Metadata
 	bindings       map[string]binding
 	observer       Observer
+	ids            *randomid.Generator
 	maxInputBytes  int
 	maxOutputBytes int
 	authorizer     Authorizer
 	defaultTimeout time.Duration
 	maxConcurrent  int
-	slots          chan struct{}
-	isFrozen       bool
-	configError    string
+	active         atomic.Int64
+	frozen         atomic.Bool
+	// isFrozen remains protected by mu for registration and JSON lookup.
+	// frozen publishes the same transition to invocation readers without
+	// taking a read lock on every request.
+	isFrozen    bool
+	configError string
 }
 
 // Option configures invocation bounds during NewRegistry construction.
@@ -120,6 +130,7 @@ func NewRegistry(authorizer Authorizer, options ...Option) *Registry {
 	}
 	return &Registry{
 		operations: make(map[string]Metadata), bindings: make(map[string]binding), authorizer: authorizer,
+		ids:      randomid.New(),
 		observer: c.observer, maxInputBytes: c.maxInputBytes, maxOutputBytes: c.maxOutputBytes,
 		defaultTimeout: c.defaultTimeout, maxConcurrent: c.maxConcurrent,
 		configError: c.configError,
@@ -212,6 +223,9 @@ func Register[I, O any](r *Registry, def Definition[I, O], handler func(context.
 	r.operations[def.ID] = metadata
 	h := &Handle[I, O]{registry: r, definition: def, handler: handler, metadata: metadata, validator: validator,
 		inputValueValidator: validator.ForType(reflect.TypeFor[I]()), outputValidator: outputValidator.ForType(reflect.TypeFor[O]())}
+	h.direct = r.observer == nil && def.Access.Mode == "public" &&
+		def.Validate == nil && def.Resolve == nil && def.Authorize == nil && def.ValidateOutput == nil && def.MapError == nil &&
+		h.inputValueValidator.AlwaysValid() && h.outputValidator.AlwaysValid()
 	r.bindings[def.ID] = binding{prepare: h.prepareJSON, invoke: h.invokeJSON}
 	return h, nil
 }
@@ -242,8 +256,8 @@ func (r *Registry) Freeze() error {
 	if r.operations == nil || r.defaultTimeout <= 0 || r.maxConcurrent <= 0 || r.maxInputBytes <= 0 || r.maxOutputBytes <= 0 || r.configError != "" {
 		return &Diagnostic{Code: "invalid_config", Message: "construct with NewRegistry and use positive timeout/concurrency/json limit options; nil options are invalid"}
 	}
-	r.slots = make(chan struct{}, r.maxConcurrent)
 	r.isFrozen = true
+	r.frozen.Store(true)
 	return nil
 }
 
@@ -252,9 +266,19 @@ func (r *Registry) IsFrozen() bool {
 	if r == nil {
 		return false
 	}
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	return r.isFrozen
+	return r.frozen.Load()
+}
+
+// tryAcquire reserves one invocation without waiting for capacity. The increment
+// occurs only below a positive int limit, so even MaxInt cannot overflow int64.
+func (r *Registry) tryAcquire() bool {
+	limit := int64(r.maxConcurrent)
+	for active := r.active.Load(); active < limit; active = r.active.Load() {
+		if r.active.CompareAndSwap(active, active+1) {
+			return true
+		}
+	}
+	return false
 }
 
 // Operations returns a detached snapshot sorted by operation ID.
@@ -287,6 +311,7 @@ type Handle[I, O any] struct {
 	validator           *schema.Validator
 	inputValueValidator *schema.ValueValidator
 	outputValidator     *schema.ValueValidator
+	direct              bool
 }
 
 // Metadata returns a detached copy of this operation's contract.
@@ -355,13 +380,13 @@ func (h *Handle[I, O]) execute(ctx context.Context, in I, runHandler bool) (resu
 	if ctx == nil {
 		return zero, NewError(Internal, "nil invocation context", nil)
 	}
+	if r.observer == nil {
+		return h.runUnobserved(ctx, in, runHandler)
+	}
 	var traceErr error
-	ctx, traceErr = newInvocationTrace(ctx)
+	ctx, traceErr = r.newInvocationTrace(ctx)
 	if traceErr != nil {
 		return zero, NewError(Internal, "could not start invocation", traceErr)
-	}
-	if r.observer == nil {
-		return h.run(ctx, in, runHandler)
 	}
 	phase := "invoke"
 	if !runHandler {
@@ -384,14 +409,53 @@ func (h *Handle[I, O]) run(ctx context.Context, in I, runHandler bool) (O, error
 	if err := ctx.Err(); err != nil {
 		return zero, invocationError(err)
 	}
-	select {
-	case r.slots <- struct{}{}:
-		defer func() { <-r.slots }()
-	default:
+	if !r.tryAcquire() {
 		return zero, NewError(RateLimited, "invocation capacity exceeded", nil)
 	}
+	defer r.active.Add(-1)
 	ctx, cancel := context.WithTimeout(ctx, h.metadata.Timeout)
 	defer cancel()
+	return h.runPhases(ctx, in, runHandler)
+}
+
+func (h *Handle[I, O]) runUnobserved(ctx context.Context, in I, runHandler bool) (O, error) {
+	var zero O
+	r := h.registry
+	// Allocate a fresh span before cancellation/capacity rejection, in the
+	// same order as the standard path. The deadline starts after admission.
+	trace, err := r.nextTrace(ctx)
+	if err != nil {
+		return zero, NewError(Internal, "could not start invocation", err)
+	}
+	if err := ctx.Err(); err != nil {
+		return zero, invocationError(err)
+	}
+	if !r.tryAcquire() {
+		return zero, NewError(RateLimited, "invocation capacity exceeded", nil)
+	}
+	defer r.active.Add(-1)
+	invocation := invocationctx.Start(ctx, invocationctx.Trace(trace), h.metadata.Timeout)
+	defer invocation.Cancel()
+	return h.runPhases(invocation, in, runHandler)
+}
+
+// Every context implementation follows the same application enforcement path.
+func (h *Handle[I, O]) runPhases(ctx context.Context, in I, runHandler bool) (O, error) {
+	var zero O
+	// Registration proves that this public operation has no application hooks,
+	// observer, or native schema checks. Wire validation remains independent.
+	// Keep the same cancellation boundary before the handler (or preparation
+	// result); call retains the post-handler check and ordinary error handling.
+	if h.direct {
+		if err := ctx.Err(); err != nil {
+			return zero, invocationError(err)
+		}
+		if !runHandler {
+			return zero, nil
+		}
+		return h.call(ctx, in)
+	}
+	r := h.registry
 	started := r.startPhase()
 	if err := h.validate(ctx, in); err != nil {
 		r.observe(ctx, h.metadata.ID, "validate", started, CodeOf(err))
@@ -431,8 +495,13 @@ func (h *Handle[I, O]) run(ctx context.Context, in I, runHandler bool) (O, error
 	if !runHandler {
 		return zero, nil
 	}
-	if err := ctx.Err(); err != nil {
-		return zero, invocationError(err)
+	// Successful authorization checked cancellation after its last callback.
+	// Only an observer can run application code between that check and the
+	// handler, so unobserved calls need no duplicate check at this boundary.
+	if r.observer != nil {
+		if err := ctx.Err(); err != nil {
+			return zero, invocationError(err)
+		}
 	}
 	started = r.startPhase()
 	out, err := h.call(ctx, in)
@@ -451,26 +520,38 @@ type resolvedContext struct {
 }
 
 func (c resolvedContext) Value(key any) any {
-	switch key.(type) {
-	case principalKey, traceKey, correlationKey:
+	if correlation.IsKey(key) || spanreserve.IsKey(key) || invocationctx.IsPrincipalKey(key) || invocationctx.IsTraceKey(key) || invocationctx.IsSlotKey(key) {
 		return c.Context.Value(key)
 	}
-	if value := c.values.Value(key); value != nil {
+	// Resolvers provide values, not cancellation ownership. WithoutCancel
+	// hides standard-library cancellation metadata while preserving all
+	// ordinary values; Cause must describe the invocation's own lifetime.
+	if value := context.WithoutCancel(c.values).Value(key); value != nil {
 		return value
 	}
 	return c.Context.Value(key)
 }
 
 func (h *Handle[I, O]) validate(ctx context.Context, in I) error {
-	violations, err := h.inputValueValidator.Validate(in)
-	if err != nil {
-		return NewError(InvalidInput, "input cannot be encoded as JSON", err)
-	}
-	if err = inputViolations(violations); err != nil {
-		return err
+	// Registration can prove an unconstrained native type always matches its
+	// schema. Check that proof before boxing the value; wire and user-defined
+	// validation remain independent and are never skipped by it.
+	nativeInput := h.inputValueValidator.AlwaysValid()
+	if !nativeInput {
+		violations, native := h.inputValueValidator.ValidateNative(reflect.ValueOf(&in).Elem())
+		var err error
+		if !native {
+			violations, err = h.inputValueValidator.Validate(in)
+		}
+		if err != nil {
+			return NewError(InvalidInput, "input cannot be encoded as JSON", err)
+		}
+		if err = inputViolations(violations); err != nil {
+			return err
+		}
 	}
 	if h.definition.Validate != nil {
-		if err = h.definition.Validate(ctx, in); err != nil {
+		if err := h.definition.Validate(ctx, in); err != nil {
 			if ctx.Err() != nil {
 				return invocationError(ctx.Err())
 			}
@@ -481,34 +562,43 @@ func (h *Handle[I, O]) validate(ctx context.Context, in I) error {
 			return NewError(InvalidInput, "input validation failed", err)
 		}
 	}
+	// On this path validation did no work, and no observer, resolver, or
+	// anonymous-access rejection can intervene before authorize checks
+	// cancellation. Keep every other path's post-validation boundary.
+	if nativeInput && h.definition.Validate == nil && h.definition.Resolve == nil && h.metadata.Access.Mode == "public" && h.registry.observer == nil {
+		return nil
+	}
 	return invocationError(ctx.Err())
 }
 
 func (h *Handle[I, O]) authorize(ctx context.Context, in I) error {
+	// Public access has no application authorizer between entry and exit.
+	// This one check also guards the next handler/prepare boundary.
+	if h.metadata.Access.Mode != "permission" {
+		return invocationError(ctx.Err())
+	}
 	if err := ctx.Err(); err != nil {
 		return invocationError(err)
 	}
-	if h.metadata.Access.Mode == "permission" {
-		principal, ok := PrincipalFromContext(ctx)
-		if !ok {
-			return NewError(Unauthenticated, "authentication required", nil)
+	principal, ok := PrincipalFromContext(ctx)
+	if !ok {
+		return NewError(Unauthenticated, "authentication required", nil)
+	}
+	var err error
+	if h.definition.Authorize != nil {
+		err = h.definition.Authorize(ctx, principal, in)
+	} else {
+		err = h.registry.authorizer.Authorize(ctx, principal, h.metadata.Access.Permission, in)
+	}
+	if err != nil {
+		if ctx.Err() != nil {
+			return invocationError(ctx.Err())
 		}
-		var err error
-		if h.definition.Authorize != nil {
-			err = h.definition.Authorize(ctx, principal, in)
-		} else {
-			err = h.registry.authorizer.Authorize(ctx, principal, h.metadata.Access.Permission, in)
+		switch CodeOf(err) {
+		case Unauthenticated, Forbidden, NotFound, Unavailable:
+			return err
 		}
-		if err != nil {
-			if ctx.Err() != nil {
-				return invocationError(ctx.Err())
-			}
-			switch CodeOf(err) {
-			case Unauthenticated, Forbidden, NotFound, Unavailable:
-				return err
-			}
-			return NewError(Forbidden, "access denied", err)
-		}
+		return NewError(Forbidden, "access denied", err)
 	}
 	return invocationError(ctx.Err())
 }
@@ -527,17 +617,29 @@ func (h *Handle[I, O]) call(ctx context.Context, in I) (O, error) {
 		}
 		return zero, err
 	}
-	issues, err := h.outputValidator.Validate(out)
-	if err != nil {
-		return zero, NewError(Internal, "output cannot be encoded as JSON", err)
-	}
-	if len(issues) > 0 {
-		return zero, NewError(Internal, "output does not match the operation contract", err)
+	nativeOutput := h.outputValidator.AlwaysValid()
+	if !nativeOutput {
+		issues, native := h.outputValidator.ValidateNative(reflect.ValueOf(&out).Elem())
+		var err error
+		if !native {
+			issues, err = h.outputValidator.Validate(out)
+		}
+		if err != nil {
+			return zero, NewError(Internal, "output cannot be encoded as JSON", err)
+		}
+		if len(issues) > 0 {
+			return zero, NewError(Internal, "output does not match the operation contract", err)
+		}
 	}
 	if h.definition.ValidateOutput != nil {
 		if err = h.definition.ValidateOutput(ctx, out); err != nil {
 			return zero, NewError(Internal, "output validation failed", err)
 		}
+	}
+	// The handler's return was already checked above. An always-valid native
+	// result with no output hook performs no encoding or callback after it.
+	if nativeOutput && h.definition.ValidateOutput == nil {
+		return out, nil
 	}
 	if ctx.Err() != nil {
 		return zero, invocationError(ctx.Err())

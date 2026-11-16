@@ -1,6 +1,10 @@
 package operation
 
-import "context"
+import (
+	"context"
+
+	"github.com/mujhtech/trest/internal/invocationctx"
+)
 
 // Principal is identity established by trusted application authentication.
 // Business input must never be used to manufacture a principal.
@@ -8,8 +12,6 @@ type Principal struct {
 	ID       string `json:"id"`
 	TenantID string `json:"tenant_id,omitempty"`
 }
-
-type principalKey struct{}
 
 // Keep the immutable identity in its context wrapper rather than allocating a
 // separate interface box. Value exposes only the private wrapper; the public
@@ -20,7 +22,7 @@ type principalContext struct {
 }
 
 func (c *principalContext) Value(key any) any {
-	if _, ok := key.(principalKey); ok {
+	if invocationctx.IsPrincipalKey(key) {
 		return c
 	}
 	return c.Context.Value(key)
@@ -36,7 +38,7 @@ func WithPrincipal(ctx context.Context, p Principal) context.Context {
 
 // PrincipalFromContext returns trusted identity, if present and nonempty.
 func PrincipalFromContext(ctx context.Context) (Principal, bool) {
-	value, _ := ctx.Value(principalKey{}).(*principalContext)
+	value, _ := invocationctx.PrincipalValue(ctx).(*principalContext)
 	if value == nil {
 		return Principal{}, false
 	}

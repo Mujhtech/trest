@@ -126,7 +126,7 @@ func (r *Registry) observeJSON(ctx context.Context, id, phase string, data json.
 	if ctx == nil {
 		return nil, NewError(Internal, "nil invocation context", nil)
 	}
-	ctx, err = newInvocationTrace(ctx)
+	ctx, err = r.newInvocationTrace(ctx)
 	if err != nil {
 		return nil, NewError(Internal, "could not start invocation", err)
 	}

@@ -2,9 +2,11 @@ package operation
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"time"
+
+	"github.com/mujhtech/trest/internal/correlation"
+	"github.com/mujhtech/trest/internal/invocationctx"
+	"github.com/mujhtech/trest/internal/spanreserve"
 )
 
 // SourceLocation identifies the registration call site. File is a basename by
@@ -22,70 +24,27 @@ type TraceContext struct {
 	SpanID       string `json:"span_id"`
 	ParentSpanID string `json:"parent_span_id,omitempty"`
 }
-type traceKey struct{}
-type correlationKey struct{}
-
-// Store immutable metadata in the context itself. context.WithValue would also
-// allocate an interface box for the trace or string. Returning the private
-// wrapper from Value lets accessors copy the value without exposing a mutable
-// *TraceContext to application context wrappers.
-type traceContext struct {
-	context.Context
-	trace TraceContext
-}
-
-func (c *traceContext) Value(key any) any {
-	if _, ok := key.(traceKey); ok {
-		return c
-	}
-	return c.Context.Value(key)
-}
-
-type correlationContext struct {
-	context.Context
-	id string
-}
-
-func (c *correlationContext) Value(key any) any {
-	if _, ok := key.(correlationKey); ok {
-		return c
-	}
-	return c.Context.Value(key)
-}
 
 // WithTrace attaches an application-supplied trace parent. The next invocation
 // creates a fresh child span. Do not use trace IDs as security credentials.
 func WithTrace(ctx context.Context, trace TraceContext) context.Context {
-	if ctx == nil {
-		panic("cannot create context from nil parent")
-	}
-	return &traceContext{Context: ctx, trace: trace}
+	return invocationctx.WithTrace(ctx, invocationctx.Trace(trace))
 }
 
 // TraceFromContext returns trace metadata for the current invocation.
 func TraceFromContext(ctx context.Context) TraceContext {
-	trace, _ := ctx.Value(traceKey{}).(*traceContext)
-	if trace == nil {
-		return TraceContext{}
-	}
-	return trace.trace
+	return TraceContext(invocationctx.TraceFrom(ctx))
 }
 
 // WithCorrelationID attaches a transport correlation ID to emitted events.
 func WithCorrelationID(ctx context.Context, id string) context.Context {
-	if ctx == nil {
-		panic("cannot create context from nil parent")
-	}
-	return &correlationContext{Context: ctx, id: id}
+	value := correlation.New(ctx, id)
+	return &value
 }
 
 // CorrelationID retrieves the transport correlation ID, if any.
 func CorrelationID(ctx context.Context) string {
-	value, _ := ctx.Value(correlationKey{}).(*correlationContext)
-	if value == nil {
-		return ""
-	}
-	return value.id
+	return correlation.ID(ctx)
 }
 
 // Event records the completion of an invocation phase. It deliberately contains
@@ -125,18 +84,29 @@ func WithObserver(observer Observer) Option {
 	}
 }
 
-func newInvocationTrace(ctx context.Context) (context.Context, error) {
-	parent := TraceFromContext(ctx)
-	var bytes [16]byte
-	if _, err := rand.Read(bytes[:]); err != nil {
+func (r *Registry) newInvocationTrace(ctx context.Context) (context.Context, error) {
+	trace, err := r.nextTrace(ctx)
+	if err != nil {
 		return ctx, err
 	}
-	id := hex.EncodeToString(bytes[:])
+	return WithTrace(ctx, trace), nil
+}
+
+func (r *Registry) nextTrace(ctx context.Context) (TraceContext, error) {
+	parent := TraceFromContext(ctx)
+	id := spanreserve.Take(ctx)
+	if id == "" {
+		var err error
+		id, err = r.ids.ID()
+		if err != nil {
+			return TraceContext{}, err
+		}
+	}
 	traceID := parent.TraceID
 	if traceID == "" {
 		traceID = id
 	}
-	return WithTrace(ctx, TraceContext{TraceID: traceID, SpanID: id, ParentSpanID: parent.SpanID}), nil
+	return TraceContext{TraceID: traceID, SpanID: id, ParentSpanID: parent.SpanID}, nil
 }
 
 // Phase clocks have no observable use when no observer is configured. Trace
